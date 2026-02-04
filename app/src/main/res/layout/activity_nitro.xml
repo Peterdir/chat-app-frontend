@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/discord_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="80dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingTop="40dp"
+            android:paddingBottom="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NITRO"
+                android:textColor="@color/white"
+                android:textSize="40sp"
+                android:textStyle="bold|italic"
+                android:fontFamily="sans-serif-black"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Khám phá nhiều niềm vui hơn trên Discord"
+                android:textColor="@color/text_body"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@android:color/transparent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_gradient_nitro"
+                android:padding="20dp">
+
+                <ImageView
+                    android:id="@+id/img_wumpus_nitro"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@mipmap/ic_launcher"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_nitro_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NITRO"
+                    android:textSize="24sp"
+                    android:textStyle="bold|italic"
+                    android:textColor="@color/white"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/tv_nitro_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="113.000 đ / tháng"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_nitro_title"/>
+
+                <LinearLayout
+                    android:id="@+id/layout_features_nitro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/tv_nitro_price"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/img_wumpus_nitro">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⬆ Tải lên 500MB"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="☺ Emoji tùy chọn mọi nơi"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📺 Stream video HD"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💎 2 Nâng cấp máy chủ"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                </LinearLayout>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lấy Nitro"
+                    android:textColor="@color/nitro_purple"
+                    android:backgroundTint="@color/white"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/layout_features_nitro"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@android:color/transparent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_gradient_basic"
+                android:padding="20dp">
+
+                <ImageView
+                    android:id="@+id/img_wumpus_basic"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@mipmap/ic_launcher"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_basic_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NITRO BASIC"
+                    android:textSize="24sp"
+                    android:textStyle="bold|italic"
+                    android:textColor="@color/white"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/tv_basic_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="42.000 đ / tháng"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_basic_title"/>
+
+                <LinearLayout
+                    android:id="@+id/layout_features_basic"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/tv_basic_price"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/img_wumpus_basic">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⬆ Tải lên 500MB"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="☺ Emoji tùy chọn mọi nơi"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🏅 Huy hiệu Nitro trên hồ sơ"
+                        android:textColor="@color/white"
+                        android:layout_marginBottom="8dp"/>
+                </LinearLayout>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tải Basic"
+                    android:textColor="@color/basic_blue"
+                    android:backgroundTint="@color/white"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/layout_features_basic"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Các đặc quyền Nitro yêu thích"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="30dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/transparent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_gradient_nitro"> <TextView
+                android:id="@+id/tv_perk_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cường điệu, giễu cợt và tạo meme bằng emoji tùy chỉnh ở mọi nơi."
+                android:textColor="@color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_margin="24dp"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:src="@mipmap/ic_launcher"
+                    android:scaleType="centerInside"
+                    android:layout_marginBottom="20dp"
+                    app:layout_constraintTop_toBottomOf="@id/tv_perk_desc"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="@color/white"
+                        android:layout_margin="4dp"/>
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="#88FFFFFF"
+                        android:layout_margin="4dp"/>
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="#88FFFFFF"
+                        android:layout_margin="4dp"/>
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chọn gói đăng ký của bạn"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="20dp"/>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1,2"
+            android:layout_marginHorizontal="16dp">
+
+            <TableRow android:layout_marginBottom="10dp">
+                <TextView android:text="" /> <TextView
+                android:text="BASIC"
+                android:textColor="@color/white"
+                android:textStyle="bold|italic"
+                android:gravity="center"/>
+                <TextView
+                    android:text="NITRO"
+                    android:textColor="@color/white"
+                    android:textStyle="bold|italic"
+                    android:gravity="center"/>
+            </TableRow>
+
+            <TableRow android:paddingVertical="10dp">
+                <TextView
+                    android:text="Giá hàng tháng"
+                    android:textColor="@color/text_body"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="42.000 đ"
+                    android:textColor="@color/white"
+                    android:gravity="center"/>
+                <TextView
+                    android:text="113.000 đ"
+                    android:textColor="@color/white"
+                    android:gravity="center"/>
+            </TableRow>
+
+            <View android:layout_height="1dp" android:background="#33FFFFFF"/>
+
+            <TableRow android:paddingVertical="10dp">
+                <TextView
+                    android:text="Emoji tùy chỉnh mọi nơi"
+                    android:textColor="@color/text_body"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="✔"
+                    android:textColor="@color/white"
+                    android:gravity="center"/>
+                <TextView
+                    android:text="✔"
+                    android:textColor="@color/white"
+                    android:gravity="center"/>
+            </TableRow>
+
+            <View android:layout_height="1dp" android:background="#33FFFFFF"/>
+
+            <TableRow android:paddingVertical="10dp">
+                <TextView
+                    android:text="Dung lượng tải lên"
+                    android:textColor="@color/text_body"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="50 MB"
+                    android:textColor="@color/white"
+                    android:gravity="center"/>
+                <TextView
+                    android:text="500 MB"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+            </TableRow>
+
+            <View android:layout_height="1dp" android:background="#33FFFFFF"/>
+
+            <TableRow android:paddingVertical="10dp">
+                <TextView
+                    android:text="Stream video HD"
+                    android:textColor="@color/text_body"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:text="✘"
+                    android:textColor="#555555"
+                    android:gravity="center"/>
+                <TextView
+                    android:text="✔"
+                    android:textColor="@color/white"
+                    android:gravity="center"/>
+            </TableRow>
+
+        </TableLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Giải phóng niềm vui cùng Nitro!"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:layout_marginBottom="20dp"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="16dp"
+                android:text="Lấy Nitro"
+                android:backgroundTint="@color/nitro_purple"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:cornerRadius="28dp"/>
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@mipmap/ic_launcher"
+                android:layout_marginTop="20dp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
