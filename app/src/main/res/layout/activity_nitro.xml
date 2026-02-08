@@ -12,31 +12,51 @@
         android:orientation="vertical"
         android:paddingBottom="80dp">
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingTop="40dp"
             android:paddingBottom="20dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="NITRO"
-                android:textColor="@color/white"
-                android:textSize="40sp"
-                android:textStyle="bold|italic"
-                android:fontFamily="sans-serif-black"/>
+            <ImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_gravity="start|top"
+                android:layout_margin="16dp"
+                android:contentDescription="Back"
+                app:tint="@color/white" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Khám phá nhiều niềm vui hơn trên Discord"
-                android:textColor="@color/text_body"
-                android:textSize="14sp"
-                android:layout_marginTop="8dp"/>
-        </LinearLayout>
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="20dp">
+
+                <TextView
+                    android:id="@+id/tv_header_nitro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NITRO"
+                    android:textColor="@color/white"
+                    android:textSize="40sp"
+                    android:textStyle="bold|italic"
+                    android:fontFamily="sans-serif-black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Khám phá nhiều niềm vui hơn trên Discord"
+                    android:textColor="@color/text_body"
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="20dp"/>
+            </LinearLayout>
+
+        </FrameLayout>
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -121,6 +141,7 @@
                 </LinearLayout>
 
                 <Button
+                    android:id="@+id/btn_get_nitro"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Lấy Nitro"
@@ -154,7 +175,8 @@
                     android:id="@+id/img_wumpus_basic"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:src="@drawable/wumpus_scooter"                    app:layout_constraintEnd_toEndOf="parent"
+                    android:src="@drawable/wumpus_scooter"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
@@ -247,22 +269,25 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/bg_gradient_nitro"> <TextView
-                android:id="@+id/tv_perk_desc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Cường điệu, giễu cợt và tạo meme bằng emoji tùy chỉnh ở mọi nơi."
-                android:textColor="@color/white"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:layout_margin="24dp"
-                app:layout_constraintTop_toTopOf="parent"/>
+                android:background="@drawable/bg_gradient_nitro">
+
+                <TextView
+                    android:id="@+id/tv_perk_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Cường điệu, giễu cợt và tạo meme bằng emoji tùy chỉnh ở mọi nơi."
+                    android:textColor="@color/white"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_margin="24dp"
+                    app:layout_constraintTop_toTopOf="parent"/>
 
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:src="@drawable/banner_emojis"                    android:scaleType="centerInside"
+                    android:layout_height="150dp"
+                    android:src="@drawable/banner_emojis"
+                    android:scaleType="fitCenter"
                     android:layout_marginBottom="20dp"
                     app:layout_constraintTop_toBottomOf="@id/tv_perk_desc"
                     app:layout_constraintBottom_toBottomOf="parent"/>
@@ -295,7 +320,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -314,11 +338,12 @@
             android:layout_marginHorizontal="16dp">
 
             <TableRow android:layout_marginBottom="10dp">
-                <TextView android:text="" /> <TextView
-                android:text="BASIC"
-                android:textColor="@color/white"
-                android:textStyle="bold|italic"
-                android:gravity="center"/>
+                <TextView android:text="" />
+                <TextView
+                    android:text="BASIC"
+                    android:textColor="@color/white"
+                    android:textStyle="bold|italic"
+                    android:gravity="center"/>
                 <TextView
                     android:text="NITRO"
                     android:textColor="@color/white"
