@@ -2,4 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="discord_background">#313338</color>
+    <color name="nitro_purple">#5865F2</color>
+    <color name="basic_blue">#00A8FC</color>
+    <color name="text_header">#FFFFFF</color>
+    <color name="text_body">#B5BAC1</color>
+    <color name="card_bg">#2B2D31</color>
 </resources>
