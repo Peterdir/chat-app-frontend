@@ -2,4 +2,16 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Discord Palette -->
+    <color name="discord_background">#313338</color>
+    <color name="discord_sidebar_bg">#2B2D31</color>
+    <color name="discord_server_rail_bg">#1E1F22</color>
+    <color name="discord_blurple">#5865F2</color>
+    <color name="discord_green">#23A559</color>
+    <color name="discord_text_primary">#F2F3F5</color>
+    <color name="discord_text_secondary">#B5BAC1</color>
+    <color name="discord_channel_hover">#35373C</color>
+    <color name="discord_channel_selected">#3F4147</color>
+    <color name="discord_divider">#1E1F22</color>
 </resources>

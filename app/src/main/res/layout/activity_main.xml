@@ -5,15 +5,32 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/discord_server_rail_bg"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+    <!-- Server Rail (Left Sidebar) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_server_rail"
+        android:layout_width="72dp"
+        android:layout_height="0dp"
+        android:background="@color/discord_server_rail_bg"
+        android:paddingTop="12dp"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/item_server_rail" />
+
+    <!-- Navigation/Content Pane (Right Sidebar) -->
+    <!-- Using FrameLayout as container for Fragments -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/discord_sidebar_bg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/rv_server_rail"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
