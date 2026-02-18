@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/discord_sidebar_bg"
+    android:orientation="vertical">
+
+    <!-- Header Area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1E1F22"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
+            android:paddingStart="0dp"
+            android:text="Friends"
+            android:textColor="@color/discord_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="0dp"
+            android:paddingEnd="16dp"
+            android:gravity="center_vertical">
+
+            <!-- Search Bar -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="8dp"
+                android:text="Find or start a conversation"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp"/>
+
+            <!-- Add Friend Button -->
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_add_friend" 
+                android:background="@drawable/bg_circle_green"
+                android:padding="8dp"/> 
+                <!-- Using color filter/tint to simulate green icon or background -->
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/discord_divider"/>
+
+    <!-- DM List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_dm_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="8dp"
+        android:clipToPadding="false" />
+
+</LinearLayout>
