@@ -38,11 +38,11 @@ public class DMFragment extends Fragment {
 
         // Mock Data
         List<Friend> friends = new ArrayList<>();
-        friends.add(new Friend("1", "Phan Vien", "Playing MATH", R.drawable.h1));
-        friends.add(new Friend("2", "Nguyen Dong", "Online", R.drawable.h2));
-        friends.add(new Friend("3", "Khanh Duy", "Idle", R.drawable.h3));
-        friends.add(new Friend("4", "Peter Park", "DND", R.drawable.h4));
-        friends.add(new Friend("5", "Persyy", "Online", R.drawable.h5));
+        friends.add(new Friend("1", "Phan Vien", "Playing MATH", R.drawable.avatar1));
+        friends.add(new Friend("2", "Nguyen Dong", "Online", R.drawable.avatar2));
+        friends.add(new Friend("3", "Khanh Duy", "Idle", R.drawable.avatar3));
+        friends.add(new Friend("4", "Peter Park", "DND", R.drawable.avatar4));
+        friends.add(new Friend("5", "Persyy", "Online", R.drawable.avatar5));
 
 
         dmAdapter = new DMAdapter(friends);

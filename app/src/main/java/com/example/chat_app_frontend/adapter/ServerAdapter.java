@@ -21,7 +21,7 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
     private OnServerClickListener listener;
 
     public interface OnServerClickListener {
-        void onServerClick(Server server);
+        void onServerClick(Server server); // Hàm sẽ được gọi khi có user click
     }
 
     public ServerAdapter(List<Server> serverList, OnServerClickListener listener) {
