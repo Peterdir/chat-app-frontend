@@ -1,6 +1,7 @@
 package com.example.chat_app_frontend;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,7 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.adapter.ServerAdapter;
 import com.example.chat_app_frontend.model.Server;
 import com.example.chat_app_frontend.ui.DMFragment;
+import com.example.chat_app_frontend.ui.NotificationsFragment;
 import com.example.chat_app_frontend.ui.ServerFragment;
+import com.example.chat_app_frontend.ui.ProfileFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +43,32 @@ public class MainActivity extends AppCompatActivity {
 
         // Load DM fragment by default
         loadDMFragment();
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                // Hiển thị lại server rail + DM fragment
+                rvServerRail.setVisibility(View.VISIBLE);
+                loadDMFragment();
+                return true;
+            } else if (id == R.id.nav_notifications) {
+                rvServerRail.setVisibility(View.GONE);
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .replace(R.id.fragment_container, new NotificationsFragment())
+                        .commit();
+                return true;
+            } else if (id == R.id.nav_profile) {
+                rvServerRail.setVisibility(View.GONE);
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .replace(R.id.fragment_container, new ProfileFragment())
+                        .commit();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setupServerRail() {
@@ -74,12 +104,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadDMFragment() {
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                 .replace(R.id.fragment_container, new DMFragment())
                 .commit();
     }
 
     private void loadServerFragment(String serverName) {
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                 .replace(R.id.fragment_container, ServerFragment.newInstance(serverName))
                 .commit();
     }
