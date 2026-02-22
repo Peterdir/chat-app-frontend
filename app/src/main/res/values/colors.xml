@@ -14,4 +14,7 @@
     <color name="discord_channel_hover">#35373C</color>
     <color name="discord_channel_selected">#3F4147</color>
     <color name="discord_divider">#1E1F22</color>
+    <color name="discord_card_bg">#2B2D31</color>
+    <color name="discord_profile_banner_end">#E87BA8</color>
+    <color name="discord_button_secondary">#4E5058</color>
 </resources>
