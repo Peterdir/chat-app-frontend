@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1e1f22"> <!-- Nền siêu tối y hệt hình -->
+
+    <!-- ==================== TOP BAR ==================== -->
+    <!-- Nút gập menu (Chữ V trỏ xuống) -->
+    <ImageButton
+        android:id="@+id/btn_collapse"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/bg_circle_dark"
+        android:src="@drawable/ic_chevron_right"
+        android:rotation="90"
+        app:tint="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Tên kênh dạng Pill (viên thuốc) -->
+    <LinearLayout
+        android:id="@+id/pill_channel_name"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/bg_pill_dark"
+        android:backgroundTint="#2b2d31"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        app:layout_constraintBottom_toBottomOf="@id/btn_collapse"
+        app:layout_constraintStart_toEndOf="@id/btn_collapse"
+        app:layout_constraintTop_toTopOf="@id/btn_collapse">
+
+        <TextView
+            android:id="@+id/tv_top_channel_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="z"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="#A0A0A0" />
+    </LinearLayout>
+
+    <!-- Nút Thêm User (Góc phải) -->
+    <ImageButton
+        android:id="@+id/btn_add_user_top"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="16dp"
+        android:background="@android:drawable/btn_dialog" 
+        android:backgroundTint="#00000000"
+        android:src="@drawable/ic_person_add"
+        app:tint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="@id/btn_collapse"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_collapse" />
+
+    <!-- Nút Loa Ngoài (Kế bên nút thêm user) -->
+    <ImageButton
+        android:id="@+id/btn_speaker_top"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_circle_white"
+        android:src="@drawable/ic_speaker"
+        app:tint="#000000"
+        app:layout_constraintBottom_toBottomOf="@id/btn_collapse"
+        app:layout_constraintEnd_toStartOf="@id/btn_add_user_top"
+        app:layout_constraintTop_toTopOf="@id/btn_collapse" />
+
+    <!-- ==================== CENTER STAGE (AVATAR KHỔNG LỒ) ==================== -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_main_avatar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="#111214"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/banner_add_people"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_collapse">
+        
+        <!-- Background Frame Container Tách Biệt Cho Video -->
+        <FrameLayout
+            android:id="@+id/fl_local_video"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#111214"
+            android:visibility="gone" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- Hình Avatar/Logo ở giữa thẻ -->
+            <ImageView
+                android:id="@+id/iv_center_avatar"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_discord_logo" 
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Pill trạng thái dưới góc trái của thẻ Avatar (vd: 🎤 Duy) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_pill_dark"
+                android:backgroundTint="#000000"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <ImageView
+                    android:id="@+id/iv_user_mic_status"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_mic_off"
+                    app:tint="#A0A0A0" />
+
+                <TextView
+                    android:id="@+id/tv_user_name_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="You"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- ==================== BOTTOM SECTION ==================== -->
+    
+    <!-- Banner Mời bạn bè -->
+    <LinearLayout
+        android:id="@+id/banner_add_people"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_rounded_card"
+        android:backgroundTint="#111214"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_action_bar">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_circle_dark"
+            android:backgroundTint="#2b2d31"
+            android:padding="6dp"
+            android:src="@drawable/ic_person_add"
+            app:tint="#FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thêm người vào Trò Chuyện Thoại"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cho nhóm biết bạn đang ở đây!"
+                android:textColor="#A0A0A0"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="#A0A0A0" />
+    </LinearLayout>
+
+    <!-- Thanh 5 Nút Điều Khiển Chính -->
+    <LinearLayout
+        android:id="@+id/bottom_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 1. Tắt Camera -->
+        <ImageButton
+            android:id="@+id/btn_video"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_circle_dark"
+            android:backgroundTint="#2b2d31"
+            android:src="@android:drawable/ic_menu_camera" 
+            app:tint="#FFFFFF" />
+
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+
+        <!-- 2. Bật/Tắt Micro -->
+        <ImageButton
+            android:id="@+id/btn_mute_main"
+            android:layout_width="64dp"  
+            android:layout_height="64dp"
+            android:background="@drawable/bg_circle_white"
+            android:src="@drawable/ic_mic_off"
+            app:tint="#ED4245" />
+
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+
+        <!-- 3. Text Chat -->
+        <ImageButton
+            android:id="@+id/btn_chat_main"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_circle_dark"
+            android:backgroundTint="#2b2d31"
+            android:src="@drawable/ic_chat_bubble"
+            app:tint="#FFFFFF" />
+
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+
+        <!-- 4. Soundboard / Event -->
+        <ImageButton
+            android:id="@+id/btn_event_main"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_circle_dark"
+            android:backgroundTint="#2b2d31"
+            android:src="@android:drawable/ic_lock_silent_mode_off" 
+            app:tint="#FFFFFF" />
+
+        <Space
+            android:layout_width="12dp"
+            android:layout_height="wrap_content" />
+
+        <!-- 5. Tắt cuộc gọi (Màu đỏ) -->
+        <ImageButton
+            android:id="@+id/btn_leave_main"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_circle_dark"
+            android:backgroundTint="#ED4245"
+            android:src="@drawable/ic_call_end"
+            app:tint="#FFFFFF" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

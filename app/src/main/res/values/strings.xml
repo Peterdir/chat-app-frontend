@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">chat-app-frontend</string>
+
+    <string name="agora_app_id">90a91286b3974226a2876f10ce8d7a0d</string>
 </resources>
