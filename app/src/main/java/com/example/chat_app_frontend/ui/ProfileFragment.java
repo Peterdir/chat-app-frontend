@@ -24,9 +24,31 @@ public class ProfileFragment extends Fragment {
 
         setupCloseImproveCard(view);
         setupEditProfileButton(view);
+        setupStoreNavigation(view);
         animateProfileEntrance(view);
 
         return view;
+    }
+
+    private void setupStoreNavigation(View view) {
+        View btnStoreHeader = view.findViewById(R.id.btn_store_header);
+        if (btnStoreHeader != null) {
+            btnStoreHeader.setOnClickListener(v -> {
+                v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                    
+                    // Chuyển sang OrbsExclusivesFragment
+                    if (getActivity() != null) {
+                        getActivity().getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, 
+                                                   android.R.anim.fade_in, android.R.anim.fade_out)
+                                .replace(R.id.fragment_container, new OrbsExclusivesFragment())
+                                .addToBackStack(null) // Cho phép nhấn Back để quay lại Profile
+                                .commit();
+                    }
+                }).start();
+            });
+        }
     }
 
     private void setupEditProfileButton(View view) {
@@ -49,19 +71,23 @@ public class ProfileFragment extends Fragment {
         View cardImproveProfile = view.findViewById(R.id.card_improve_profile);
         View btnClose = view.findViewById(R.id.btn_close_improve);
 
-        btnClose.setOnClickListener(v -> {
-            // Animate card disappearing
-            cardImproveProfile.animate()
-                    .alpha(0f)
-                    .translationY(-30f)
-                    .setDuration(250)
-                    .withEndAction(() -> cardImproveProfile.setVisibility(View.GONE))
-                    .start();
-        });
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> {
+                // Animate card disappearing
+                if (cardImproveProfile != null) {
+                    cardImproveProfile.animate()
+                            .alpha(0f)
+                            .translationY(-30f)
+                            .setDuration(250)
+                            .withEndAction(() -> cardImproveProfile.setVisibility(View.GONE))
+                            .start();
+                }
+            });
+        }
 
         // Setup Header Buttons with Click Animations
         setupHeaderButton(view, R.id.btn_nitro_header);
-        setupHeaderButton(view, R.id.btn_store_header);
+        // btn_store_header handled in setupStoreNavigation
         setupHeaderButton(view, R.id.btn_settings);
 
         // Start Shimmer Effect for Nitro Button
@@ -104,7 +130,7 @@ public class ProfileFragment extends Fragment {
 
     private void setupHeaderButton(View view, int buttonId) {
         View button = view.findViewById(buttonId);
-        if (button != null) {
+        if (button != null && buttonId != R.id.btn_store_header) {
             button.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
@@ -123,9 +149,11 @@ public class ProfileFragment extends Fragment {
 
         // Avatar bounce animation
         View avatarContainer = view.findViewById(R.id.avatar_container);
-        Animation scaleBounce = AnimationUtils.loadAnimation(getContext(), R.anim.scale_bounce);
-        scaleBounce.setStartOffset(200);
-        avatarContainer.startAnimation(scaleBounce);
+        if (avatarContainer != null) {
+            Animation scaleBounce = AnimationUtils.loadAnimation(getContext(), R.anim.scale_bounce);
+            scaleBounce.setStartOffset(200);
+            avatarContainer.startAnimation(scaleBounce);
+        }
 
         // Staggered slide-up animation for each card
         int[] cardIds = {
