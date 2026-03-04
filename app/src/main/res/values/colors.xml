@@ -16,9 +16,14 @@
     <color name="discord_sidebar_bg">#2B2D31</color>
     <color name="discord_divider">#313338</color>
 
-    <!-- Legacy compatibility -->
+    <!-- Legacy & Shop Screen Colors (Merged) -->
     <color name="bg_card">@color/discord_card_bg</color>
     <color name="placeholder_image">@color/discord_channel_selected</color>
-    <color name="text_primary">@color/discord_text_primary</color>
-    <color name="text_secondary">@color/discord_text_secondary</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B5BAC1</color>
+    <color name="dark_bg">#121212</color>
+    <color name="dark_card_bg">#1E1E1E</color>
+    <color name="shop_blue">#5865F2</color>
+    <color name="card_normal">#2A2A2A</color>
+    <color name="card_pressed">#3A3A3A</color>
 </resources>

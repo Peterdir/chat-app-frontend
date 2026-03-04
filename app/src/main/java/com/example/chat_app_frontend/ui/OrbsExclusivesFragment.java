@@ -48,16 +48,24 @@ public class OrbsExclusivesFragment extends Fragment {
 
     private void setupRecyclerView() {
         List<OrbItem> items = new ArrayList<>();
-        // Sử dụng R.drawable.tên_file để thêm ảnh. 
-        // Ở đây tôi dùng tạm ic_nitro_boost và ic_store_modern làm ví dụ.
+        
+        // Hàng 1
         items.add(new OrbItem("3-Day Nitro Credit", 1400, R.drawable.nitro_3_days));
         items.add(new OrbItem("Orbs Apprentice Badge", 1200, R.drawable.img));
+        
+        // Hàng 2
         items.add(new OrbItem("Infinite Swirl Bundle", 8900, R.drawable.infinite_swrirl_bundle));
-        items.add(new OrbItem("Magic Mists", 3500, R.drawable.magic_mists)); // 0 nghĩa là chưa có ảnh
+        items.add(new OrbItem("Magic Mists", 3500, R.drawable.magic_mists));
+        
+        // Hàng 3
         items.add(new OrbItem("Infinite Swirl", 3500, R.drawable.magic_mists));
         items.add(new OrbItem("Pondering Portal", 3500, R.drawable.magic_mists));
+        
+        // Hàng 4
         items.add(new OrbItem("Infinite Swirl", 3500, R.drawable.infinite_swirl_bundle2));
         items.add(new OrbItem("Magic Mists", 3500, R.drawable.infinite_swirl_bundle2));
+        
+        // Hàng 5
         items.add(new OrbItem("Nevermore", 4100, R.drawable.nevermore));
         items.add(new OrbItem("Lone Wolf Bundle", 11000, R.drawable.nevermore));
 
