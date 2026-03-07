@@ -17,4 +17,9 @@
     <color name="discord_card_bg">#2B2D31</color>
     <color name="discord_profile_banner_end">#E87BA8</color>
     <color name="discord_button_secondary">#4E5058</color>
+
+    <!-- GamerConnect Splash palette -->
+    <color name="splash_bg">#0D0F12</color>
+    <color name="gamer_purple">#7C5CF5</color>
+    <color name="gamer_cyan">#00D4FF</color>
 </resources>
