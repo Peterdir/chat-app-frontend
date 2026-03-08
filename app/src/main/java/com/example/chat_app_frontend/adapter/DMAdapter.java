@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Friend;
+import com.example.chat_app_frontend.ui.DMChatActivity;
 
 import java.util.List;
 
@@ -40,24 +42,25 @@ public class DMAdapter extends RecyclerView.Adapter<DMAdapter.DMViewHolder> {
             holder.imgFriendAvatar.setVisibility(View.VISIBLE);
             holder.tvFriendInitial.setVisibility(View.GONE);
         } else {
-            // Default: Show Initial on Background
             holder.imgFriendAvatar.setVisibility(View.GONE);
             holder.tvFriendInitial.setVisibility(View.VISIBLE);
 
-            // Get first letter
             String name = friend.getName();
             if (name != null && !name.isEmpty()) {
                 holder.tvFriendInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
             } else {
                 holder.tvFriendInitial.setText("?");
             }
-
-            // Pick a random discord color for background (simulated by CardView background
-            // in XML or here)
-            // For now, let's keep the default green from XML or cycle through if needed.
-            // Valid improvement: Set CardView background color programmatically based on
-            // name hash.
         }
+
+        // Open DM chat on click
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), DMChatActivity.class);
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_NAME, friend.getName());
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_STATUS, friend.getStatus());
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_AVATAR, friend.getAvatarResId());
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override

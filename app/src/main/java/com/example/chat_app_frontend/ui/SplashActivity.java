@@ -1,4 +1,6 @@
-package com.example.chat_app_frontend;
+package com.example.chat_app_frontend.ui;
+
+import com.example.chat_app_frontend.R;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -14,9 +16,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.chat_app_frontend.ui.CircuitTrailView;
-import com.example.chat_app_frontend.ui.PingRingView;
 
 /**
  * GamerConnect splash / intro activity.
