@@ -1,4 +1,6 @@
-package com.example.chat_app_frontend;
+package com.example.chat_app_frontend.ui;
+
+import com.example.chat_app_frontend.R;
 
 import android.animation.ValueAnimator;
 import android.content.Intent;

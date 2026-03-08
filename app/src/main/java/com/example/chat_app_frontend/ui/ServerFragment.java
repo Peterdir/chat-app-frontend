@@ -70,6 +70,7 @@ public class ServerFragment extends Fragment {
         channels.add(new Channel("7", "music", "voice"));
 
         channelAdapter = new ChannelAdapter(channels);
+        channelAdapter.setServerName(serverName);
         rvChannels.setAdapter(channelAdapter);
     }
 }
