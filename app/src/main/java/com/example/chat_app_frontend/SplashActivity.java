@@ -184,7 +184,8 @@ public class SplashActivity extends AppCompatActivity {
         fadeOut.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                startActivity(new Intent(SplashActivity.this, OnboardingActivity.class));
+                overridePendingTransition(0, 0);
                 finish();
             }
         });

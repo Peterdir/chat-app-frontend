@@ -24,7 +24,55 @@
             </intent-filter>
         </activity>
 
-        <!-- Main app screen – started programmatically from SplashActivity -->
+        <!-- Onboarding screen – shown after splash animation completes -->
+        <activity
+            android:name=".OnboardingActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Splash" />
+
+        <!-- Register screen -->
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <!-- Login screen -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <!-- Forgot Password flow -->
+        <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Chatappfrontend" />
+        <activity
+            android:name=".OtpVerificationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Chatappfrontend" />
+        <activity
+            android:name=".NewPasswordActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Chatappfrontend" />
+        <activity
+            android:name=".PasswordChangedActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <!-- Main app screen – started programmatically from OnboardingActivity -->
         <activity
             android:name=".MainActivity"
             android:exported="false" />

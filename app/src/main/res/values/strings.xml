@@ -2,4 +2,84 @@
     <string name="app_name">GamerConnect</string>
     <string name="gamerconnect_name">GamerConnect</string>
     <string name="gamerconnect_logo_desc">GamerConnect logo</string>
+
+    <!-- Onboarding slides -->
+    <string name="onboard_title_1">Gaming</string>
+    <string name="onboard_title_2">Social Media</string>
+    <string name="onboard_title_3">Team work</string>
+
+    <string name="onboard_desc_1">Discord là ứng dụng những tuyển thủ tin dùng để sử dụng trong chơi game và thi đấu</string>
+    <string name="onboard_desc_2">Discord còn là nơi để kết bạn, tương tác và giao lưu với mọi người</string>
+    <string name="onboard_desc_3">Discord giúp cho mọi người dễ dàng làm việc, học tập trực tuyến với sự hỗ trợ đa dụng như micro, camera.</string>
+
+    <string name="onboard_btn_register">ĐĂNG KÝ</string>
+    <string name="onboard_btn_login">ĐÃ CÓ TÀI KHOẢN</string>
+
+    <!-- Register screen -->
+    <string name="register_back">Back</string>
+    <string name="register_title">Hello! Register to get started</string>
+    <string name="register_hint_username">Username</string>
+    <string name="register_hint_display_name">Display name</string>
+    <string name="register_hint_email">Email</string>
+    <string name="register_hint_password">Password</string>
+    <string name="register_hint_confirm_password">Confirm password</string>
+    <string name="register_btn">Register</string>
+    <string name="register_or_with">Or Register with</string>
+    <string name="register_via_facebook">Register with Facebook</string>
+    <string name="register_via_google">Register with Google</string>
+    <string name="register_login_link">Already have an account? Login Now</string>
+    <string name="register_login_link_action">Login Now</string>
+    <string name="register_error_username">Please enter your username</string>
+    <string name="register_error_display_name">Please enter your display name</string>
+    <string name="register_error_email">Please enter a valid email</string>
+    <string name="register_error_password">Password must be at least 6 characters</string>
+    <string name="register_error_confirm">Passwords do not match</string>
+    <string name="register_success">Account created!</string>
+
+    <!-- Login screen -->
+    <string name="login_back">Back</string>
+    <string name="login_title">Welcome back! Glad to see you. Again!</string>
+    <string name="login_hint_email">Enter your email</string>
+    <string name="login_hint_password">Enter your password</string>
+    <string name="login_toggle_password">Toggle password visibility</string>
+    <string name="login_forgot_password">Forgot Password?</string>
+    <string name="login_btn">Login</string>
+    <string name="login_or_with">Or Login with</string>
+    <string name="login_via_facebook">Login with Facebook</string>
+    <string name="login_via_google">Login with Google</string>
+    <string name="login_register_link">Don\'t have an account? Register Now</string>
+    <string name="login_register_link_action">Register Now</string>
+    <string name="login_error_password">Please enter your password</string>
+
+    <!-- Forgot Password screen -->
+    <string name="fp_back">Back</string>
+    <string name="fp_title">Forgot Password?</string>
+    <string name="fp_subtitle">Don\'t worry! It occurs. Please enter the email address linked with your account.</string>
+    <string name="fp_hint_email">Enter your email</string>
+    <string name="fp_btn_send">Send Code</string>
+    <string name="fp_login_link">Remember Password? Login</string>
+    <string name="fp_login_link_action">Login</string>
+
+    <!-- OTP Verification screen -->
+    <string name="otp_back">Back</string>
+    <string name="otp_title">OTP Verification</string>
+    <string name="otp_subtitle">Enter the verification code we just sent on your email address.</string>
+    <string name="otp_btn_verify">Verify</string>
+    <string name="otp_resend_link">Didn\'t received code? Resend</string>
+    <string name="otp_resend_link_action">Resend</string>
+    <string name="otp_error_incomplete">Please enter all 4 digits</string>
+    <string name="otp_resent">Code resent!</string>
+
+    <!-- New Password screen -->
+    <string name="np_back">Back</string>
+    <string name="np_title">Create new password</string>
+    <string name="np_subtitle">Your new password must be unique from those previously used.</string>
+    <string name="np_hint_new">New Password</string>
+    <string name="np_hint_confirm">Confirm Password</string>
+    <string name="np_btn_reset">Reset Password</string>
+
+    <!-- Password Changed screen -->
+    <string name="pc_title">Password Changed!</string>
+    <string name="pc_subtitle">Your password has been changed successfully.</string>
+    <string name="pc_btn_back">Back to Login</string>
 </resources>
