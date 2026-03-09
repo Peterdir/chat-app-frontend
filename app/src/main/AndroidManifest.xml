@@ -12,9 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Chatappfrontend">
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
 
         <activity
             android:name=".ui.NitroActivity"
