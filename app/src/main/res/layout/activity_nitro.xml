@@ -172,7 +172,6 @@
                             android:background="@drawable/bg_shine"
                             android:layout_alignParentStart="true"/>
                     </RelativeLayout>
-
                 </androidx.cardview.widget.CardView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -253,17 +252,39 @@
                         android:layout_marginBottom="8dp"/>
                 </LinearLayout>
 
-                <Button
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/btn_get_basic"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Tải Basic"
-                    android:textColor="@color/basic_blue"
-                    android:backgroundTint="@color/white"
-                    android:textStyle="bold"
+                    android:layout_height="50dp"
                     android:layout_marginTop="20dp"
+                    app:cardCornerRadius="25dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/white"
                     app:layout_constraintTop_toBottomOf="@id/layout_features_basic"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tải Basic"
+                            android:textColor="@color/basic_blue"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:layout_centerInParent="true"/>
+
+                        <View
+                            android:id="@+id/view_shine_basic"
+                            android:layout_width="80dp"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_shine"
+                            android:layout_alignParentStart="true"/>
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
@@ -411,15 +432,36 @@
                 android:textSize="20sp"
                 android:layout_marginBottom="20dp"/>
 
-            <Button
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btn_get_nitro_footer"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginHorizontal="16dp"
-                android:text="Lấy Nitro"
-                android:backgroundTint="@color/nitro_purple"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                app:cornerRadius="28dp"/>
+                app:cardCornerRadius="28dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/nitro_purple">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lấy Nitro"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        android:layout_centerInParent="true"/>
+
+                    <View
+                        android:id="@+id/view_shine_footer"
+                        android:layout_width="80dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_shine"
+                        android:layout_alignParentStart="true"/>
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
 
             <ImageView
                 android:layout_width="120dp"

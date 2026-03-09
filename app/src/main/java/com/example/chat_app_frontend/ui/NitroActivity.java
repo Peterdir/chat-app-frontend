@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,15 +20,12 @@ import java.util.List;
 
 public class NitroActivity extends AppCompatActivity {
 
-    // Khai báo biến cho Slider
     private ViewPager2 viewPagerPerks;
     private LinearLayout layoutDots;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Ẩn thanh tiêu đề
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
@@ -40,61 +36,47 @@ public class NitroActivity extends AppCompatActivity {
     }
 
     private void setupAnimations() {
-        // --- 1. Load các file animation từ XML ---
         Animation animHover = AnimationUtils.loadAnimation(this, R.anim.anim_hover);
         Animation animSlideIn = AnimationUtils.loadAnimation(this, R.anim.anim_slide_in);
         Animation animGlow = AnimationUtils.loadAnimation(this, R.anim.anim_glow);
         Animation animSlideUp = AnimationUtils.loadAnimation(this, R.anim.anim_slide_up);
-        Animation animShimmer = AnimationUtils.loadAnimation(this, R.anim.anim_shimmer); // Hiệu ứng lấp lánh
 
-        // --- 2. Áp dụng hiệu ứng ---
-
-        // Màn hình trượt lên
         findViewById(android.R.id.content).startAnimation(animSlideUp);
 
-        // Wumpus bay (Thẻ Tím)
         ImageView imgNitro = findViewById(R.id.img_wumpus_nitro);
-        if (imgNitro != null) {
-            imgNitro.startAnimation(animHover);
-        }
+        if (imgNitro != null) imgNitro.startAnimation(animHover);
 
-        // Xe máy (Thẻ Xanh)
         ImageView imgBasic = findViewById(R.id.img_wumpus_basic);
         if (imgBasic != null) {
             animSlideIn.setStartOffset(1000);
             imgBasic.startAnimation(animSlideIn);
         }
 
-        // Chữ NITRO nhấp nháy
         TextView tvTitle = findViewById(R.id.tv_header_nitro);
-        if (tvTitle != null) {
-            tvTitle.startAnimation(animGlow);
-        }
+        if (tvTitle != null) tvTitle.startAnimation(animGlow);
 
-        // Nút Back (Quay lại)
         View btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {
-            btnBack.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    finish();
-                }
-            });
+            btnBack.setOnClickListener(v -> finish());
         }
 
-        // --- XỬ LÝ NÚT "LẤY NITRO" (SHIMMER EFFECT) ---
-        // Lưu ý: Trong XML mới, nút này là CardView, không phải Button
-        View btnGetNitro = findViewById(R.id.btn_get_nitro);
 
-        // Tìm vệt sáng bên trong nút
-        View viewShine = findViewById(R.id.view_shine);
+        setupShimmerButton(R.id.btn_get_nitro, R.id.view_shine);
 
-        if (btnGetNitro != null && viewShine != null) {
-            // A. Cho vệt sáng chạy qua chạy lại (Lấp lánh)
+        setupShimmerButton(R.id.btn_get_basic, R.id.view_shine_basic);
+
+        setupShimmerButton(R.id.btn_get_nitro_footer, R.id.view_shine_footer);
+    }
+
+    private void setupShimmerButton(int btnId, int shineId) {
+        View btnContainer = findViewById(btnId);
+        View viewShine = findViewById(shineId);
+
+        if (btnContainer != null && viewShine != null) {
+            Animation animShimmer = AnimationUtils.loadAnimation(this, R.anim.anim_shimmer);
             viewShine.startAnimation(animShimmer);
 
-            // B. Sự kiện bấm nút (Click nảy lên)
-            btnGetNitro.setOnClickListener(new View.OnClickListener() {
+            btnContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Animation animClick = AnimationUtils.loadAnimation(NitroActivity.this, R.anim.anim_click);
@@ -109,9 +91,9 @@ public class NitroActivity extends AppCompatActivity {
         layoutDots = findViewById(R.id.layout_dots);
 
         List<PerkItem> list = new ArrayList<>();
-        list.add(new PerkItem("Cường điệu, giễu cợt và tạo meme bằng emoji tùy chỉnh.", R.drawable.banner_emojis));
-        list.add(new PerkItem("Tải lên tập tin khổng lồ 500MB để chia sẻ dữ liệu.", R.drawable.wumpus_jetpack));
-        list.add(new PerkItem("Phát trực tiếp chất lượng HD mượt mà sắc nét.", R.drawable.wumpus_scooter));
+        list.add(new PerkItem("Cường điệu, giễu cợt và tạo meme bằng emoji tùy chỉnh.", R.drawable.icons));
+        list.add(new PerkItem("Tải lên tập tin khổng lồ 500MB để chia sẻ dữ liệu.", R.drawable.files));
+        list.add(new PerkItem("Phát trực tiếp chất lượng HD mượt mà sắc nét.", R.drawable.lives));
 
         PerkAdapter adapter = new PerkAdapter(list);
         viewPagerPerks.setAdapter(adapter);
@@ -154,12 +136,9 @@ public class NitroActivity extends AppCompatActivity {
         }
     }
 
-    // --- CÁC CLASS CON (MODEL & ADAPTER) ---
-
     static class PerkItem {
         String title;
         int imageRes;
-
         public PerkItem(String title, int imageRes) {
             this.title = title;
             this.imageRes = imageRes;
@@ -168,15 +147,11 @@ public class NitroActivity extends AppCompatActivity {
 
     class PerkAdapter extends RecyclerView.Adapter<PerkAdapter.PerkViewHolder> {
         private List<PerkItem> items;
-
-        public PerkAdapter(List<PerkItem> items) {
-            this.items = items;
-        }
+        public PerkAdapter(List<PerkItem> items) { this.items = items; }
 
         @NonNull
         @Override
         public PerkViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            // Nạp layout item_nitro_perk.xml
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_nitro_perk, parent, false);
             return new PerkViewHolder(view);
         }
@@ -189,14 +164,11 @@ public class NitroActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount() {
-            return items.size();
-        }
+        public int getItemCount() { return items.size(); }
 
         class PerkViewHolder extends RecyclerView.ViewHolder {
             TextView tvTitle;
             ImageView imgIcon;
-
             public PerkViewHolder(@NonNull View itemView) {
                 super(itemView);
                 tvTitle = itemView.findViewById(R.id.tv_perk_title);
