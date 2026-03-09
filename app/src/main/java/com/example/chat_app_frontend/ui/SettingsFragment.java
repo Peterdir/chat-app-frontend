@@ -51,7 +51,7 @@ public class SettingsFragment extends Fragment {
         items.add(new SettingsItem("Data & Privacy", R.drawable.ic_settings));
         items.add(new SettingsItem("Family Center", R.drawable.ic_person_add));
         items.add(new SettingsItem("Authorized Apps", R.drawable.ic_store_modern));
-        items.add(new SettingsItem("Devices", R.drawable.ic_launcher_foreground));
+        items.add(new SettingsItem("Devices", R.drawable.ic_phone));
         items.add(new SettingsItem("Connections", R.drawable.ic_discord_logo));
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -90,7 +90,7 @@ public class SettingsFragment extends Fragment {
     private void setupSupportSettings(View view) {
         RecyclerView rv = view.findViewById(R.id.rvSupportSettings);
         List<SettingsItem> items = new ArrayList<>();
-        items.add(new SettingsItem("Support", R.drawable.ic_settings));
+        items.add(new SettingsItem("Support", R.drawable.ic_search));
         items.add(new SettingsItem("Upload debug logs to Discord Support", R.drawable.ic_settings));
         items.add(new SettingsItem("Acknowledgements", R.drawable.ic_settings));
 
