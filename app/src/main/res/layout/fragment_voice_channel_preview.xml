@@ -1,123 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Nền chỉnh màu Xám Chì (2b2d31) y Discord -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_bottom_sheet_dark" 
-    android:paddingBottom="24dp">
+    android:background="@drawable/bg_bottom_sheet_dark"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <!-- Thanh ngang điều hướng góc trên -->
-    <View
-        android:id="@+id/drag_handle"
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_marginTop="8dp"
-        android:background="#4E5058"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Thanh Tiêu đề -->
-    <ImageView
-        android:id="@+id/ic_down"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:src="@drawable/ic_chevron_right"
-        android:rotation="90"
-        app:tint="#B5BAC1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/drag_handle" />
-
-    <TextView
-        android:id="@+id/tv_preview_channel_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="# d"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginStart="12dp"
-        app:layout_constraintBottom_toBottomOf="@id/ic_down"
-        app:layout_constraintStart_toEndOf="@id/ic_down"
-        app:layout_constraintTop_toTopOf="@id/ic_down" />
-
-    <ImageView
-        android:id="@+id/btn_add_user"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_person_add" 
-        app:tint="#B5BAC1"
-        app:layout_constraintBottom_toBottomOf="@id/ic_down"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/ic_down" />
-
-    <!-- Chữ báo trạng thái phòng trống -->
-    <TextView
-        android:id="@+id/tv_empty_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:gravity="center"
-        android:text="Hiện chưa có ai ở đây!\nKhi nào bạn sẵn sàng trò chuyện, hãy tham gia."
-        android:textColor="#F2F3F5"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_preview_channel_name" />
-
-    <!-- Thanh Control -->
+    <!-- Top Bar -->
     <LinearLayout
-        android:id="@+id/bottom_action_bar"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="50dp"
-        android:background="@drawable/bg_nitro_card_green" 
-        android:backgroundTint="#1e1f22"
+        android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_empty_state">
+        android:layout_marginBottom="32dp">
 
-        <!-- Nút Mic -->
         <ImageButton
-            android:id="@+id/btn_preview_mute"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/bg_circle_white"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_mic_off"
-            app:tint="#ED4245" />
+            android:id="@+id/btn_collapse"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:rotation="90"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="#FFFFFF" />
 
-        <!-- Nút Tham Gia Thoại -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_join_voice"
+        <TextView
+            android:id="@+id/tv_channel_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="z"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="#A0A0A0" />
+
+        <Space
             android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_weight="1"
-            android:background="@drawable/bg_nitro_button_green"
-            android:text="Tham Gia Thoại"
-            android:textAllCaps="false"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/btn_add_user"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_person_add"
+            app:tint="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Center Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginBottom="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hiện chưa có ai ở đây!"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <!-- Nút Tin nhắn -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Khi nào bạn sẵn sàng trò chuyện, hãy tham gia."
+            android:textColor="#A0A0A0"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Bottom Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
         <ImageButton
-            android:id="@+id/btn_text_chat"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:id="@+id/btn_mute"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_circle_white"
+            android:src="@drawable/ic_mic_off"
+            app:tint="#ED4245" />
+
+        <FrameLayout
+            android:id="@+id/btn_join_voice"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginHorizontal="12dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_btn_green_voice"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Tham Gia Thoại"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <ImageButton
+            android:id="@+id/btn_chat"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:background="@drawable/bg_circle_dark"
+            android:backgroundTint="#2b2d31"
             android:src="@drawable/ic_chat_bubble"
             app:tint="#FFFFFF" />
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

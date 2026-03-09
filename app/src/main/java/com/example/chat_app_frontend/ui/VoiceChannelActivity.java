@@ -23,6 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.manager.VoiceStateManager;
 
 import io.agora.rtc2.ChannelMediaOptions;
 import io.agora.rtc2.Constants;
@@ -57,7 +58,7 @@ public class VoiceChannelActivity extends AppCompatActivity {
     private boolean isVideoOn = false; // Mặc định tắt camera lúc vào phòng
 
     private FrameLayout flLocalVideo;
-    private CardView cardMainAvatar;
+    private View vMainSpeakingBorder;
 
     // Biến cấu hình phòng gọi
     private String channelName = "test_channel";
@@ -88,7 +89,7 @@ public class VoiceChannelActivity extends AppCompatActivity {
         // Tìm view theo ID mới
         tvTopChannelName = findViewById(R.id.tv_top_channel_name);
         btnCollapse = findViewById(R.id.btn_collapse);
-        cardMainAvatar = findViewById(R.id.card_main_avatar);
+        vMainSpeakingBorder = findViewById(R.id.v_main_speaking_border);
         btnAddUserTop = findViewById(R.id.btn_add_user_top);
         btnSpeakerTop = findViewById(R.id.btn_speaker_top);
 
@@ -110,6 +111,9 @@ public class VoiceChannelActivity extends AppCompatActivity {
         // Khởi tạo trạng thái nút Mic UI ban đầu
         updateMicUiState();
         updateVideoUiState();
+
+        // Đồng bộ trạng thái Camera ngay từ lúc vào phòng
+        VoiceStateManager.getInstance().setVideoOn(isVideoOn);
 
         setupClickListeners();
 
@@ -185,6 +189,9 @@ public class VoiceChannelActivity extends AppCompatActivity {
                 mRtcEngine.muteLocalAudioStream(isMuted);
             }
 
+            // Đồng bộ hoá trạng thái Mute lên toàn app (cho danh sách kênh cập nhật theo)
+            VoiceStateManager.getInstance().setMuted(isMuted);
+
             updateMicUiState();
         });
 
@@ -227,20 +234,46 @@ public class VoiceChannelActivity extends AppCompatActivity {
                     findViewById(R.id.iv_center_avatar).setVisibility(View.VISIBLE);
                 }
             }
+
+            // Đồng bộ hoá trạng thái Video lên toàn app (cho danh sách kênh cập nhật theo)
+            VoiceStateManager.getInstance().setVideoOn(isVideoOn);
+
             updateVideoUiState();
         });
         btnChatMain.setOnClickListener(v -> {
             animateClick(v);
-            Toast.makeText(this, "Mở cửa sổ Chat", Toast.LENGTH_SHORT).show();
+            ChatBottomSheet chatSheet = new ChatBottomSheet(channelName);
+            chatSheet.show(getSupportFragmentManager(), "ChatSheet");
         });
+
+        // Bắt sự kiện khi click vào tên kênh trên cùng (hoặc cái khung pill chứa nó)
+        View pillChannelName = findViewById(R.id.pill_channel_name);
+        if (pillChannelName != null) {
+            pillChannelName.setOnClickListener(v -> {
+                animateClick(v);
+                VoiceChannelSettingsBottomSheet settingsSheet = new VoiceChannelSettingsBottomSheet(channelName, "Duy");
+                settingsSheet.show(getSupportFragmentManager(), "SettingsSheet");
+            });
+        }
         btnEventMain.setOnClickListener(v -> {
             animateClick(v);
-            Toast.makeText(this, "Mở Soundboard", Toast.LENGTH_SHORT).show();
+            SoundboardBottomSheet soundboardSheet = new SoundboardBottomSheet(channelName);
+            soundboardSheet.show(getSupportFragmentManager(), "SoundboardSheet");
         });
         btnAddUserTop.setOnClickListener(v -> {
             animateClick(v);
-            Toast.makeText(this, "Thêm người", Toast.LENGTH_SHORT).show();
+            InviteFriendsBottomSheet inviteSheet = new InviteFriendsBottomSheet(channelName);
+            inviteSheet.show(getSupportFragmentManager(), "InviteSheet");
         });
+
+        View bannerAddPeople = findViewById(R.id.banner_add_people);
+        if (bannerAddPeople != null) {
+            bannerAddPeople.setOnClickListener(v -> {
+                animateClick(v);
+                InviteFriendsBottomSheet inviteSheet = new InviteFriendsBottomSheet(channelName);
+                inviteSheet.show(getSupportFragmentManager(), "InviteSheet");
+            });
+        }
 
         btnLeaveMain.setOnClickListener(v -> {
             animateClick(v);
@@ -394,19 +427,14 @@ public class VoiceChannelActivity extends AppCompatActivity {
                 }
             }
             final boolean finalSpeaking = localSpeaking && !isMuted;
+            VoiceStateManager.getInstance().setSpeaking(finalSpeaking);
+
             runOnUiThread(() -> {
-                if (cardMainAvatar != null) {
-                    // Cây đũa phép: Thay vì Stroke (Vốn không Support viền API cũ), ta đổi
-                    // Background của Card thành Xanh,
-                    // sau đó Layout con bên trong cách vào 4dp là thành "Khung Viền Xanh" - Hack
-                    // UI.
+                if (vMainSpeakingBorder != null) {
                     if (finalSpeaking) {
-                        cardMainAvatar.setCardBackgroundColor(android.graphics.Color.parseColor("#43B581"));
-                        int padding = (int) (4 * getResources().getDisplayMetrics().density);
-                        cardMainAvatar.setContentPadding(padding, padding, padding, padding);
+                        vMainSpeakingBorder.setVisibility(View.VISIBLE);
                     } else {
-                        cardMainAvatar.setCardBackgroundColor(android.graphics.Color.parseColor("#111214"));
-                        cardMainAvatar.setContentPadding(0, 0, 0, 0);
+                        vMainSpeakingBorder.setVisibility(View.GONE);
                     }
                 }
             });
@@ -414,6 +442,7 @@ public class VoiceChannelActivity extends AppCompatActivity {
     };
 
     private void leaveChannel() {
+        VoiceStateManager.getInstance().leaveChannel();
         if (mRtcEngine != null) {
             mRtcEngine.leaveChannel();
         }

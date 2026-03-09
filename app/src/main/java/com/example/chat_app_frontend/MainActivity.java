@@ -48,9 +48,14 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
-                // Hiển thị lại server rail + DM fragment
+                // Hiển thị lại server rail và fragment tương ứng với lựa chọn hiện tại
                 rvServerRail.setVisibility(View.VISIBLE);
-                loadDMFragment();
+                Server selectedServer = serverAdapter.getSelectedServer();
+                if (selectedServer != null && !selectedServer.getId().equals("0")) {
+                    loadServerFragment(selectedServer.getName());
+                } else {
+                    loadDMFragment();
+                }
                 return true;
             } else if (id == R.id.nav_notifications) {
                 rvServerRail.setVisibility(View.GONE);
