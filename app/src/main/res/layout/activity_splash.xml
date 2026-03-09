@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_splash">
+
+    <!-- Circuit board trail layer (full-screen canvas, drawn below logo) -->
+    <com.example.chat_app_frontend.ui.CircuitTrailView
+        android:id="@+id/circuit_trail_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Logo group: icon centered above wordmark, slides in from left -->
+    <LinearLayout
+        android:id="@+id/logo_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/iv_controller_icon"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:src="@drawable/ic_intro"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/gamerconnect_logo_desc" />
+
+        <ImageView
+            android:id="@+id/tv_logo_text"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/img_discord"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/gamerconnect_name" />
+
+    </LinearLayout>
+
+    <!-- Ping ripple layer (full-screen, initially invisible) -->
+    <com.example.chat_app_frontend.ui.PingRingView
+        android:id="@+id/ping_ring_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible" />
+
+</FrameLayout>
