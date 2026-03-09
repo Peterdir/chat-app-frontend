@@ -29,58 +29,76 @@ public class NitroActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Ẩn thanh tiêu đề
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
         setContentView(R.layout.activity_nitro);
 
         setupAnimations();
-
         setupSlider();
     }
 
     private void setupAnimations() {
-        // Load các file animation từ XML
+        // --- 1. Load các file animation từ XML ---
         Animation animHover = AnimationUtils.loadAnimation(this, R.anim.anim_hover);
         Animation animSlideIn = AnimationUtils.loadAnimation(this, R.anim.anim_slide_in);
         Animation animGlow = AnimationUtils.loadAnimation(this, R.anim.anim_glow);
         Animation animSlideUp = AnimationUtils.loadAnimation(this, R.anim.anim_slide_up);
-        Animation animClick = AnimationUtils.loadAnimation(this, R.anim.anim_click);
+        Animation animShimmer = AnimationUtils.loadAnimation(this, R.anim.anim_shimmer); // Hiệu ứng lấp lánh
 
+        // --- 2. Áp dụng hiệu ứng ---
+
+        // Màn hình trượt lên
         findViewById(android.R.id.content).startAnimation(animSlideUp);
 
+        // Wumpus bay (Thẻ Tím)
         ImageView imgNitro = findViewById(R.id.img_wumpus_nitro);
         if (imgNitro != null) {
             imgNitro.startAnimation(animHover);
         }
 
+        // Xe máy (Thẻ Xanh)
         ImageView imgBasic = findViewById(R.id.img_wumpus_basic);
         if (imgBasic != null) {
             animSlideIn.setStartOffset(1000);
             imgBasic.startAnimation(animSlideIn);
         }
 
+        // Chữ NITRO nhấp nháy
         TextView tvTitle = findViewById(R.id.tv_header_nitro);
         if (tvTitle != null) {
             tvTitle.startAnimation(animGlow);
         }
 
-        Button btnGetNitro = findViewById(R.id.btn_get_nitro);
-        if (btnGetNitro != null) {
-            btnGetNitro.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    v.startAnimation(animClick);
-                }
-            });
-        }
-
+        // Nút Back (Quay lại)
         View btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {
             btnBack.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     finish();
+                }
+            });
+        }
+
+        // --- XỬ LÝ NÚT "LẤY NITRO" (SHIMMER EFFECT) ---
+        // Lưu ý: Trong XML mới, nút này là CardView, không phải Button
+        View btnGetNitro = findViewById(R.id.btn_get_nitro);
+
+        // Tìm vệt sáng bên trong nút
+        View viewShine = findViewById(R.id.view_shine);
+
+        if (btnGetNitro != null && viewShine != null) {
+            // A. Cho vệt sáng chạy qua chạy lại (Lấp lánh)
+            viewShine.startAnimation(animShimmer);
+
+            // B. Sự kiện bấm nút (Click nảy lên)
+            btnGetNitro.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Animation animClick = AnimationUtils.loadAnimation(NitroActivity.this, R.anim.anim_click);
+                    v.startAnimation(animClick);
                 }
             });
         }
@@ -136,6 +154,8 @@ public class NitroActivity extends AppCompatActivity {
         }
     }
 
+    // --- CÁC CLASS CON (MODEL & ADAPTER) ---
+
     static class PerkItem {
         String title;
         int imageRes;
@@ -156,6 +176,7 @@ public class NitroActivity extends AppCompatActivity {
         @NonNull
         @Override
         public PerkViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            // Nạp layout item_nitro_perk.xml
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_nitro_perk, parent, false);
             return new PerkViewHolder(view);
         }
