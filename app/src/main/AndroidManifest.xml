@@ -72,13 +72,18 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Chatappfrontend" />
 
-        <!-- Main app screen – started programmatically from OnboardingActivity -->
+        <!-- Main app screen – SỬA Ở ĐÂY: Thêm .ui. vào trước tên class -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="false" />
 
         <activity
             android:name=".ui.EditProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <activity
+            android:name=".ui.ShopActivity"
             android:exported="false"
             android:theme="@style/Theme.Chatappfrontend" />
 
