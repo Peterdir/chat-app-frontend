@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0D0F12">
+    android:background="#0D0F12"
+    android:fitsSystemWindows="true">
 
     <!-- Large Discord ghost logo – full-screen watermark behind everything -->
     <ImageView
