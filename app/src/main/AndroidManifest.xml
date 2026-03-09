@@ -12,6 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Chatappfrontend">
 
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.NitroActivity"
+            android:exported="true"/>
         <!-- Splash / intro screen – declared as LAUNCHER so it is the entry point -->
         <activity
             android:name=".ui.SplashActivity"
