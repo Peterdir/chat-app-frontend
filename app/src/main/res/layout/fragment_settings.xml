@@ -43,11 +43,14 @@
                 android:drawableStart="@drawable/ic_search"
                 android:drawablePadding="12dp"
                 android:hint="Search"
+                android:importantForAutofill="no"
+                android:inputType="text"
                 android:paddingHorizontal="16dp"
                 android:textColor="@android:color/white"
                 android:textColorHint="@color/discord_text_secondary"
                 android:textSize="14sp" />
 
+            <!-- Account Settings -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -59,53 +62,16 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <LinearLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAccountSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_rounded_card"
-                android:orientation="vertical">
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_settings_row"
+                tools:itemCount="8" />
 
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_nitro_boost"
-                    app:title="Get Nitro" />
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/discord_divider" />
-
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_person"
-                    app:title="Account" />
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/discord_divider" />
-
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_chat_bubble"
-                    app:title="Content &amp; Social" />
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/discord_divider" />
-
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_settings"
-                    app:title="Data &amp; Privacy" />
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/discord_divider" />
-
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_person_add"
-                    app:title="Family Center" />
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/discord_divider" />
-
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_store_modern"
-                    app:title="Authorized Apps" />
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/discord_divider" />
-
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_launcher_foreground"
-                    app:title="Devices" />
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/discord_divider" />
-
-                <include layout="@layout/item_settings_row"
-                    app:icon="@drawable/ic_discord_logo"
-                    app:title="Connections" />
-
-            </LinearLayout>
-
+            <!-- Billing Settings -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -116,6 +82,93 @@
                 android:textColor="@color/discord_text_secondary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvBillingSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_settings_row"
+                tools:itemCount="4" />
+
+            <!-- App Settings -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
+                android:text="App Settings"
+                android:textAllCaps="true"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAppSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_settings_row"
+                tools:itemCount="9" />
+
+            <!-- Support -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
+                android:text="Support"
+                android:textAllCaps="true"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSupportSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_settings_row"
+                tools:itemCount="3" />
+
+            <!-- What's New -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
+                android:text="What's New"
+                android:textAllCaps="true"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvWhatsNewSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_settings_row"
+                tools:itemCount="1" />
+
+            <!-- Log Out -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvLogoutSetting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_rounded_card"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_settings_row"
+                tools:itemCount="1" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="32dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

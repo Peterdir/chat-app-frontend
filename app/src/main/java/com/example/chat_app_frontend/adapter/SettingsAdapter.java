@@ -1,11 +1,14 @@
 package com.example.chat_app_frontend.adapter;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.SettingsItem;
@@ -31,6 +34,29 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Settin
         SettingsItem item = settingsItems.get(position);
         holder.tvTitle.setText(item.getTitle());
         holder.ivIcon.setImageResource(item.getIconRes());
+        
+        // Handle Status
+        if (item.getStatus() != null && !item.getStatus().isEmpty()) {
+            holder.tvStatus.setText(item.getStatus());
+            holder.tvStatus.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvStatus.setVisibility(View.GONE);
+        }
+
+        // Handle NEW badge
+        holder.tvNewBadge.setVisibility(item.isNew() ? View.VISIBLE : View.GONE);
+
+        // Handle Logout/Destructive style
+        if (item.isDestructive()) {
+            int redColor = Color.parseColor("#F23F43");
+            holder.tvTitle.setTextColor(redColor);
+            holder.ivIcon.setImageTintList(ColorStateList.valueOf(redColor));
+            holder.ivChevron.setVisibility(View.GONE);
+        } else {
+            holder.tvTitle.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.id.tvTitle == R.id.tvTitle ? R.color.discord_text_primary : R.color.discord_text_primary));
+            holder.ivIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.discord_text_secondary)));
+            holder.ivChevron.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -39,13 +65,16 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Settin
     }
 
     public static class SettingsViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivIcon;
-        TextView tvTitle;
+        ImageView ivIcon, ivChevron;
+        TextView tvTitle, tvStatus, tvNewBadge;
 
         public SettingsViewHolder(@NonNull View itemView) {
             super(itemView);
             ivIcon = itemView.findViewById(R.id.ivIcon);
+            ivChevron = itemView.findViewById(R.id.ivChevron);
             tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvNewBadge = itemView.findViewById(R.id.tvNewBadge);
         }
     }
 }

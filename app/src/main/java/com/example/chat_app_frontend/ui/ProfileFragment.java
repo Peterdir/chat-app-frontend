@@ -25,35 +25,56 @@ public class ProfileFragment extends Fragment {
         setupCloseImproveCard(view);
         setupEditProfileButton(view);
         setupStoreNavigation(view);
+        setupSettingsNavigation(view);
         animateProfileEntrance(view);
 
         return view;
     }
 
-    private void setupStoreNavigation(View view) {
-        // Nút "Cửa hàng" (nút to màu xanh trong card "Cải thiện hồ sơ")
-        View btnStore = view.findViewById(R.id.btn_store);
-        
-        if (btnStore != null) {
-            btnStore.setOnClickListener(v -> {
+    private void setupSettingsNavigation(View view) {
+        View btnSettings = view.findViewById(R.id.btn_settings);
+        if (btnSettings != null) {
+            btnSettings.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
                     
-                    // Route tới ShopActivity như bạn yêu cầu
-                    Intent intent = new Intent(getActivity(), ShopActivity.class);
-                    startActivity(intent);
-                    
+                    // Chuyển sang SettingsFragment
                     if (getActivity() != null) {
-                        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        getActivity().getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, 
+                                                   android.R.anim.fade_in, android.R.anim.fade_out)
+                                .replace(R.id.fragment_container, new SettingsFragment())
+                                .addToBackStack(null)
+                                .commit();
                     }
                 }).start();
             });
         }
+    }
 
-        // Vô hiệu hóa hoặc ẩn icon túi xách nhỏ ở header nếu cần
+    private void setupStoreNavigation(View view) {
+        View btnStore = view.findViewById(R.id.btn_store);
         View btnStoreHeader = view.findViewById(R.id.btn_store_header);
+
+        View.OnClickListener storeClickListener = v -> {
+            v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
+                v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                
+                Intent intent = new Intent(getActivity(), ShopActivity.class);
+                startActivity(intent);
+                
+                if (getActivity() != null) {
+                    getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                }
+            }).start();
+        };
+
+        if (btnStore != null) {
+            btnStore.setOnClickListener(storeClickListener);
+        }
+        
         if (btnStoreHeader != null) {
-            btnStoreHeader.setVisibility(View.GONE); // Ẩn đi theo ý bạn
+            btnStoreHeader.setVisibility(View.GONE);
         }
     }
 
@@ -91,7 +112,7 @@ public class ProfileFragment extends Fragment {
         }
 
         setupHeaderButton(view, R.id.btn_nitro_header);
-        setupHeaderButton(view, R.id.btn_settings);
+        // btn_settings handled in setupSettingsNavigation
         startShimmerAnimation(view);
     }
 
@@ -125,7 +146,7 @@ public class ProfileFragment extends Fragment {
 
     private void setupHeaderButton(View view, int buttonId) {
         View button = view.findViewById(buttonId);
-        if (button != null) {
+        if (button != null && buttonId != R.id.btn_settings) {
             button.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
