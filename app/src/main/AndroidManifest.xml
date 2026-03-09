@@ -17,6 +17,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.ServerSettingsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.NitroActivity"
             android:exported="true">
             <intent-filter>
