@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/discord_sidebar_bg"
+    android:orientation="vertical">
+
+    <!-- Header Area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1E1F22"
+        android:paddingBottom="8dp"
+        android:elevation="2dp">
+
+        <TextView
+            android:id="@+id/tv_server_name"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
+            android:paddingStart="0dp"
+            android:text="Server Name"
+            android:textColor="@color/discord_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="0dp"
+            android:paddingEnd="16dp"
+            android:gravity="center_vertical">
+
+            <!-- Search Bar -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="4dp"
+                android:text="Tìm kiếm"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp"/>
+
+            <!-- Add Member Button -->
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_person_add" 
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/discord_text_secondary"
+                android:layout_marginEnd="12dp"/> 
+
+            <!-- Event/Calendar Button -->
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_event" 
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/discord_text_secondary"/> 
+        </LinearLayout>
+    </LinearLayout>
+        
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/discord_divider"/>
+
+    <!-- Channel List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_channels"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="8dp"
+        android:clipToPadding="false" />
+
+</LinearLayout>
