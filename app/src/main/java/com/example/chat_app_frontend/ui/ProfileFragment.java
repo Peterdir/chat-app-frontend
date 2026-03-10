@@ -37,12 +37,12 @@ public class ProfileFragment extends Fragment {
             btnSettings.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
-                    
+
                     // Chuyển sang SettingsFragment
                     if (getActivity() != null) {
                         getActivity().getSupportFragmentManager().beginTransaction()
-                                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out, 
-                                                   android.R.anim.fade_in, android.R.anim.fade_out)
+                                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
+                                        android.R.anim.fade_in, android.R.anim.fade_out)
                                 .replace(R.id.fragment_container, new SettingsFragment())
                                 .addToBackStack(null)
                                 .commit();
@@ -59,10 +59,10 @@ public class ProfileFragment extends Fragment {
         View.OnClickListener storeClickListener = v -> {
             v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                 v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
-                
+
                 Intent intent = new Intent(getActivity(), ShopActivity.class);
                 startActivity(intent);
-                
+
                 if (getActivity() != null) {
                     getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 }
@@ -72,9 +72,10 @@ public class ProfileFragment extends Fragment {
         if (btnStore != null) {
             btnStore.setOnClickListener(storeClickListener);
         }
-        
+
         if (btnStoreHeader != null) {
-            btnStoreHeader.setVisibility(View.GONE);
+            btnStoreHeader.setVisibility(View.VISIBLE);
+            btnStoreHeader.setOnClickListener(storeClickListener);
         }
     }
 
@@ -112,6 +113,7 @@ public class ProfileFragment extends Fragment {
         }
 
         setupHeaderButton(view, R.id.btn_nitro_header);
+        setupHeaderButton(view, R.id.btn_nitro);
         // btn_settings handled in setupSettingsNavigation
         startShimmerAnimation(view);
     }
@@ -124,7 +126,8 @@ public class ProfileFragment extends Fragment {
             Runnable shimmerRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (getContext() == null) return;
+                    if (getContext() == null)
+                        return;
                     shimmerView.setVisibility(View.VISIBLE);
                     shimmerView.setTranslationX(-100f);
                     float endX = nitroButton.getWidth() + 100f;
@@ -150,6 +153,12 @@ public class ProfileFragment extends Fragment {
             button.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+
+                    Intent intent = new Intent(getActivity(), NitroActivity.class);
+                    startActivity(intent);
+                    if (getActivity() != null) {
+                        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    }
                 }).start();
             });
         }
@@ -169,13 +178,15 @@ public class ProfileFragment extends Fragment {
             avatarContainer.startAnimation(scaleBounce);
         }
 
-        int[] cardIds = { R.id.username_section, R.id.btn_edit_profile, R.id.card_improve_profile, R.id.card_orbs, R.id.card_joined, R.id.card_friends, R.id.card_notes };
+        int[] cardIds = { R.id.username_section, R.id.btn_edit_profile, R.id.card_improve_profile, R.id.card_orbs,
+                R.id.card_joined, R.id.card_friends, R.id.card_notes };
         for (int i = 0; i < cardIds.length; i++) {
             View card = view.findViewById(cardIds[i]);
             if (card != null) {
                 card.setAlpha(0f);
                 card.setTranslationY(60f);
-                card.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(150 + (i * 80L)).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+                card.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(150 + (i * 80L))
+                        .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
             }
         }
 
@@ -183,7 +194,8 @@ public class ProfileFragment extends Fragment {
         if (statusDot != null) {
             statusDot.setScaleX(0f);
             statusDot.setScaleY(0f);
-            statusDot.animate().scaleX(1f).scaleY(1f).setDuration(400).setStartDelay(600).setInterpolator(new android.view.animation.OvershootInterpolator(2f)).start();
+            statusDot.animate().scaleX(1f).scaleY(1f).setDuration(400).setStartDelay(600)
+                    .setInterpolator(new android.view.animation.OvershootInterpolator(2f)).start();
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +21,8 @@ public class SettingsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
@@ -42,6 +44,30 @@ public class SettingsFragment extends Fragment {
         return view;
     }
 
+    private final SettingsAdapter.OnItemClickListener settingsClickListener = item -> {
+        if ("Get Nitro".equals(item.getTitle())) {
+            Intent intent = new Intent(getActivity(), NitroActivity.class);
+            startActivity(intent);
+            if (getActivity() != null) {
+                getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
+        } else if ("Shop".equals(item.getTitle())) {
+            Intent intent = new Intent(getActivity(), ShopActivity.class);
+            startActivity(intent);
+            if (getActivity() != null) {
+                getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
+        } else if ("Log Out".equals(item.getTitle())) {
+            if (getActivity() != null) {
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                getActivity().finish();
+            }
+        }
+    };
+
     private void setupAccountSettings(View view) {
         RecyclerView rv = view.findViewById(R.id.rvAccountSettings);
         List<SettingsItem> items = new ArrayList<>();
@@ -55,7 +81,7 @@ public class SettingsFragment extends Fragment {
         items.add(new SettingsItem("Connections", R.drawable.ic_discord_logo));
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new SettingsAdapter(items));
+        rv.setAdapter(new SettingsAdapter(items, settingsClickListener));
     }
 
     private void setupBillingSettings(View view) {
@@ -67,7 +93,7 @@ public class SettingsFragment extends Fragment {
         items.add(new SettingsItem("Nitro Gifting", R.drawable.ic_chat_bubble));
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new SettingsAdapter(items));
+        rv.setAdapter(new SettingsAdapter(items, settingsClickListener));
     }
 
     private void setupAppSettings(View view) {
@@ -84,7 +110,7 @@ public class SettingsFragment extends Fragment {
         items.add(new SettingsItem("Advanced", R.drawable.ic_settings));
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new SettingsAdapter(items));
+        rv.setAdapter(new SettingsAdapter(items, settingsClickListener));
     }
 
     private void setupSupportSettings(View view) {
@@ -95,7 +121,7 @@ public class SettingsFragment extends Fragment {
         items.add(new SettingsItem("Acknowledgements", R.drawable.ic_settings));
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new SettingsAdapter(items));
+        rv.setAdapter(new SettingsAdapter(items, settingsClickListener));
     }
 
     private void setupWhatsNewSettings(View view) {
@@ -104,7 +130,7 @@ public class SettingsFragment extends Fragment {
         items.add(new SettingsItem("What's New", R.drawable.ic_settings));
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new SettingsAdapter(items));
+        rv.setAdapter(new SettingsAdapter(items, settingsClickListener));
     }
 
     private void setupLogoutSetting(View view) {
@@ -113,6 +139,6 @@ public class SettingsFragment extends Fragment {
         items.add(new SettingsItem("Log Out", R.drawable.ic_back_arrow, null, false, true));
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new SettingsAdapter(items));
+        rv.setAdapter(new SettingsAdapter(items, settingsClickListener));
     }
 }
