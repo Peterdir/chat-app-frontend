@@ -2,6 +2,7 @@ package com.example.chat_app_frontend.ui;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -150,10 +151,24 @@ public class EditProfileActivity extends AppCompatActivity {
         View btnNitroPreview = findViewById(R.id.btn_nitro_preview);
         View shimmerNitroPreview = findViewById(R.id.shimmer_nitro_preview);
         startShimmerAnimation(btnNitroPreview, shimmerNitroPreview);
+        if (btnNitroPreview != null) {
+            btnNitroPreview.setOnClickListener(v -> {
+                Intent intent = new Intent(this, NitroActivity.class);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            });
+        }
 
         View btnNitroBuy = findViewById(R.id.btn_nitro_buy);
         View shimmerNitroBuy = findViewById(R.id.shimmer_nitro_buy);
         startShimmerAnimation(btnNitroBuy, shimmerNitroBuy);
+        if (btnNitroBuy != null) {
+            btnNitroBuy.setOnClickListener(v -> {
+                Intent intent = new Intent(this, NitroActivity.class);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            });
+        }
 
         // Item card press animations
         setupItemPress(R.id.item_avatar_decoration);

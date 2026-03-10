@@ -16,10 +16,20 @@ import java.util.List;
 
 public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.SettingsViewHolder> {
 
+    public interface OnItemClickListener {
+        void onItemClick(SettingsItem item);
+    }
+
     private List<SettingsItem> settingsItems;
+    private OnItemClickListener listener;
+
+    public SettingsAdapter(List<SettingsItem> settingsItems, OnItemClickListener listener) {
+        this.settingsItems = settingsItems;
+        this.listener = listener;
+    }
 
     public SettingsAdapter(List<SettingsItem> settingsItems) {
-        this.settingsItems = settingsItems;
+        this(settingsItems, null);
     }
 
     @NonNull
@@ -34,7 +44,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Settin
         SettingsItem item = settingsItems.get(position);
         holder.tvTitle.setText(item.getTitle());
         holder.ivIcon.setImageResource(item.getIconRes());
-        
+
         // Handle Status
         if (item.getStatus() != null && !item.getStatus().isEmpty()) {
             holder.tvStatus.setText(item.getStatus());
@@ -53,10 +63,18 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Settin
             holder.ivIcon.setImageTintList(ColorStateList.valueOf(redColor));
             holder.ivChevron.setVisibility(View.GONE);
         } else {
-            holder.tvTitle.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.id.tvTitle == R.id.tvTitle ? R.color.discord_text_primary : R.color.discord_text_primary));
-            holder.ivIcon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.discord_text_secondary)));
+            holder.tvTitle.setTextColor(ContextCompat.getColor(holder.itemView.getContext(),
+                    R.id.tvTitle == R.id.tvTitle ? R.color.discord_text_primary : R.color.discord_text_primary));
+            holder.ivIcon.setImageTintList(ColorStateList
+                    .valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.discord_text_secondary)));
             holder.ivChevron.setVisibility(View.VISIBLE);
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(item);
+            }
+        });
     }
 
     @Override
