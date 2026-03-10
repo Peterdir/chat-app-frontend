@@ -3,10 +3,39 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="discord_background">#313338</color>
     <color name="nitro_purple">#5865F2</color>
     <color name="basic_blue">#00A8FC</color>
     <color name="text_header">#FFFFFF</color>
     <color name="text_body">#B5BAC1</color>
     <color name="card_bg">#2B2D31</color>
+    <!-- Discord Colors -->
+    <color name="discord_bg_dark">#1E1F22</color>
+    <color name="discord_background">#1E1F22</color>
+    <color name="discord_card_bg">#2B2D31</color>
+    <color name="discord_text_primary">#F2F3F5</color>
+    <color name="discord_text_secondary">#B5BAC1</color>
+    <color name="discord_channel_selected">#3F4147</color>
+    <color name="discord_blurple">#5865F2</color>
+    <color name="discord_green">#23A559</color>
+    <color name="discord_server_rail_bg">#1E1F22</color>
+    <color name="discord_sidebar_bg">#2B2D31</color>
+    <color name="discord_divider">#313338</color>
+    <color name="discord_profile_banner_end">#E87BA8</color>
+    <color name="discord_button_secondary">#4E5058</color>
+
+    <!-- Legacy and Shop Screen Colors -->
+    <color name="bg_card">@color/discord_card_bg</color>
+    <color name="placeholder_image">@color/discord_channel_selected</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B5BAC1</color>
+    <color name="dark_bg">#121212</color>
+    <color name="dark_card_bg">#1E1E1E</color>
+    <color name="shop_blue">#5865F2</color>
+    <color name="card_normal">#2A2A2A</color>
+    <color name="card_pressed">#3A3A3A</color>
+
+    <!-- Splash palette -->
+    <color name="splash_bg">#0D0F12</color>
+    <color name="gamer_purple">#7C5CF5</color>
+    <color name="gamer_cyan">#00D4FF</color>
 </resources>

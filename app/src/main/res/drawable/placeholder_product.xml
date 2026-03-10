@@ -1,0 +1,12 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+  <path
+      android:fillColor="@color/card_normal"
+      android:pathData="M100,100m-80,0a80,80 0,1 1,160,0a80,80 0,1 1,-160,0"/>
+  <path
+      android:fillColor="@color/discord_blurple"
+      android:pathData="M100,60c-5.5,0 -10,4.5 -10,10s4.5,10 10,10s10,-4.5 10,-10S105.5,60 100,60zM100,120c-16.5,0 -30,-13.5 -30,-30s13.5,-30 30,-30s30,13.5 30,30S116.5,120 100,120z"/>
+</vector>
