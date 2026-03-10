@@ -11,37 +11,37 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
-import com.example.chat_app_frontend.model.SettingsItem;
+import com.example.chat_app_frontend.model.UserSettingItem;
 import java.util.List;
 
-public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.SettingsViewHolder> {
+public class UserSettingsAdapter extends RecyclerView.Adapter<UserSettingsAdapter.SettingsViewHolder> {
 
     public interface OnItemClickListener {
-        void onItemClick(SettingsItem item);
+        void onItemClick(UserSettingItem item);
     }
 
-    private List<SettingsItem> settingsItems;
+    private List<UserSettingItem> settingsItems;
     private OnItemClickListener listener;
 
-    public SettingsAdapter(List<SettingsItem> settingsItems, OnItemClickListener listener) {
+    public UserSettingsAdapter(List<UserSettingItem> settingsItems, OnItemClickListener listener) {
         this.settingsItems = settingsItems;
         this.listener = listener;
     }
 
-    public SettingsAdapter(List<SettingsItem> settingsItems) {
+    public UserSettingsAdapter(List<UserSettingItem> settingsItems) {
         this(settingsItems, null);
     }
 
     @NonNull
     @Override
     public SettingsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_settings_row, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_settings_row, parent, false);
         return new SettingsViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SettingsViewHolder holder, int position) {
-        SettingsItem item = settingsItems.get(position);
+        UserSettingItem item = settingsItems.get(position);
         holder.tvTitle.setText(item.getTitle());
         holder.ivIcon.setImageResource(item.getIconRes());
 
