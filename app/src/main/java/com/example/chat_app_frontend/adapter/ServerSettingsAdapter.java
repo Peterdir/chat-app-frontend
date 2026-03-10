@@ -8,14 +8,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
-import com.example.chat_app_frontend.model.SettingItem;
+import com.example.chat_app_frontend.model.ServerSettingItem;
 import java.util.List;
 
-public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ServerSettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private List<SettingItem> items;
+    private List<ServerSettingItem> items;
 
-    public SettingsAdapter(List<SettingItem> items) {
+    public ServerSettingsAdapter(List<ServerSettingItem> items) {
         this.items = items;
     }
 
@@ -27,18 +27,18 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == SettingItem.TYPE_HEADER) {
+        if (viewType == ServerSettingItem.TYPE_HEADER) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_section_header, parent, false);
             return new HeaderViewHolder(view);
         } else {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_setting_row, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_server_setting_header, parent, false);
             return new ItemViewHolder(view);
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        SettingItem item = items.get(position);
+        ServerSettingItem item = items.get(position);
         if (holder instanceof HeaderViewHolder) {
             ((HeaderViewHolder) holder).tvTitle.setText(item.title);
         } else if (holder instanceof ItemViewHolder) {

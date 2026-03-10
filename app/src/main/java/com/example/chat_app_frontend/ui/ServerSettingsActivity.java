@@ -1,13 +1,13 @@
 package com.example.chat_app_frontend.ui;
 
 import android.os.Bundle;
-import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
-import com.example.chat_app_frontend.adapter.SettingsAdapter;
-import com.example.chat_app_frontend.model.SettingItem;
+import com.example.chat_app_frontend.adapter.ServerSettingsAdapter;
+import com.example.chat_app_frontend.model.ServerSettingItem;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,30 +21,30 @@ public class ServerSettingsActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_close).setOnClickListener(v -> finish());
 
-        List<SettingItem> data = new ArrayList<>();
+        List<ServerSettingItem> data = new ArrayList<>();
 
-        data.add(new SettingItem("Cài đặt"));
-        data.add(new SettingItem("Tổng quan", R.drawable.ic_info));
-        data.add(new SettingItem("Điều chỉnh", R.drawable.ic_swords));
-        data.add(new SettingItem("Nhật Ký Chỉnh Sửa", R.drawable.ic_audit_log));
-        data.add(new SettingItem("Kênh", R.drawable.ic_channel));
-        data.add(new SettingItem("Tích hợp", R.drawable.ic_puzzle));
-        data.add(new SettingItem("Emoji", R.drawable.ic_emoji));
-        data.add(new SettingItem("Sticker", R.drawable.ic_emoji));
-        data.add(new SettingItem("Bảo mật", R.drawable.ic_shield));
+        data.add(new ServerSettingItem("Cài đặt"));
+        data.add(new ServerSettingItem("Tổng quan", R.drawable.ic_info));
+        data.add(new ServerSettingItem("Điều chỉnh", R.drawable.ic_swords));
+        data.add(new ServerSettingItem("Nhật Ký Chỉnh Sửa", R.drawable.ic_audit_log));
+        data.add(new ServerSettingItem("Kênh", R.drawable.ic_channel));
+        data.add(new ServerSettingItem("Tích hợp", R.drawable.ic_puzzle));
+        data.add(new ServerSettingItem("Emoji", R.drawable.ic_emoji));
+        data.add(new ServerSettingItem("Sticker", R.drawable.ic_emoji));
+        data.add(new ServerSettingItem("Bảo mật", R.drawable.ic_shield));
 
-        data.add(new SettingItem("Cộng đồng"));
-        data.add(new SettingItem("Kích Hoạt Cộng Đồng", R.drawable.ic_people));
+        data.add(new ServerSettingItem("Cộng đồng"));
+        data.add(new ServerSettingItem("Kích Hoạt Cộng Đồng", R.drawable.ic_people));
 
-        data.add(new SettingItem("Quản lý người dùng"));
-        data.add(new SettingItem("Thành viên", R.drawable.ic_people));
-        data.add(new SettingItem("Vai trò", R.drawable.ic_people));
-        data.add(new SettingItem("Lời mời", R.drawable.ic_link));
-        data.add(new SettingItem("Chặn", R.drawable.ic_hammer));
+        data.add(new ServerSettingItem("Quản lý người dùng"));
+        data.add(new ServerSettingItem("Thành viên", R.drawable.ic_people));
+        data.add(new ServerSettingItem("Vai trò", R.drawable.ic_people));
+        data.add(new ServerSettingItem("Lời mời", R.drawable.ic_link));
+        data.add(new ServerSettingItem("Chặn", R.drawable.ic_hammer));
 
         RecyclerView recyclerView = findViewById(R.id.recycler_settings);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        SettingsAdapter adapter = new SettingsAdapter(data);
+        ServerSettingsAdapter adapter = new ServerSettingsAdapter(data);
         recyclerView.setAdapter(adapter);
     }
 }
