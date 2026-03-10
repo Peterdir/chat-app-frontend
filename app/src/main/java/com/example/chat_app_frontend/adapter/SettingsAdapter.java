@@ -79,6 +79,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Settin
 
     @Override
     public int getItemCount() {
+
         return settingsItems.size();
     }
 
