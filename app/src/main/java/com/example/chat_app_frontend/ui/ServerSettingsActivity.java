@@ -1,7 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
 import android.os.Bundle;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,13 +15,20 @@ public class ServerSettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getSupportActionBar() != null) getSupportActionBar().hide();
+
+        // Ẩn thanh Action Bar mặc định
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         setContentView(R.layout.activity_server_settings);
 
-        findViewById(R.id.btn_close).setOnClickListener(v -> finish());
+        // Đã sửa: btn_close -> btn_close_server_settings
+        findViewById(R.id.btn_close_server_settings).setOnClickListener(v -> finish());
 
         List<ServerSettingItem> data = new ArrayList<>();
 
+        // Nhóm Cài đặt
         data.add(new ServerSettingItem("Cài đặt"));
         data.add(new ServerSettingItem("Tổng quan", R.drawable.ic_info));
         data.add(new ServerSettingItem("Điều chỉnh", R.drawable.ic_swords));
@@ -33,16 +39,19 @@ public class ServerSettingsActivity extends AppCompatActivity {
         data.add(new ServerSettingItem("Sticker", R.drawable.ic_emoji));
         data.add(new ServerSettingItem("Bảo mật", R.drawable.ic_shield));
 
+        // Nhóm Cộng đồng
         data.add(new ServerSettingItem("Cộng đồng"));
         data.add(new ServerSettingItem("Kích Hoạt Cộng Đồng", R.drawable.ic_people));
 
+        // Nhóm Quản lý người dùng
         data.add(new ServerSettingItem("Quản lý người dùng"));
         data.add(new ServerSettingItem("Thành viên", R.drawable.ic_people));
         data.add(new ServerSettingItem("Vai trò", R.drawable.ic_people));
         data.add(new ServerSettingItem("Lời mời", R.drawable.ic_link));
         data.add(new ServerSettingItem("Chặn", R.drawable.ic_hammer));
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_settings);
+        // Đã sửa: recycler_settings -> recycler_server_settings
+        RecyclerView recyclerView = findViewById(R.id.recycler_server_settings);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         ServerSettingsAdapter adapter = new ServerSettingsAdapter(data);
         recyclerView.setAdapter(adapter);
