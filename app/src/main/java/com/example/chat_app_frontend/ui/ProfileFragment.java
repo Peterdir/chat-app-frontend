@@ -38,12 +38,12 @@ public class ProfileFragment extends Fragment {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
 
-                    // Chuyển sang SettingsFragment
+                    // Chuyển sang UserSettingsFragment
                     if (getActivity() != null) {
                         getActivity().getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
                                         android.R.anim.fade_in, android.R.anim.fade_out)
-                                .replace(R.id.fragment_container, new SettingsFragment())
+                                .replace(R.id.fragment_container, new UserSettingsFragment())
                                 .addToBackStack(null)
                                 .commit();
                     }

@@ -1,25 +1,25 @@
 package com.example.chat_app_frontend.model;
 
-public class SettingsItem {
+public class UserSettingItem {
     private String title;
     private int iconRes;
     private String status;
     private boolean isNew;
     private boolean isDestructive; // For red items like Log Out
 
-    public SettingsItem(String title, int iconRes) {
+    public UserSettingItem(String title, int iconRes) {
         this(title, iconRes, null, false, false);
     }
 
-    public SettingsItem(String title, int iconRes, String status) {
+    public UserSettingItem(String title, int iconRes, String status) {
         this(title, iconRes, status, false, false);
     }
 
-    public SettingsItem(String title, int iconRes, boolean isNew) {
+    public UserSettingItem(String title, int iconRes, boolean isNew) {
         this(title, iconRes, null, isNew, false);
     }
 
-    public SettingsItem(String title, int iconRes, String status, boolean isNew, boolean isDestructive) {
+    public UserSettingItem(String title, int iconRes, String status, boolean isNew, boolean isDestructive) {
         this.title = title;
         this.iconRes = iconRes;
         this.status = status;
