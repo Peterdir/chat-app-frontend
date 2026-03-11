@@ -136,4 +136,13 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
         if (newPosition != -1)
             notifyItemChanged(newPosition);
     }
+
+    public Server getSelectedServer() {
+        for (Server server : serverList) {
+            if (server.isSelected()) {
+                return server;
+            }
+        }
+        return null; // Should not happen if one is always selected
+    }
 }
