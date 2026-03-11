@@ -3,7 +3,6 @@ package com.example.chat_app_frontend.ui;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.manager.AuthManager;
 import com.example.chat_app_frontend.model.User;
-import com.example.chat_app_frontend.utils.DataSeeder;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -50,12 +49,9 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.et_password);
         cbEye      = findViewById(R.id.cb_eye);
         btnLogin  = findViewById(R.id.btn_login);
-        
-        // Tìm ProgressBar nếu có trong layout, nếu không thì bỏ qua
-        progressBar = findViewById(R.id.progress_bar);
 
-        // Seed admin user khi lần đầu chạy app
-        seedAdminUserIfNeeded();
+        // ProgressBar (optional – chỉ tồn tại nếu layout có khai báo)
+        // progressBar = findViewById(R.id.progress_bar);
 
         // Back button
         ImageButton btnBack = findViewById(R.id.btn_back);
@@ -126,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
                 
                 // Chuyển sang MainActivity
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_Task);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
             }
@@ -153,28 +149,6 @@ public class LoginActivity extends AppCompatActivity {
         }
         
         btnLogin.setText(loading ? "Đang đăng nhập..." : "Đăng nhập");
-    }
-
-    /**
-     * Seed admin user nếu chưa có
-     */
-    private void seedAdminUserIfNeeded() {
-        DataSeeder.seedAdminUser(new DataSeeder.OnSeedCompleteListener() {
-            @Override
-            public void onSeedComplete(boolean success, String message) {
-                if (success) {
-                    Log.d(TAG, "✅ " + message);
-                    Toast.makeText(LoginActivity.this, 
-                        "Tài khoản test:\nUsername: admin\nPassword: admin123", 
-                        Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onSeedFailed(String error) {
-                Log.e(TAG, "❌ Seed failed: " + error);
-            }
-        });
     }
 
     // -------------------------------------------------------------------------

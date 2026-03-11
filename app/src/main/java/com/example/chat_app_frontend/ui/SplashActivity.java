@@ -1,6 +1,7 @@
 package com.example.chat_app_frontend.ui;
 
 import com.example.chat_app_frontend.R;
+import com.google.firebase.auth.FirebaseAuth;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -17,8 +18,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-
 
 /**
  * GamerConnect splash / intro activity.
@@ -186,7 +185,10 @@ public class SplashActivity extends AppCompatActivity {
         fadeOut.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                startActivity(new Intent(SplashActivity.this, OnboardingActivity.class));
+                // Nếu user đã đăng nhập qua Firebase Auth → bỏ qua Onboarding
+                boolean isLoggedIn = FirebaseAuth.getInstance().getCurrentUser() != null;
+                Class<?> target = isLoggedIn ? MainActivity.class : OnboardingActivity.class;
+                startActivity(new Intent(SplashActivity.this, target));
                 overridePendingTransition(0, 0);
                 finish();
             }

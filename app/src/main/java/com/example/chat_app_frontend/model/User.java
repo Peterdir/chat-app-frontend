@@ -6,29 +6,32 @@ import java.util.List;
 /**
  * Model User cho Android app
  * Tương ứng với User entity từ backend
+ *
+ * Key trong Firebase RTDB: users/{firebaseUid}
+ * Credentials (email/password) được quản lý hoàn toàn bởi Firebase Authentication.
  */
 public class User {
-    private Long id;
+    private String firebaseUid;   // Firebase Auth UID – khóa chính trong RTDB
     private String userName;
     private String email;
-    private String password;        // Chỉ dùng khi đăng ký/đăng nhập, không lưu local
     private String displayName;
-    private String birthDate;       // Format: "yyyy-MM-dd" hoặc timestamp
+    private String birthDate;     // Format: "yyyy-MM-dd"
     private String country;
     private String pronouns;
-    private long createdAt;         // Unix timestamp (milliseconds)
-    private long lastActive;        // Unix timestamp (milliseconds)
+    private long createdAt;       // Unix timestamp (milliseconds)
+    private long lastActive;      // Unix timestamp (milliseconds)
     private String bio;
-    private String avatarUrl;       // URL hoặc Firebase Storage path
+    private String avatarUrl;     // URL hoặc Firebase Storage path
     private boolean isActive;
     private boolean isEmailVerified;
     private UserStatus status;
-    private List<String> roles;     // Đơn giản hóa thành list string: ["USER", "ADMIN"]
+    private List<String> roles;   // ["USER", "ADMIN"]
 
     // =========================================================================
     // Constructors
     // =========================================================================
 
+    /** Constructor rỗng bắt buộc để Firebase RTDB có thể deserialize */
     public User() {
         this.status = UserStatus.OFFLINE;
         this.roles = new ArrayList<>();
@@ -36,33 +39,24 @@ public class User {
         this.isEmailVerified = false;
     }
 
-    public User(Long id, String userName, String email, String displayName) {
+    public User(String firebaseUid, String userName, String email, String displayName) {
         this();
-        this.id = id;
+        this.firebaseUid = firebaseUid;
         this.userName = userName;
         this.email = email;
         this.displayName = displayName;
-    }
-
-    // Constructor đầy đủ cho Firebase
-    public User(Long id, String userName, String email, String displayName,
-                String avatarUrl, String bio, UserStatus status) {
-        this(id, userName, email, displayName);
-        this.avatarUrl = avatarUrl;
-        this.bio = bio;
-        this.status = status;
     }
 
     // =========================================================================
     // Getters & Setters
     // =========================================================================
 
-    public Long getId() {
-        return id;
+    public String getFirebaseUid() {
+        return firebaseUid;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setFirebaseUid(String firebaseUid) {
+        this.firebaseUid = firebaseUid;
     }
 
     public String getUserName() {
@@ -79,14 +73,6 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getDisplayName() {
@@ -189,23 +175,14 @@ public class User {
     // Helper methods
     // =========================================================================
 
-    /**
-     * Kiểm tra user có quyền admin không
-     */
     public boolean isAdmin() {
         return roles != null && roles.contains("ADMIN");
     }
 
-    /**
-     * Kiểm tra user có đang online không
-     */
     public boolean isOnline() {
         return status == UserStatus.ONLINE;
     }
 
-    /**
-     * Lấy display name hoặc username nếu không có display name
-     */
     public String getDisplayNameOrUserName() {
         return displayName != null && !displayName.isEmpty() ? displayName : userName;
     }
@@ -213,7 +190,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "uid='" + firebaseUid + '\'' +
                 ", userName='" + userName + '\'' +
                 ", email='" + email + '\'' +
                 ", displayName='" + displayName + '\'' +

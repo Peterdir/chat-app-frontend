@@ -13,13 +13,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 /**
- * Repository để quản lý User với Firebase Realtime Database
- * 
- * Cung cấp các phương thức CRUD:
- * - Create/Update user
- * - Read user (single, list, realtime)
- * - Delete user
- * - Update status, profile
+ * Repository quản lý User profile trong Firebase Realtime Database.
+ *
+ * Cấu trúc RTDB:
+ *   users/
+ *     {firebaseUid}/
+ *       userName, email, displayName, bio, avatarUrl, status, ...
+ *
+ * Credentials (email/password) do Firebase Authentication quản lý — không lưu ở đây.
  */
 public class UserRepository {
 
@@ -28,16 +29,12 @@ public class UserRepository {
 
     private final DatabaseReference usersRef;
 
-    // Singleton instance
     private static UserRepository instance;
 
     private UserRepository() {
         usersRef = FirebaseManager.getDatabaseReference(USERS_PATH);
     }
 
-    /**
-     * Lấy instance singleton
-     */
     public static synchronized UserRepository getInstance() {
         if (instance == null) {
             instance = new UserRepository();
@@ -50,19 +47,17 @@ public class UserRepository {
     // =========================================================================
 
     /**
-     * Tạo hoặc cập nhật user
-     * 
-     * @param user User object cần lưu
-     * @param callback Callback khi hoàn thành
+     * Lưu (tạo mới hoặc cập nhật) profile của user.
+     * Key trong RTDB = user.getFirebaseUid()
      */
     public void saveUser(User user, OnCompleteListener callback) {
-        if (user.getId() == null) {
-            Log.e(TAG, "User ID không được null!");
-            if (callback != null) callback.onFailure("User ID không được null");
+        if (user.getFirebaseUid() == null || user.getFirebaseUid().isEmpty()) {
+            Log.e(TAG, "Firebase UID không được null/rỗng!");
+            if (callback != null) callback.onFailure("Firebase UID không được null");
             return;
         }
 
-        usersRef.child(user.getId().toString())
+        usersRef.child(user.getFirebaseUid())
                 .setValue(user)
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "Lưu user thành công: " + user.getUserName());
@@ -74,52 +69,26 @@ public class UserRepository {
                 });
     }
 
-    /**
-     * Tạo user mới với ID tự động
-     */
-    public void createUserWithAutoId(User user, OnUserCreatedListener callback) {
-        String newId = usersRef.push().getKey();
-        if (newId == null) {
-            if (callback != null) callback.onFailure("Không thể tạo ID");
-            return;
-        }
-
-        // Convert String ID to Long
-        user.setId(Long.parseLong(newId.replaceAll("[^0-9]", "").substring(0, Math.min(10, newId.length()))));
-        user.setCreatedAt(System.currentTimeMillis());
-        user.setLastActive(System.currentTimeMillis());
-
-        saveUser(user, new OnCompleteListener() {
-            @Override
-            public void onSuccess() {
-                if (callback != null) callback.onUserCreated(user);
-            }
-
-            @Override
-            public void onFailure(String error) {
-                if (callback != null) callback.onFailure(error);
-            }
-        });
-    }
-
     // =========================================================================
-    // READ (Single value)
+    // READ (Single)
     // =========================================================================
 
     /**
-     * Lấy user theo ID (đọc 1 lần)
+     * Lấy user profile theo Firebase UID (đọc 1 lần).
      */
-    public void getUserById(Long userId, OnUserLoadedListener callback) {
-        usersRef.child(userId.toString())
+    public void getUserByUid(String uid, OnUserLoadedListener callback) {
+        usersRef.child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         User user = snapshot.getValue(User.class);
                         if (user != null) {
+                            // Đảm bảo firebaseUid được gán (có thể bị null nếu field chưa lưu)
+                            if (user.getFirebaseUid() == null) user.setFirebaseUid(uid);
                             Log.d(TAG, "Đọc user thành công: " + user.getUserName());
                             if (callback != null) callback.onUserLoaded(user);
                         } else {
-                            Log.w(TAG, "Không tìm thấy user với ID: " + userId);
+                            Log.w(TAG, "Không tìm thấy user với UID: " + uid);
                             if (callback != null) callback.onUserNotFound();
                         }
                     }
@@ -132,47 +101,23 @@ public class UserRepository {
                 });
     }
 
-    /**
-     * Lấy user theo username (đọc 1 lần)
-     */
-    public void getUserByUsername(String username, OnUserLoadedListener callback) {
-        usersRef.orderByChild("userName")
-                .equalTo(username)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (snapshot.exists()) {
-                            for (DataSnapshot child : snapshot.getChildren()) {
-                                User user = child.getValue(User.class);
-                                if (callback != null) callback.onUserLoaded(user);
-                                return;
-                            }
-                        } else {
-                            if (callback != null) callback.onUserNotFound();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        if (callback != null) callback.onFailure(error.getMessage());
-                    }
-                });
-    }
-
     // =========================================================================
     // READ (Realtime)
     // =========================================================================
 
     /**
-     * Lắng nghe thay đổi realtime của 1 user
+     * Lắng nghe thay đổi realtime của 1 user.
+     *
+     * @return listener – dùng để hủy sau này bằng removeListener()
      */
-    public ValueEventListener observeUser(Long userId, OnUserLoadedListener callback) {
+    public ValueEventListener observeUser(String uid, OnUserLoadedListener callback) {
         ValueEventListener listener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User user = snapshot.getValue(User.class);
-                if (user != null && callback != null) {
-                    callback.onUserLoaded(user);
+                if (user != null) {
+                    if (user.getFirebaseUid() == null) user.setFirebaseUid(uid);
+                    if (callback != null) callback.onUserLoaded(user);
                 }
             }
 
@@ -182,16 +127,16 @@ public class UserRepository {
             }
         };
 
-        usersRef.child(userId.toString()).addValueEventListener(listener);
+        usersRef.child(uid).addValueEventListener(listener);
         return listener;
     }
 
     /**
-     * Hủy listener
+     * Hủy listener realtime.
      */
-    public void removeListener(Long userId, ValueEventListener listener) {
+    public void removeListener(String uid, ValueEventListener listener) {
         if (listener != null) {
-            usersRef.child(userId.toString()).removeEventListener(listener);
+            usersRef.child(uid).removeEventListener(listener);
         }
     }
 
@@ -199,15 +144,10 @@ public class UserRepository {
     // UPDATE (Specific fields)
     // =========================================================================
 
-    /**
-     * Cập nhật trạng thái online/offline
-     */
-    public void updateUserStatus(Long userId, UserStatus status, OnCompleteListener callback) {
-        usersRef.child(userId.toString())
-                .child("status")
+    public void updateUserStatus(String uid, UserStatus status, OnCompleteListener callback) {
+        usersRef.child(uid).child("status")
                 .setValue(status.name())
                 .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Cập nhật status thành công: " + status);
                     if (callback != null) callback.onSuccess();
                 })
                 .addOnFailureListener(e -> {
@@ -215,21 +155,12 @@ public class UserRepository {
                 });
     }
 
-    /**
-     * Cập nhật lastActive timestamp
-     */
-    public void updateLastActive(Long userId) {
-        usersRef.child(userId.toString())
-                .child("lastActive")
-                .setValue(System.currentTimeMillis());
+    public void updateLastActive(String uid) {
+        usersRef.child(uid).child("lastActive").setValue(System.currentTimeMillis());
     }
 
-    /**
-     * Cập nhật avatar URL
-     */
-    public void updateAvatar(Long userId, String avatarUrl, OnCompleteListener callback) {
-        usersRef.child(userId.toString())
-                .child("avatarUrl")
+    public void updateAvatar(String uid, String avatarUrl, OnCompleteListener callback) {
+        usersRef.child(uid).child("avatarUrl")
                 .setValue(avatarUrl)
                 .addOnSuccessListener(aVoid -> {
                     if (callback != null) callback.onSuccess();
@@ -239,12 +170,8 @@ public class UserRepository {
                 });
     }
 
-    /**
-     * Cập nhật bio
-     */
-    public void updateBio(Long userId, String bio, OnCompleteListener callback) {
-        usersRef.child(userId.toString())
-                .child("bio")
+    public void updateBio(String uid, String bio, OnCompleteListener callback) {
+        usersRef.child(uid).child("bio")
                 .setValue(bio)
                 .addOnSuccessListener(aVoid -> {
                     if (callback != null) callback.onSuccess();
@@ -258,14 +185,11 @@ public class UserRepository {
     // DELETE
     // =========================================================================
 
-    /**
-     * Xóa user
-     */
-    public void deleteUser(Long userId, OnCompleteListener callback) {
-        usersRef.child(userId.toString())
+    public void deleteUser(String uid, OnCompleteListener callback) {
+        usersRef.child(uid)
                 .removeValue()
                 .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Xóa user thành công: " + userId);
+                    Log.d(TAG, "Xóa user thành công: " + uid);
                     if (callback != null) callback.onSuccess();
                 })
                 .addOnFailureListener(e -> {
@@ -286,11 +210,6 @@ public class UserRepository {
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
         void onUserNotFound();
-        void onFailure(String error);
-    }
-
-    public interface OnUserCreatedListener {
-        void onUserCreated(User user);
         void onFailure(String error);
     }
 }

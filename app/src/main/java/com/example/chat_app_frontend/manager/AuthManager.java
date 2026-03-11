@@ -1,40 +1,39 @@
 package com.example.chat_app_frontend.manager;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.model.UserStatus;
 import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.utils.FirebaseManager;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import java.util.Collections;
 
 /**
- * Authentication Manager - Quản lý đăng nhập, đăng xuất và session
- * 
- * Sử dụng SharedPreferences để lưu thông tin user hiện tại
- * Không dùng Firebase Authentication, chỉ dùng Realtime Database
+ * Authentication Manager – quản lý đăng nhập, đăng ký, đăng xuất và session.
+ *
+ * Sử dụng Firebase Authentication để xác thực và lưu trữ session.
+ * Profile mở rộng (userName, bio, avatarUrl, ...) được lưu trong Firebase RTDB
+ * tại users/{firebaseUid}.
  */
 public class AuthManager {
 
     private static final String TAG = "AuthManager";
-    private static final String PREF_NAME = "auth_prefs";
-    private static final String KEY_USER_ID = "user_id";
-    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
 
     private static AuthManager instance;
-    private final SharedPreferences prefs;
+
+    private final FirebaseAuth auth;
     private final UserRepository userRepository;
-    private User currentUser;
+    private User currentUser;   // Cache profile của user hiện tại
 
     private AuthManager(Context context) {
-        prefs = context.getApplicationContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        auth = FirebaseManager.getAuth();
         userRepository = UserRepository.getInstance();
     }
 
-    /**
-     * Lấy instance singleton
-     * Gọi init() trước khi sử dụng
-     */
     public static synchronized AuthManager getInstance(Context context) {
         if (instance == null) {
             instance = new AuthManager(context);
@@ -47,59 +46,101 @@ public class AuthManager {
     // =========================================================================
 
     /**
-     * Đăng nhập bằng email và password
-     * 
-     * @param email Email hoặc username
-     * @param password Mật khẩu (plain text)
-     * @param callback Callback khi hoàn thành
+     * Đăng nhập bằng email và password.
+     * Firebase Authentication xác thực credentials, sau đó profile được load từ RTDB.
      */
     public void login(String email, String password, OnAuthListener callback) {
-        Log.d(TAG, "Đang đăng nhập với email: " + email);
+        Log.d(TAG, "Đang đăng nhập: " + email);
 
-        // Tìm user theo email
-        userRepository.getUserByUsername(email, new UserRepository.OnUserLoadedListener() {
-            @Override
-            public void onUserLoaded(User user) {
-                // Kiểm tra password (lưu ý: trong production nên hash password)
-                if (user.getPassword() != null && user.getPassword().equals(password)) {
-                    // Đăng nhập thành công
-                    loginSuccess(user);
-                    
-                    // Cập nhật status lên Firebase
-                    userRepository.updateUserStatus(user.getId(), UserStatus.ONLINE, null);
-                    userRepository.updateLastActive(user.getId());
-                    
-                    Log.d(TAG, "✅ Đăng nhập thành công: " + user.getUserName());
-                    if (callback != null) callback.onSuccess(user);
-                } else {
-                    Log.w(TAG, "❌ Mật khẩu không đúng");
-                    if (callback != null) callback.onFailure("Mật khẩu không đúng");
-                }
-            }
+        auth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser fbUser = authResult.getUser();
+                    if (fbUser == null) {
+                        if (callback != null) callback.onFailure("Đăng nhập thất bại");
+                        return;
+                    }
 
-            @Override
-            public void onUserNotFound() {
-                Log.w(TAG, "❌ Không tìm thấy tài khoản");
-                if (callback != null) callback.onFailure("Tài khoản không tồn tại");
-            }
+                    // Chặn user chưa xác minh email
+                    if (!fbUser.isEmailVerified()) {
+                        auth.signOut(); // Xóa session, không cho vào app
+                        // Gửi lại email xác minh để tiện cho user
+                        fbUser.sendEmailVerification();
+                        if (callback != null) callback.onFailure(
+                                "Email chưa được xác minh.\n" +
+                                "Vui lòng kiểm tra hộp thư và click vào link xác minh.\n" +
+                                "(Đã gửi lại email xác minh)");
+                        return;
+                    }
 
-            @Override
-            public void onFailure(String error) {
-                Log.e(TAG, "❌ Lỗi khi đăng nhập: " + error);
-                if (callback != null) callback.onFailure("Lỗi kết nối: " + error);
-            }
-        });
+                    Log.d(TAG, "Firebase Auth OK, UID: " + fbUser.getUid());
+                    loadProfileAfterAuth(fbUser, callback);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Đăng nhập thất bại: " + e.getMessage());
+                    if (callback != null) callback.onFailure(mapAuthError(e.getMessage()));
+                });
     }
 
+    // =========================================================================
+    // REGISTER
+    // =========================================================================
+
     /**
-     * Lưu thông tin đăng nhập vào SharedPreferences
+     * Đăng ký tài khoản mới.
+     * 1. Tạo tài khoản Firebase Auth (email + password)
+     * 2. Gửi email xác minh
+     * 3. Lưu profile (không có password) vào RTDB tại users/{uid}
      */
-    private void loginSuccess(User user) {
-        currentUser = user;
-        prefs.edit()
-                .putLong(KEY_USER_ID, user.getId())
-                .putBoolean(KEY_IS_LOGGED_IN, true)
-                .apply();
+    public void register(String email, String password,
+                         String username, String displayName,
+                         OnAuthListener callback) {
+        Log.d(TAG, "Đang đăng ký: " + email);
+
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser fbUser = authResult.getUser();
+                    if (fbUser == null) {
+                        if (callback != null) callback.onFailure("Đăng ký thất bại");
+                        return;
+                    }
+
+                    // Gửi email xác minh (không bắt buộc phải verify để dùng app)
+                    fbUser.sendEmailVerification()
+                          .addOnCompleteListener(task ->
+                              Log.d(TAG, "Gửi email xác minh: " + (task.isSuccessful() ? "OK" : task.getException())));
+
+                    // Tạo profile trong RTDB
+                    String uid = fbUser.getUid();
+                    User user = new User(uid, username, email, displayName);
+                    user.setAvatarUrl("https://ui-avatars.com/api/?name="
+                            + displayName.replace(" ", "+")
+                            + "&background=5865F2&color=fff&size=256");
+                    user.setRoles(Collections.singletonList("USER"));
+                    user.setCreatedAt(System.currentTimeMillis());
+                    user.setLastActive(System.currentTimeMillis());
+                    user.setEmailVerified(fbUser.isEmailVerified());
+
+                    userRepository.saveUser(user, new UserRepository.OnCompleteListener() {
+                        @Override
+                        public void onSuccess() {
+                            currentUser = user;
+                            Log.d(TAG, "✅ Đăng ký thành công: " + username);
+                            if (callback != null) callback.onSuccess(user);
+                        }
+
+                        @Override
+                        public void onFailure(String error) {
+                            // Profile không lưu được, xóa tài khoản Auth để tránh orphan
+                            fbUser.delete();
+                            Log.e(TAG, "❌ Lưu profile thất bại: " + error);
+                            if (callback != null) callback.onFailure("Lưu profile thất bại: " + error);
+                        }
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Đăng ký thất bại: " + e.getMessage());
+                    if (callback != null) callback.onFailure(mapAuthError(e.getMessage()));
+                });
     }
 
     // =========================================================================
@@ -107,94 +148,121 @@ public class AuthManager {
     // =========================================================================
 
     /**
-     * Đăng xuất
+     * Đăng xuất – cập nhật status OFFLINE rồi sign out khỏi Firebase Auth.
      */
     public void logout(OnLogoutListener callback) {
-        if (currentUser != null) {
-            // Cập nhật status sang OFFLINE
-            userRepository.updateUserStatus(currentUser.getId(), UserStatus.OFFLINE, 
-                new UserRepository.OnCompleteListener() {
-                    @Override
-                    public void onSuccess() {
-                        clearSession();
-                        Log.d(TAG, "✅ Đăng xuất thành công");
-                        if (callback != null) callback.onLogoutSuccess();
-                    }
-
-                    @Override
-                    public void onFailure(String error) {
-                        // Vẫn đăng xuất local dù Firebase fail
-                        clearSession();
-                        if (callback != null) callback.onLogoutSuccess();
-                    }
-                });
+        if (currentUser != null && currentUser.getFirebaseUid() != null) {
+            userRepository.updateUserStatus(
+                    currentUser.getFirebaseUid(), UserStatus.OFFLINE,
+                    new UserRepository.OnCompleteListener() {
+                        @Override public void onSuccess() { doSignOut(callback); }
+                        @Override public void onFailure(String error) { doSignOut(callback); }
+                    });
         } else {
-            clearSession();
-            if (callback != null) callback.onLogoutSuccess();
+            doSignOut(callback);
         }
     }
 
-    /**
-     * Xóa session local
-     */
-    private void clearSession() {
+    private void doSignOut(OnLogoutListener callback) {
         currentUser = null;
-        prefs.edit()
-                .remove(KEY_USER_ID)
-                .putBoolean(KEY_IS_LOGGED_IN, false)
-                .apply();
+        auth.signOut();
+        Log.d(TAG, "✅ Đã đăng xuất");
+        if (callback != null) callback.onLogoutSuccess();
     }
 
     // =========================================================================
-    // SESSION MANAGEMENT
+    // FORGOT PASSWORD
     // =========================================================================
 
     /**
-     * Kiểm tra user đã đăng nhập chưa
+     * Gửi email đặt lại mật khẩu.
+     * Firebase sẽ gửi link trực tiếp đến email người dùng – không cần OTP thủ công.
+     */
+    public void sendPasswordResetEmail(String email, OnCompleteListener callback) {
+        Log.d(TAG, "Gửi email reset password: " + email);
+        auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "✅ Đã gửi email reset password");
+                    if (callback != null) callback.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "❌ Gửi email thất bại: " + e.getMessage());
+                    if (callback != null) callback.onFailure(mapAuthError(e.getMessage()));
+                });
+    }
+
+    // =========================================================================
+    // SESSION
+    // =========================================================================
+
+    /**
+     * Kiểm tra user đã đăng nhập chưa (dựa vào Firebase Auth session – tự persist).
      */
     public boolean isLoggedIn() {
-        return prefs.getBoolean(KEY_IS_LOGGED_IN, false);
+        return auth.getCurrentUser() != null;
     }
 
     /**
-     * Lấy user hiện tại (từ cache)
+     * Lấy user profile đang cache (có thể null nếu chưa load).
      */
     public User getCurrentUser() {
         return currentUser;
     }
 
     /**
-     * Load user hiện tại từ Firebase (dùng khi app khởi động)
+     * Load profile user hiện tại từ RTDB khi app khởi động.
+     * Dùng sau khi kiểm tra isLoggedIn() == true.
      */
     public void loadCurrentUser(OnAuthListener callback) {
-        if (!isLoggedIn()) {
+        FirebaseUser fbUser = auth.getCurrentUser();
+        if (fbUser == null) {
             if (callback != null) callback.onFailure("Chưa đăng nhập");
             return;
         }
+        loadProfileAfterAuth(fbUser, callback);
+    }
 
-        long userId = prefs.getLong(KEY_USER_ID, -1);
-        if (userId == -1) {
-            if (callback != null) callback.onFailure("Session không hợp lệ");
-            return;
-        }
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
 
-        userRepository.getUserById(userId, new UserRepository.OnUserLoadedListener() {
+    /**
+     * Load profile từ RTDB sau khi Firebase Auth xác thực thành công.
+     * Nếu profile chưa có (user mới) → tạo profile cơ bản.
+     */
+    private void loadProfileAfterAuth(FirebaseUser fbUser, OnAuthListener callback) {
+        String uid = fbUser.getUid();
+
+        userRepository.getUserByUid(uid, new UserRepository.OnUserLoadedListener() {
             @Override
             public void onUserLoaded(User user) {
                 currentUser = user;
-                
-                // Cập nhật status lên ONLINE
-                userRepository.updateUserStatus(user.getId(), UserStatus.ONLINE, null);
-                userRepository.updateLastActive(user.getId());
-                
+                // Cập nhật trạng thái online
+                userRepository.updateUserStatus(uid, UserStatus.ONLINE, null);
+                userRepository.updateLastActive(uid);
                 if (callback != null) callback.onSuccess(user);
             }
 
             @Override
             public void onUserNotFound() {
-                // User đã bị xóa, clear session
-                clearSession();
-                if (callback != null) callback.onFailure("Tài khoản không tồn tại");
+                // Profile chưa có (sign-in lần đầu với tài khoản cũ)
+                // Tạo profile tối thiểu từ thông tin Firebase Auth
+                String email = fbUser.getEmail() != null ? fbUser.getEmail() : "";
+                String name = fbUser.getDisplayName() != null ? fbUser.getDisplayName() : email;
+                User fallback = new User(uid, email, email, name);
+                fallback.setEmailVerified(fbUser.isEmailVerified());
+                fallback.setCreatedAt(System.currentTimeMillis());
+                fallback.setLastActive(System.currentTimeMillis());
+
+                userRepository.saveUser(fallback, new UserRepository.OnCompleteListener() {
+                    @Override public void onSuccess() {
+                        currentUser = fallback;
+                        if (callback != null) callback.onSuccess(fallback);
+                    }
+                    @Override public void onFailure(String error) {
+                        if (callback != null) callback.onFailure(error);
+                    }
+                });
             }
 
             @Override
@@ -202,6 +270,28 @@ public class AuthManager {
                 if (callback != null) callback.onFailure(error);
             }
         });
+    }
+
+    /**
+     * Chuyển lỗi Firebase Auth sang tiếng Việt thân thiện.
+     */
+    private String mapAuthError(String error) {
+        if (error == null) return "Đã xảy ra lỗi";
+        if (error.contains("EMAIL_NOT_FOUND") || error.contains("no user record") || error.contains("INVALID_LOGIN_CREDENTIALS"))
+            return "Email không tồn tại hoặc mật khẩu sai";
+        if (error.contains("INVALID_PASSWORD") || error.contains("WRONG_PASSWORD"))
+            return "Mật khẩu không đúng";
+        if (error.contains("EMAIL_EXISTS") || error.contains("email address is already in use"))
+            return "Email này đã được sử dụng";
+        if (error.contains("WEAK_PASSWORD") || error.contains("password should be at least"))
+            return "Mật khẩu quá yếu (tối thiểu 6 ký tự)";
+        if (error.contains("INVALID_EMAIL") || error.contains("badly formatted"))
+            return "Email không hợp lệ";
+        if (error.contains("TOO_MANY_REQUESTS") || error.contains("too many"))
+            return "Quá nhiều lần thử, vui lòng thử lại sau";
+        if (error.contains("network") || error.contains("NETWORK_ERROR"))
+            return "Lỗi kết nối mạng";
+        return "Đăng nhập / đăng ký thất bại. Vui lòng thử lại";
     }
 
     // =========================================================================
@@ -215,5 +305,10 @@ public class AuthManager {
 
     public interface OnLogoutListener {
         void onLogoutSuccess();
+    }
+
+    public interface OnCompleteListener {
+        void onSuccess();
+        void onFailure(String error);
     }
 }
