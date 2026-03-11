@@ -62,7 +62,7 @@ public class ShopActivity extends AppCompatActivity {
     }
 
     private void loadSampleData() {
-        // 1. Data cho phần cuộn ngang (Mickey & Friends) - Sử dụng ảnh thật
+        // 1. Data cho phần cuộn ngang (Mickey & Friends)
         List<ShopItem> featured = new ArrayList<>();
         featured.add(new ShopItem("f1", "Mickey Ear Headb...", R.drawable.mickey_ear_headband1, "0", "circular"));
         featured.add(new ShopItem("f2", "Minnie Ear Headb...", R.drawable.mickey_ear_headband2, "0", "circular"));
@@ -70,7 +70,7 @@ public class ShopActivity extends AppCompatActivity {
         
         rvHorizontalShop.setAdapter(new FeaturedProductAdapter(featured));
 
-        // 2. Data cho phần Popular Picks (Grid dưới) - Sử dụng ảnh thật
+        // 2. Data cho phần Popular Picks (Grid dưới)
         List<ShopItem> popular = new ArrayList<>();
         popular.add(new ShopItem("1", "Magic Mists", R.drawable.magic_mists, "3500", "circular"));
         popular.add(new ShopItem("2", "Angry", R.drawable.img, "1200", "circular"));
@@ -78,6 +78,16 @@ public class ShopActivity extends AppCompatActivity {
         popular.add(new ShopItem("4", "Magic Mists", R.drawable.infinite_swirl_bundle2, "8900", "banner"));
         popular.add(new ShopItem("5", "Fallen Angel (Black)", R.drawable.nevermore, "4100", "circular"));
         popular.add(new ShopItem("6", "Nevermore", R.drawable.nevermore, "4100", "banner"));
+
+        // Thêm 8 assets placeholder
+        popular.add(new ShopItem("7", "Moon", R.drawable.moon, "0", "circular"));
+        popular.add(new ShopItem("8", "HunnyBunnies", R.drawable.hunnybunnies, "0", "circular"));
+        popular.add(new ShopItem("9", "DarkRoses", R.drawable.darkroses, "0", "circular"));
+        popular.add(new ShopItem("10", "Bonsai", R.drawable.bonsai, "0", "circular"));
+        popular.add(new ShopItem("11", "the shame duck", R.drawable.theshameduck, "0", "circular"));
+        popular.add(new ShopItem("12", "Aries", R.drawable.aries, "0", "circular"));
+        popular.add(new ShopItem("13", "Hologram Dragon", R.drawable.hologram, "0", "circular"));
+        popular.add(new ShopItem("14", "Dark Roses Bundle", R.drawable.darkrosebundle, "0", "circular"));
 
         shopAdapter.updateList(popular);
     }
