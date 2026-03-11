@@ -95,9 +95,25 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.AccountSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <activity
+            android:name=".ui.EditUsernameActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <activity
             android:name=".ui.EditProfileActivity"
             android:exported="false"
             android:theme="@style/Theme.Chatappfrontend" />
+
+        <activity
+            android:name=".ui.ChangePasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chatappfrontend" />
+
         <activity
             android:name=".ui.VoiceChannelActivity"
             android:exported="false"
