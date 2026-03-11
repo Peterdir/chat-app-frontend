@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Bật Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <!-- Cho phép thay đổi âm lượng hệ thống, bật/tắt loa ngoài - microphone,... -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- Cho biết đang dùng Wifi hay 4G để tối ưu chất lượng âm thanh -->

@@ -55,6 +55,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
             holder.llConnectedState.setVisibility(View.VISIBLE);
 
             holder.tvConnectedChannelName.setText(channel.getName());
+            holder.tvConnectedUserName.setText("Duy");
 
             // Set up user status
             String currentStatus = stateManager.getCurrentActivityStatus();

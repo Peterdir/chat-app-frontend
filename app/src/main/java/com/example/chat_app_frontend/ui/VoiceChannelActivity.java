@@ -112,8 +112,13 @@ public class VoiceChannelActivity extends AppCompatActivity {
         updateMicUiState();
         updateVideoUiState();
 
-        // Đồng bộ trạng thái Camera ngay từ lúc vào phòng
-        VoiceStateManager.getInstance().setVideoOn(isVideoOn);
+        // Đồng bộ trạng thái Lên VoiceStateManager ngay khi vào app
+        VoiceStateManager stateManager = VoiceStateManager.getInstance();
+        stateManager.setConnectedChannel(channelName);
+        stateManager.setMuted(isMuted);
+        stateManager.setVideoOn(isVideoOn);
+        // Thiết lập trạng thái mặc định để hiện icon Sofa (như trong hình yêu cầu)
+        stateManager.setCurrentActivityStatus("đang chill");
 
         setupClickListeners();
 
