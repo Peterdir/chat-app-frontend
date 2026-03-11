@@ -10,15 +10,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/discord_bg_dark"
-        app:elevation="0dp">
+        app:elevation="0dp"
+        app:liftOnScroll="false">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/discord_bg_dark"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:navigationIconTint="@android:color/white"
-            app:title="Settings"
+            app:title="Cài đặt"
             app:titleCentered="true"
             app:titleTextColor="@android:color/white" />
 
@@ -27,6 +29,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -42,7 +45,7 @@
                 android:background="@drawable/bg_search_input"
                 android:drawableStart="@drawable/ic_search"
                 android:drawablePadding="12dp"
-                android:hint="Search"
+                android:hint="Tìm kiếm"
                 android:importantForAutofill="no"
                 android:inputType="text"
                 android:paddingHorizontal="16dp"
@@ -56,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="8dp"
-                android:text="Account Settings"
+                android:text="Cài đặt tài khoản"
                 android:textAllCaps="true"
                 android:textColor="@color/discord_text_secondary"
                 android:textSize="12sp"
@@ -77,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="8dp"
-                android:text="Billing Settings"
+                android:text="Cài đặt thanh toán"
                 android:textAllCaps="true"
                 android:textColor="@color/discord_text_secondary"
                 android:textSize="12sp"
@@ -98,7 +101,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="8dp"
-                android:text="App Settings"
+                android:text="Cài đặt ứng dụng"
                 android:textAllCaps="true"
                 android:textColor="@color/discord_text_secondary"
                 android:textSize="12sp"
@@ -119,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="8dp"
-                android:text="Support"
+                android:text="Hỗ trợ"
                 android:textAllCaps="true"
                 android:textColor="@color/discord_text_secondary"
                 android:textSize="12sp"
@@ -140,7 +143,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="8dp"
-                android:text="What's New"
+                android:text="Có gì mới"
                 android:textAllCaps="true"
                 android:textColor="@color/discord_text_secondary"
                 android:textSize="12sp"
