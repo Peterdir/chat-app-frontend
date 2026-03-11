@@ -81,6 +81,7 @@ public class UserSettingsFragment extends Fragment {
         items.add(new UserSettingItem("Thiết bị", R.drawable.ic_phone));
         items.add(new UserSettingItem("Kết nối", R.drawable.ic_discord_logo));
 
+
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
     }
@@ -92,6 +93,7 @@ public class UserSettingsFragment extends Fragment {
         items.add(new UserSettingItem("Nhiệm vụ", R.drawable.ic_quest_badge));
         items.add(new UserSettingItem("Tăng cường máy chủ", R.drawable.ic_nitro_boost));
         items.add(new UserSettingItem("Tặng quà Nitro", R.drawable.ic_chat_bubble));
+
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
@@ -110,6 +112,7 @@ public class UserSettingsFragment extends Fragment {
         items.add(new UserSettingItem("Biểu tượng ứng dụng", R.drawable.ic_discord_logo, true));
         items.add(new UserSettingItem("Nâng cao", R.drawable.ic_settings));
 
+
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
     }
@@ -121,6 +124,7 @@ public class UserSettingsFragment extends Fragment {
         items.add(new UserSettingItem("Tải nhật ký gỡ lỗi lên Hỗ trợ Discord", R.drawable.ic_settings));
         items.add(new UserSettingItem("Lời cảm ơn", R.drawable.ic_settings));
 
+
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
     }
@@ -130,6 +134,7 @@ public class UserSettingsFragment extends Fragment {
         List<UserSettingItem> items = new ArrayList<>();
         items.add(new UserSettingItem("Có gì mới", R.drawable.ic_settings));
 
+
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
     }
@@ -138,6 +143,7 @@ public class UserSettingsFragment extends Fragment {
         RecyclerView rv = view.findViewById(R.id.rvLogoutSetting);
         List<UserSettingItem> items = new ArrayList<>();
         items.add(new UserSettingItem("Đăng xuất", R.drawable.ic_back_arrow, null, false, true));
+
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));

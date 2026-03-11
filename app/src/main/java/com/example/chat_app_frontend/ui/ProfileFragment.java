@@ -149,7 +149,7 @@ public class ProfileFragment extends Fragment {
 
     private void setupHeaderButton(View view, int buttonId) {
         View button = view.findViewById(buttonId);
-        if (button != null) {
+        if (button != null && buttonId != R.id.btn_settings) {
             button.setOnClickListener(v -> {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
