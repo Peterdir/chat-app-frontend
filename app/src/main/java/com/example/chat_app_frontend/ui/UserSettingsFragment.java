@@ -58,6 +58,12 @@ public class UserSettingsFragment extends Fragment {
             if (getActivity() != null) {
                 getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
+        } else if ("Account".equals(title)) {
+            Intent intent = new Intent(getActivity(), AccountSettingsActivity.class);
+            startActivity(intent);
+            if (getActivity() != null) {
+                getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
         } else if ("Log Out".equals(item.getTitle())) {
             if (getActivity() != null) {
                 Intent intent = new Intent(getActivity(), LoginActivity.class);
