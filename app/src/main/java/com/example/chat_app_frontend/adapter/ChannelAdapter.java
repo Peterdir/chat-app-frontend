@@ -140,21 +140,13 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
                         bottomSheet.show(((AppCompatActivity) context).getSupportFragmentManager(), "VoicePreview");
                     }
                 } else {
-                    Toast.makeText(context, "Chưa hỗ trợ Text Chat: " + channel.getName(), Toast.LENGTH_SHORT).show();
+                    // Only text channels open a chat screen
+                    Intent intent = new Intent(context, ServerChatActivity.class);
+                    intent.putExtra(ServerChatActivity.EXTRA_CHANNEL_NAME, channel.getName());
+                    intent.putExtra(ServerChatActivity.EXTRA_SERVER_NAME, serverName != null ? serverName : "");
+                    context.startActivity(intent);
                 }
             });
-        holder.tvChannelName.setText(channel.getName());
-
-        // Only text channels open a chat screen
-        if ("text".equals(channel.getType())) {
-            holder.itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(v.getContext(), ServerChatActivity.class);
-                intent.putExtra(ServerChatActivity.EXTRA_CHANNEL_NAME, channel.getName());
-                intent.putExtra(ServerChatActivity.EXTRA_SERVER_NAME, serverName != null ? serverName : "");
-                v.getContext().startActivity(intent);
-            });
-        } else {
-            holder.itemView.setOnClickListener(null);
         }
     }
 
