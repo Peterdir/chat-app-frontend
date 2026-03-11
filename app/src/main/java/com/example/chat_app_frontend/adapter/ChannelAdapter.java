@@ -17,6 +17,7 @@ import com.example.chat_app_frontend.manager.VoiceStateManager;
 import com.example.chat_app_frontend.model.Channel;
 import com.example.chat_app_frontend.ui.VoiceChannelActivity;
 import com.example.chat_app_frontend.ui.VoiceChannelPreviewBottomSheet;
+import com.example.chat_app_frontend.ui.ServerChatActivity;
 
 import java.util.List;
 
@@ -24,9 +25,14 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
 
     private List<Channel> channelList;
     private Context context;
+    private String serverName;
 
     public ChannelAdapter(List<Channel> channelList) {
         this.channelList = channelList;
+    }
+
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     @NonNull
@@ -137,6 +143,18 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
                     Toast.makeText(context, "Chưa hỗ trợ Text Chat: " + channel.getName(), Toast.LENGTH_SHORT).show();
                 }
             });
+        holder.tvChannelName.setText(channel.getName());
+
+        // Only text channels open a chat screen
+        if ("text".equals(channel.getType())) {
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), ServerChatActivity.class);
+                intent.putExtra(ServerChatActivity.EXTRA_CHANNEL_NAME, channel.getName());
+                intent.putExtra(ServerChatActivity.EXTRA_SERVER_NAME, serverName != null ? serverName : "");
+                v.getContext().startActivity(intent);
+            });
+        } else {
+            holder.itemView.setOnClickListener(null);
         }
     }
 

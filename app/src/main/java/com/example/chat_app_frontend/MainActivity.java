@@ -15,8 +15,8 @@ import com.example.chat_app_frontend.adapter.ServerAdapter;
 import com.example.chat_app_frontend.model.Server;
 import com.example.chat_app_frontend.ui.DMFragment;
 import com.example.chat_app_frontend.ui.NotificationsFragment;
-import com.example.chat_app_frontend.ui.ServerFragment;
 import com.example.chat_app_frontend.ui.ProfileFragment;
+import com.example.chat_app_frontend.ui.ServerFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -81,16 +81,10 @@ public class MainActivity extends AppCompatActivity {
         rvServerRail.setLayoutManager(new LinearLayoutManager(this));
 
         List<Server> servers = new ArrayList<>();
-        // ID "0" is reserved for DM/Home (Discord Logo)
-        // Using 0 as iconResId will trigger the 'initial' text fallback,
-        // to make it look like Discord button we might need a drawable.
-        // For now let's use a placeholder or implement specific logic for the top
-        // button.
         servers.add(new Server("0", "Direct Messages", R.drawable.ic_chat_bubble));
         servers.add(new Server("1", "CP Man", 0));
         servers.add(new Server("2", "Vietnam Gamers", 0));
         servers.add(new Server("3", "Study Group", 0));
-        // Add more servers as needed
 
         serverAdapter = new ServerAdapter(servers, server -> {
             serverAdapter.setSelectedServer(server.getId());
@@ -101,9 +95,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Select DM by default
         serverAdapter.setSelectedServer("0");
-
         rvServerRail.setAdapter(serverAdapter);
     }
 
