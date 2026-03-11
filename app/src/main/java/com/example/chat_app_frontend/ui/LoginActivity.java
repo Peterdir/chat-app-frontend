@@ -1,6 +1,9 @@
 package com.example.chat_app_frontend.ui;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.manager.AuthManager;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.utils.DataSeeder;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,10 +13,13 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,17 +31,31 @@ import android.text.method.PasswordTransformationMethod;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "LoginActivity";
+    
     private EditText etEmail, etPassword;
     private CheckBox cbEye;
+    private Button btnLogin;
+    private ProgressBar progressBar;
+    private AuthManager authManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        authManager = AuthManager.getInstance(this);
+
         etEmail   = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
         cbEye      = findViewById(R.id.cb_eye);
+        btnLogin  = findViewById(R.id.btn_login);
+        
+        // Tìm ProgressBar nếu có trong layout, nếu không thì bỏ qua
+        progressBar = findViewById(R.id.progress_bar);
+
+        // Seed admin user khi lần đầu chạy app
+        seedAdminUserIfNeeded();
 
         // Back button
         ImageButton btnBack = findViewById(R.id.btn_back);
@@ -71,15 +91,16 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     // -------------------------------------------------------------------------
-    // Validation
+    // Validation & Login
     // -------------------------------------------------------------------------
 
     private void attemptLogin() {
         String email    = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString();
 
-        if (TextUtils.isEmpty(email) || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError(getString(R.string.register_error_email));
+        // Validation
+        if (TextUtils.isEmpty(email)) {
+            etEmail.setError("Vui lòng nhập email hoặc username");
             etEmail.requestFocus();
             return;
         }
@@ -89,9 +110,71 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO: call API — for now go to main
-        startActivity(new Intent(this, MainActivity.class));
-        finish();
+        // Show loading
+        setLoading(true);
+
+        // Gọi AuthManager để đăng nhập
+        authManager.login(email, password, new AuthManager.OnAuthListener() {
+            @Override
+            public void onSuccess(User user) {
+                setLoading(false);
+                Toast.makeText(LoginActivity.this, 
+                    "Chào mừng, " + user.getDisplayNameOrUserName() + "!", 
+                    Toast.LENGTH_SHORT).show();
+                
+                Log.d(TAG, "✅ Đăng nhập thành công: " + user.getUserName());
+                
+                // Chuyển sang MainActivity
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_Task);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onFailure(String error) {
+                setLoading(false);
+                Toast.makeText(LoginActivity.this, error, Toast.LENGTH_LONG).show();
+                Log.e(TAG, "❌ Đăng nhập thất bại: " + error);
+            }
+        });
+    }
+
+    /**
+     * Hiển thị/ẩn loading indicator
+     */
+    private void setLoading(boolean loading) {
+        btnLogin.setEnabled(!loading);
+        etEmail.setEnabled(!loading);
+        etPassword.setEnabled(!loading);
+        
+        if (progressBar != null) {
+            progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+        
+        btnLogin.setText(loading ? "Đang đăng nhập..." : "Đăng nhập");
+    }
+
+    /**
+     * Seed admin user nếu chưa có
+     */
+    private void seedAdminUserIfNeeded() {
+        DataSeeder.seedAdminUser(new DataSeeder.OnSeedCompleteListener() {
+            @Override
+            public void onSeedComplete(boolean success, String message) {
+                if (success) {
+                    Log.d(TAG, "✅ " + message);
+                    Toast.makeText(LoginActivity.this, 
+                        "Tài khoản test:\nUsername: admin\nPassword: admin123", 
+                        Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onSeedFailed(String error) {
+                Log.e(TAG, "❌ Seed failed: " + error);
+            }
+        });
     }
 
     // -------------------------------------------------------------------------

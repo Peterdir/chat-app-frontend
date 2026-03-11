@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.chat_app_frontend" />
+                  <option name="mobileSdkAppId" value="1:225131628939:android:428d77ab77d60e725e078e" />
+                  <option name="projectId" value="discord-clone-android" />
+                  <option name="projectNumber" value="225131628939" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

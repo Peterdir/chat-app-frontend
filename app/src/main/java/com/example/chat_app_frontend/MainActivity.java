@@ -1,7 +1,10 @@
 package com.example.chat_app_frontend;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
