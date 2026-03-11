@@ -44,7 +44,9 @@ public class ServerSettingsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         } else if (holder instanceof ItemViewHolder) {
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
             itemViewHolder.tvTitle.setText(item.title);
-            itemViewHolder.imgIcon.setImageResource(item.iconRes);
+            if (item.iconRes != 0) {
+                itemViewHolder.imgIcon.setImageResource(item.iconRes);
+            }
         }
     }
 

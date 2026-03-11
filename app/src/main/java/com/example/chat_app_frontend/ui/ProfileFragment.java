@@ -154,10 +154,12 @@ public class ProfileFragment extends Fragment {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
 
-                    Intent intent = new Intent(getActivity(), NitroActivity.class);
-                    startActivity(intent);
-                    if (getActivity() != null) {
-                        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    if (buttonId == R.id.btn_nitro_header || buttonId == R.id.btn_nitro) {
+                        Intent intent = new Intent(getActivity(), NitroActivity.class);
+                        startActivity(intent);
+                        if (getActivity() != null) {
+                            getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        }
                     }
                 }).start();
             });
