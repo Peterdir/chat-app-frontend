@@ -23,9 +23,9 @@ public class ServerSettingsActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_server_settings);
 
+
         // Đã sửa: btn_close -> btn_close_server_settings
         findViewById(R.id.btn_close_server_settings).setOnClickListener(v -> finish());
-
         List<ServerSettingItem> data = new ArrayList<>();
 
         // Nhóm Cài đặt
