@@ -1,6 +1,8 @@
 package com.example.chat_app_frontend.repository;
 
 import android.util.Log;
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 
@@ -199,6 +201,45 @@ public class UserRepository {
     }
 
     // =========================================================================
+    // SEARCH
+    // =========================================================================
+
+    /**
+     * Tìm kiếm user theo displayName hoặc userName chứa query (case-insensitive).
+     * Firebase RTDB không hỗ trợ full-text search nên filter client-side.
+     *
+     * @param query   Từ khoá tìm kiếm
+     * @param myUid   UID của user hiện tại (để loại khỏi kết quả)
+     */
+    public void searchUsers(String query, String myUid, OnUserListListener callback) {
+        String lowerQuery = query.toLowerCase().trim();
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<User> results = new ArrayList<>();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    User user = child.getValue(User.class);
+                    if (user == null) continue;
+                    if (user.getFirebaseUid() == null) user.setFirebaseUid(child.getKey());
+                    // Bỏ qua chính mình
+                    if (myUid != null && myUid.equals(user.getFirebaseUid())) continue;
+                    // Lọc theo tên
+                    String name     = user.getDisplayName()  != null ? user.getDisplayName().toLowerCase()  : "";
+                    String userName = user.getUserName()      != null ? user.getUserName().toLowerCase()      : "";
+                    if (name.contains(lowerQuery) || userName.contains(lowerQuery)) {
+                        results.add(user);
+                    }
+                }
+                if (callback != null) callback.onLoaded(results);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (callback != null) callback.onFailure(error.getMessage());
+            }
+        });
+    }
+
+    // =========================================================================
     // CALLBACKS
     // =========================================================================
 
@@ -210,6 +251,11 @@ public class UserRepository {
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
         void onUserNotFound();
+        void onFailure(String error);
+    }
+
+    public interface OnUserListListener {
+        void onLoaded(List<User> users);
         void onFailure(String error);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +36,17 @@ public class DMFragment extends Fragment {
 
         rvDMList = view.findViewById(R.id.rv_dm_list);
         rvDMList.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        View btnAddFriend = view.findViewById(R.id.btn_add_friend);
+        if (btnAddFriend != null) {
+            btnAddFriend.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), AddFriendActivity.class);
+                startActivity(intent);
+                if (getActivity() != null) {
+                    getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                }
+            });
+        }
 
         // Mock Data
         List<Friend> friends = new ArrayList<>();
