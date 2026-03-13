@@ -102,6 +102,12 @@
             android:theme="@style/Theme.Chatappfrontend" />
 
         <activity
+            android:name=".ui.NotificationSettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <activity
             android:name=".ui.EditUsernameActivity"
             android:exported="false"
             android:theme="@style/Theme.Chatappfrontend" />

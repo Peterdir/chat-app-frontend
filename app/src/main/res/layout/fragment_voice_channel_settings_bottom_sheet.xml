@@ -307,11 +307,16 @@
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switch_mute"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:thumb="@drawable/bg_switch_thumb"
-                        app:track="@drawable/bg_switch_track"
-                        app:thumbTint="@null"
-                        app:trackTint="@null" />
+                        android:layout_height="40dp"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        app:switchMinWidth="60dp"
+                        android:switchPadding="0dp"
+                        android:splitTrack="false"
+                        android:thumb="@drawable/selector_discord_switch_thumb"
+                        android:track="@drawable/selector_discord_switch_track"
+                        app:trackTint="@color/selector_switch_track_tint"
+                        app:thumbTint="@null" />
                 </LinearLayout>
 
                 <View
@@ -362,11 +367,16 @@
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/switch_video_only"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:thumb="@drawable/bg_switch_thumb"
-                        app:track="@drawable/bg_switch_track"
-                        app:thumbTint="@null"
-                        app:trackTint="@null" />
+                        android:layout_height="40dp"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        app:switchMinWidth="60dp"
+                        android:switchPadding="0dp"
+                        android:splitTrack="false"
+                        android:thumb="@drawable/selector_discord_switch_thumb"
+                        android:track="@drawable/selector_discord_switch_track"
+                        app:trackTint="@color/selector_switch_track_tint"
+                        app:thumbTint="@null" />
                 </LinearLayout>
 
             </LinearLayout>
