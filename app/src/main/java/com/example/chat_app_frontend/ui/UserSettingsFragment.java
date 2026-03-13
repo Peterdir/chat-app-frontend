@@ -93,7 +93,6 @@ public class UserSettingsFragment extends Fragment {
         items.add(new UserSettingItem("Thiết bị", R.drawable.ic_phone));
         items.add(new UserSettingItem("Kết nối", R.drawable.ic_discord_logo));
 
-
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
     }
@@ -146,7 +145,6 @@ public class UserSettingsFragment extends Fragment {
         List<UserSettingItem> items = new ArrayList<>();
         items.add(new UserSettingItem("Có gì mới", R.drawable.ic_settings));
 
-
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
     }
@@ -155,7 +153,6 @@ public class UserSettingsFragment extends Fragment {
         RecyclerView rv = view.findViewById(R.id.rvLogoutSetting);
         List<UserSettingItem> items = new ArrayList<>();
         items.add(new UserSettingItem("Đăng xuất", R.drawable.ic_back_arrow, null, false, true));
-
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new UserSettingsAdapter(items, settingsClickListener));
