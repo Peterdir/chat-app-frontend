@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.chat_app_frontend"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.chat_app_frontend"
@@ -49,4 +48,12 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation("io.agora.rtc:full-sdk:4.3.0")
+    // Khai báo Firebase BoM (Bill of Materials) để tự động quản lý phiên bản
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+
+    implementation("com.google.firebase:firebase-database") // Để làm Realtime Chat
+    implementation("com.google.firebase:firebase-auth") // Để quản lý người dùng và xác thực
+
+    // Tải ảnh từ URL (avatar)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

@@ -1,8 +1,8 @@
 package com.example.chat_app_frontend.ui;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.manager.AuthManager;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -11,8 +11,10 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,23 +24,28 @@ import androidx.core.content.ContextCompat;
 public class ForgotPasswordActivity extends AppCompatActivity {
 
     private EditText etEmail;
+    private Button btnSendCode;
+    private AuthManager authManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
 
-        etEmail = findViewById(R.id.et_email);
+        authManager = AuthManager.getInstance(this);
+
+        etEmail     = findViewById(R.id.et_email);
+        btnSendCode = findViewById(R.id.btn_send_code);
 
         ImageButton btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(v -> finish());
 
-        findViewById(R.id.btn_send_code).setOnClickListener(v -> attemptSendCode());
+        btnSendCode.setOnClickListener(v -> attemptSendReset());
 
         setupLoginLink();
     }
 
-    private void attemptSendCode() {
+    private void attemptSendReset() {
         String email = etEmail.getText().toString().trim();
         if (TextUtils.isEmpty(email) || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError(getString(R.string.register_error_email));
@@ -46,14 +53,35 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO: call API to send OTP
-        Intent intent = new Intent(this, OtpVerificationActivity.class);
-        intent.putExtra("email", email);
-        startActivity(intent);
+        setLoading(true);
+
+        // Firebase gửi email đặt lại mật khẩu trực tiếp — không cần OTP thủ công
+        authManager.sendPasswordResetEmail(email, new AuthManager.OnCompleteListener() {
+            @Override
+            public void onSuccess() {
+                setLoading(false);
+                Toast.makeText(ForgotPasswordActivity.this,
+                        "Email đặt lại mật khẩu đã được gửi!\nVui lòng kiểm tra hộp thư của bạn.",
+                        Toast.LENGTH_LONG).show();
+                finish(); // Quay về màn hình Login
+            }
+
+            @Override
+            public void onFailure(String error) {
+                setLoading(false);
+                Toast.makeText(ForgotPasswordActivity.this, error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void setLoading(boolean loading) {
+        btnSendCode.setEnabled(!loading);
+        etEmail.setEnabled(!loading);
+        btnSendCode.setText(loading ? "Đang gửi..." : "Gửi email");
     }
 
     private void setupLoginLink() {
-        TextView tvLink = findViewById(R.id.tv_login_link);
+        TextView tvLink  = findViewById(R.id.tv_login_link);
         String full      = getString(R.string.fp_login_link);
         String clickPart = getString(R.string.fp_login_link_action);
 
@@ -67,7 +95,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             spannable.setSpan(new ClickableSpan() {
                 @Override public void onClick(View widget) { finish(); }
                 @Override public void updateDrawState(android.text.TextPaint ds) {
-                    super.updateDrawState(ds); ds.setUnderlineText(false);
+                    super.updateDrawState(ds);
+                    ds.setUnderlineText(false);
                 }
             }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }

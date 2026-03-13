@@ -26,9 +26,26 @@ public class ProfileFragment extends Fragment {
         setupEditProfileButton(view);
         setupStoreNavigation(view);
         setupSettingsNavigation(view);
+        setupFriendsNavigation(view);
         animateProfileEntrance(view);
 
         return view;
+    }
+
+    private void setupFriendsNavigation(View view) {
+        View cardFriends = view.findViewById(R.id.card_friends);
+        if (cardFriends != null) {
+            cardFriends.setOnClickListener(v -> {
+                v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(80).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                    Intent intent = new Intent(getActivity(), FriendListActivity.class);
+                    startActivity(intent);
+                    if (getActivity() != null) {
+                        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    }
+                }).start();
+            });
+        }
     }
 
     private void setupSettingsNavigation(View view) {
@@ -154,8 +171,8 @@ public class ProfileFragment extends Fragment {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
 
-                    if (buttonId == R.id.btn_nitro_header || buttonId == R.id.btn_store_header) {
-                        Intent intent = new Intent(getActivity(), EditProfileActivity.class);
+                    if (buttonId == R.id.btn_nitro_header || buttonId == R.id.btn_nitro) {
+                        Intent intent = new Intent(getActivity(), NitroActivity.class);
                         startActivity(intent);
                         if (getActivity() != null) {
                             getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

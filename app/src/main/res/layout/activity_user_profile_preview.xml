@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/discord_bg_dark">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Banner & Header Section -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <!-- Banner Color -->
+                <View
+                    android:id="@+id/profile_banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:background="#57F287" />
+
+                <!-- Action Buttons on Banner -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/bg_circle_dark"
+                        android:backgroundTint="#80000000"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_person_add"
+                        app:tint="@android:color/white" />
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_circle_dark"
+                        android:backgroundTint="#80000000"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_more_horiz"
+                        app:tint="@android:color/white" />
+                </LinearLayout>
+
+                <!-- Avatar with Frame -->
+                <FrameLayout
+                    android:id="@+id/avatar_container"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_below="@id/profile_banner"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="-50dp">
+
+                    <!-- Border/Frame -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar_decoration_ring" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_gravity="center"
+                        android:padding="4dp"
+                        android:src="@drawable/avatar1"
+                        app:shapeAppearanceOverlay="@style/CircleImage"
+                        android:background="@color/discord_bg_dark" />
+
+                    <!-- Status Indicator -->
+                    <View
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/bg_circle_dark"
+                        android:backgroundTint="#313338"
+                        android:padding="2dp" />
+
+                    <View
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="11dp"
+                        android:layout_marginBottom="11dp"
+                        android:background="@drawable/bg_circle_dark"
+                        android:backgroundTint="#4E5058" />
+                </FrameLayout>
+
+            </RelativeLayout>
+
+            <!-- User Info Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Đặng Minh Tài"
+                    android:textColor="@android:color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="tamidanopro"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="14sp" />
+
+                    <!-- Badge 1 -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_pill_dark"
+                        android:backgroundTint="#2B2D31"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="2dp">
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_swords"
+                            app:tint="#23A559" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="GDev"
+                            android:textColor="@android:color/white"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <!-- Other Badges -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_pill_dark"
+                        android:backgroundTint="#2B2D31"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="2dp">
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_gem"
+                            android:layout_marginEnd="4dp" />
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_nitro_boost"
+                            android:layout_marginEnd="4dp" />
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_quest_badge" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_people"
+                        app:tint="@color/discord_text_secondary" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="1 Máy Chủ Chung"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Communication Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <!-- Message -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_circle_dark"
+                            android:backgroundTint="#2B2D31"
+                            android:padding="16dp"
+                            android:src="@drawable/ic_chat_bubble"
+                            app:tint="@android:color/white" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Tin nhắn"
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <!-- Voice Call -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_circle_dark"
+                            android:backgroundTint="#2B2D31"
+                            android:padding="16dp"
+                            android:src="@drawable/ic_phone"
+                            app:tint="@android:color/white" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="Cuộc gọi\nthoại"
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <!-- Video Call -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:background="@drawable/bg_circle_dark"
+                            android:backgroundTint="#2B2D31"
+                            android:padding="16dp"
+                            android:src="@drawable/ic_videocam"
+                            app:tint="@android:color/white" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="Cuộc gọi\nvideo"
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Info Cards -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:background="@drawable/bg_rounded_card"
+                    android:backgroundTint="#1E1F22"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tiểu sử"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Be your self"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="Gia Nhập Từ"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_discord_logo"
+                            app:tint="@color/discord_text_secondary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="8 Th9, 2023"
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Notes Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_rounded_card"
+                    android:backgroundTint="#1E1F22"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Ghi chú (chỉ hiển thị cho bạn)"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="13sp" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_edit_pencil"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
