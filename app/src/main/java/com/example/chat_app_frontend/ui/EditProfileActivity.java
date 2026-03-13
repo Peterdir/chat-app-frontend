@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
 
 import com.example.chat_app_frontend.R;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class EditProfileActivity extends AppCompatActivity {
 
@@ -146,6 +147,12 @@ public class EditProfileActivity extends AppCompatActivity {
             });
         }
 
+        // Edit avatar
+        View btnEditAvatar = findViewById(R.id.btn_edit_avatar);
+        if (btnEditAvatar != null) {
+            btnEditAvatar.setOnClickListener(v -> showEditAvatarBottomSheet());
+        }
+
         // Item clicks
         setupItemPress(R.id.item_avatar_decoration);
         setupItemPress(R.id.item_profile_effect);
@@ -218,5 +225,51 @@ public class EditProfileActivity extends AppCompatActivity {
                         .start();
             }
         }
+    }
+
+    private void showChangeDecorationBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.TransparentBottomSheetDialogTheme);
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_change_decoration, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+        bottomSheetDialog.show();
+    }
+
+    private void showEditAvatarBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.TransparentBottomSheetDialogTheme);
+        View bottomSheetView = getLayoutInflater().inflate(R.style.TransparentBottomSheetDialogTheme == 0 ? R.layout.bottom_sheet_edit_avatar : R.layout.bottom_sheet_edit_avatar, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        // Upload image
+        View btnUploadImage = bottomSheetView.findViewById(R.id.btn_upload_image);
+        if (btnUploadImage != null) {
+            btnUploadImage.setOnClickListener(v -> {
+                bottomSheetDialog.dismiss();
+                // TODO: Handle upload image
+            });
+        }
+
+        // Animated avatar / Nitro
+        View btnAnimatedAvatar = bottomSheetView.findViewById(R.id.btn_animated_avatar);
+        View btnUnlockNitro = bottomSheetView.findViewById(R.id.btn_unlock_nitro);
+        
+        View.OnClickListener nitroClickListener = v -> {
+            bottomSheetDialog.dismiss();
+            Intent intent = new Intent(EditProfileActivity.this, NitroActivity.class);
+            startActivity(intent);
+        };
+        
+        if (btnAnimatedAvatar != null) btnAnimatedAvatar.setOnClickListener(nitroClickListener);
+        if (btnUnlockNitro != null) btnUnlockNitro.setOnClickListener(nitroClickListener);
+
+        // Change decoration
+        View btnChangeDecoration = bottomSheetView.findViewById(R.id.btn_change_decoration);
+        if (btnChangeDecoration != null) {
+            btnChangeDecoration.setOnClickListener(v -> {
+                bottomSheetDialog.dismiss();
+                showChangeDecorationBottomSheet();
+            });
+        }
+
+        bottomSheetDialog.show();
     }
 }
