@@ -7,6 +7,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import com.example.chat_app_frontend.R;
 
 public class CustomStatusActivity extends AppCompatActivity {
@@ -22,6 +23,10 @@ public class CustomStatusActivity extends AppCompatActivity {
         setContentView(R.layout.activity_custom_status);
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_save).setOnClickListener(v -> {
+            Toast.makeText(this, "Đã lưu trạng thái!", Toast.LENGTH_SHORT).show();
+            finish();
+        });
 
         EditText etStatusInput = findViewById(R.id.et_status_input);
         TextView tvStatusPreview = findViewById(R.id.tv_status_preview);
@@ -40,19 +45,21 @@ public class CustomStatusActivity extends AppCompatActivity {
                     tvStatusPreview.setTextColor(android.graphics.Color.parseColor("#FFFFFF"));
                 }
             }
-
             @Override
             public void afterTextChanged(Editable s) {}
         });
 
-        findViewById(R.id.btn_save).setOnClickListener(v -> {
-            String status = etStatusInput.getText().toString().trim();
-            if (status.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập trạng thái!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Đã lưu trạng thái: " + status, Toast.LENGTH_SHORT).show();
-                finish();
-            }
+        CardView btnDeleteAt = findViewById(R.id.btn_delete_at);
+        TextView tvDeleteAtTime = findViewById(R.id.tv_delete_at_time);
+
+        btnDeleteAt.setOnClickListener(v -> {
+            DeleteAtBottomSheet bottomSheet = new DeleteAtBottomSheet();
+
+            bottomSheet.setOnTimeSelectedListener(time -> {
+                tvDeleteAtTime.setText(time);
+            });
+
+            bottomSheet.show(getSupportFragmentManager(), "DeleteAtSheet");
         });
     }
 }
