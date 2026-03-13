@@ -64,6 +64,12 @@ public class UserSettingsFragment extends Fragment {
             if (getActivity() != null) {
                 getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
+        } else if ("Giao diện".equals(title)) {
+            Intent intent = new Intent(getActivity(), AppearanceSettingsActivity.class);
+            startActivity(intent);
+            if (getActivity() != null) {
+                getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
         } else if ("Đăng xuất".equals(item.getTitle())) {
             if (getActivity() != null) {
                 Intent intent = new Intent(getActivity(), LoginActivity.class);

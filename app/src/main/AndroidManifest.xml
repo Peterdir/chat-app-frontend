@@ -123,6 +123,11 @@
             android:theme="@style/Theme.Chatappfrontend" />
 
         <activity
+            android:name=".ui.AppearanceSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chatappfrontend" />
+
+        <activity
             android:name=".ui.VoiceChannelActivity"
             android:exported="false"
             android:supportsPictureInPicture="true"
