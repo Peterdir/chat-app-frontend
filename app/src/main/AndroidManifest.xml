@@ -32,6 +32,7 @@
         <activity android:name=".ui.VoiceSettingsActivity" android:exported="false" android:screenOrientation="portrait" android:theme="@style/Theme.Chatappfrontend"/>
         <activity android:name=".ui.PrivateCallActivity" android:exported="false" android:screenOrientation="portrait" android:theme="@style/Theme.Chatappfrontend" />
         <activity android:name=".ui.CustomizeServerActivity" android:screenOrientation="portrait" android:theme="@style/Theme.Chatappfrontend" />
+        <activity android:name=".ui.CustomStatusActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.Chatappfrontend" />
         <activity
             android:name=".ui.ServerMenuActivity"
             android:exported="true"
@@ -177,7 +178,8 @@
 <!--<activity android:name=".ui.CustomizeServerActivity" android:screenOrientation="portrait" android:theme="@style/Theme.Chatappfrontend" />-->
 <!--<activity android:name=".ui.JoinServerActivity" android:screenOrientation="portrait" android:theme="@style/Theme.Chatappfrontend" />-->
 <!--<activity android:name=".ui.StudentHubActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.Chatappfrontend" />-->
-<!--    &lt;!&ndash; Private call &ndash;&gt;-->
+<!--<activity android:name=".ui.CustomStatusActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.Chatappfrontend" />-->
+    <!--    &lt;!&ndash; Private call &ndash;&gt;-->
 <!--    <activity-->
 <!--        android:name=".ui.PrivateCallActivity"-->
 <!--        android:exported="false"-->

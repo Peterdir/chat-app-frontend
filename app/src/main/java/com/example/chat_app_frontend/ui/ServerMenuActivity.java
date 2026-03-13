@@ -18,7 +18,15 @@ public class ServerMenuActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_server_menu);
 
-        findViewById(R.id.btn_close).setOnClickListener(v -> finish());
+//        findViewById(R.id.btn_close).setOnClickListener(v -> finish());
+
+        // Mượn tạm nút X (btn_close) để test bảng Trạng Thái
+        findViewById(R.id.btn_close).setOnClickListener(v -> {
+
+            StatusBottomSheet bottomSheet = new StatusBottomSheet();
+            bottomSheet.show(getSupportFragmentManager(), "StatusSheet");
+
+        });
 
         findViewById(R.id.btn_create_own).setOnClickListener(v -> {
             startActivity(new Intent(ServerMenuActivity.this, ServerPurposeActivity.class));
