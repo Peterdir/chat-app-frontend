@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_bottom_sheet_dark"
+    android:orientation="vertical"
+    android:paddingTop="12dp">
+
+    <!-- Handle drag -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="#4F545C"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Mời bạn bè"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Horizontal Options -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Item 1: Chia Sẻ -->
+            <LinearLayout
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_dark"
+                    android:backgroundTint="#2b2d31"
+                    android:padding="16dp"
+                    android:src="@android:drawable/ic_menu_share"
+                    app:tint="#DCDDDE" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Chia Sẻ Lời\nMời"
+                    android:textColor="#A0A0A0"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Item 2: Sao Chép Link -->
+            <LinearLayout
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_dark"
+                    android:backgroundTint="#2b2d31"
+                    android:padding="16dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="#DCDDDE" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Sao Chép\nLink"
+                    android:textColor="#A0A0A0"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Item 3: Mã QR -->
+            <LinearLayout
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_dark"
+                    android:backgroundTint="#2b2d31"
+                    android:padding="16dp"
+                    android:src="@android:drawable/ic_dialog_map"
+                    app:tint="#DCDDDE" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Mã QR"
+                    android:textColor="#A0A0A0"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Item 4: Tin Nhắn -->
+            <LinearLayout
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_dark"
+                    android:backgroundTint="#2b2d31"
+                    android:padding="16dp"
+                    android:src="@android:drawable/ic_menu_send"
+                    app:tint="#DCDDDE" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Tin nhắn"
+                    android:textColor="#A0A0A0"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Item 5: Email -->
+            <LinearLayout
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_dark"
+                    android:backgroundTint="#2b2d31"
+                    android:padding="16dp"
+                    android:src="@android:drawable/ic_dialog_email"
+                    app:tint="#DCDDDE" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Email"
+                    android:textColor="#A0A0A0"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Item 6: Messenger -->
+            <LinearLayout
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_circle_dark"
+                    android:backgroundTint="#2b2d31"
+                    android:padding="16dp"
+                    android:src="@android:drawable/ic_dialog_info"
+                    app:tint="#DCDDDE" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Messenger"
+                    android:textColor="#A0A0A0"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Search Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginHorizontal="16dp"
+        android:background="@drawable/bg_search_bar"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@android:drawable/ic_menu_search"
+            app:tint="#A0A0A0" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:background="@null"
+            android:hint="Mời bạn bè vào Code lò"
+            android:textColorHint="#A0A0A0"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Link mời của bạn sẽ hết hạn sau 30 ngày. Chỉnh sửa link mời."
+        android:textColor="#A0A0A0"
+        android:textSize="12sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_invite_friends"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
+
+</LinearLayout>

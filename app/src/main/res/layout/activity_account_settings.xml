@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/discord_bg_dark">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/discord_bg_dark"
+        app:liftOnScroll="false"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/discord_bg_dark"
+            app:navigationIcon="@drawable/ic_back_arrow"
+            app:navigationIconTint="@android:color/white"
+            app:title="Tài Khoản"
+            app:titleCentered="true"
+            app:titleTextColor="@android:color/white" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:background="@color/discord_bg_dark"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/discord_bg_dark"
+            android:padding="16dp">
+
+            <!-- Toggle Selector -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_toggle_container"
+                android:orientation="horizontal"
+                android:padding="4dp"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_toggle_selected"
+                    android:gravity="center"
+                    android:text="Bảo mật"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Trạng thái"
+                    android:textColor="@color/discord_text_secondary" />
+            </LinearLayout>
+
+            <!-- Thông Tin Tài Khoản Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Thông Tin Tài Khoản"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <!-- Tên đăng nhập -->
+                <LinearLayout
+                    android:id="@+id/rowUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tên đăng nhập"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="sibuladepzai5447"
+                        android:textColor="@color/discord_text_secondary"
+                        android:layout_marginEnd="8dp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/discord_divider" />
+
+                <!-- Tên hiển thị -->
+                <LinearLayout
+                    android:id="@+id/rowDisplayName"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tên hiển thị"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Trần Nhân"
+                        android:textColor="@color/discord_text_secondary"
+                        android:layout_marginEnd="8dp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/discord_divider" />
+
+                <!-- Email -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Email"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="sibula1234@gmail.com"
+                        android:textColor="@color/discord_text_secondary"
+                        android:layout_marginEnd="8dp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/discord_divider" />
+
+                <!-- Điện thoại -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Điện thoại"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="+84704500872"
+                        android:textColor="@color/discord_text_secondary"
+                        android:layout_marginEnd="8dp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Passkey Promo Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:backgroundTint="#2B2D31"
+                android:padding="16dp"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp"
+                android:elevation="2dp"
+                android:layout_marginHorizontal="2dp">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/img_gameconsole"
+                    android:layout_gravity="center_vertical"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Quên mật khẩu"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thêm mã khóa và đăng nhập với một cú nhấn."
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp" />
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/bg_button_blurple"
+                        android:text="Bắt đầu"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:paddingHorizontal="24dp"
+                        app:backgroundTint="@null"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Cách bạn đăng nhập Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Cách bạn đăng nhập vào tài khoản của mình"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:id="@+id/rowPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mật khẩu"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/discord_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mã bảo mật"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Đã thêm 0"
+                        android:textColor="@color/discord_text_secondary"
+                        android:layout_marginEnd="8dp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/discord_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Bật Ứng Dụng Xác Thực"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_secondary" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Quản Lý Tài Khoản Section (from second image) -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Quản Lý Tài Khoản"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Vô Hiệu Hóa Tài Khoản"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/discord_divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Xóa Tài Khoản"
+                        android:textColor="#F04747"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
