@@ -173,7 +173,7 @@
             android:textColor="@color/white"
             android:textSize="14sp"
             android:textStyle="bold"
-            app:cornerRadius="4dp" />
+            app:cornerRadius="24dp" />
     </LinearLayout>
 
 </LinearLayout>
