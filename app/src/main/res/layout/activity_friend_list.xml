@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/discord_background"
+    android:orientation="vertical">
+
+    <!-- Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp"
+        android:background="#1E1F22">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="Quay lại"
+            app:tint="@color/discord_text_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/anim_scale_button" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="Bạn Bè"
+            android:textColor="@color/discord_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btn_add_friend"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_add_friend"
+            android:background="@drawable/bg_circle_dark"
+            android:contentDescription="Thêm bạn bè"
+            app:tint="@color/discord_text_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:stateListAnimator="@animator/anim_scale_button" />
+    </LinearLayout>
+
+    <!-- TabLayout -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="#1E1F22"
+        app:tabTextColor="@color/discord_text_secondary"
+        app:tabSelectedTextColor="@color/discord_text_primary"
+        app:tabIndicatorColor="#5865F2"
+        app:tabIndicatorHeight="2dp"
+        app:tabRippleColor="@android:color/transparent"
+        app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/discord_divider" />
+
+    <!-- ViewPager2 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

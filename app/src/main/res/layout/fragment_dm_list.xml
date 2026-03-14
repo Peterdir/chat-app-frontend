@@ -48,12 +48,15 @@
 
             <!-- Add Friend Button -->
             <ImageView
+                android:id="@+id/btn_add_friend"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:src="@drawable/ic_add_friend" 
+                android:src="@drawable/ic_add_friend"
                 android:background="@drawable/bg_circle_green"
-                android:padding="8dp"/> 
-                <!-- Using color filter/tint to simulate green icon or background -->
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Add Friend" />
         </LinearLayout>
     </LinearLayout>
 

@@ -20,6 +20,8 @@ import com.example.chat_app_frontend.model.Notification;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 public class NotificationsFragment extends Fragment {
 
     @Nullable
@@ -30,8 +32,38 @@ public class NotificationsFragment extends Fragment {
 
         setupNotifications(view);
         setupFriendSuggestions(view);
+        setupMoreButton(view);
 
         return view;
+    }
+
+    private void setupMoreButton(View view) {
+        View btnMore = view.findViewById(R.id.btn_more);
+        if (btnMore != null) {
+            btnMore.setOnClickListener(v -> {
+                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
+                View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.bottom_sheet_notification_settings, null);
+                bottomSheetDialog.setContentView(bottomSheetView);
+                
+                
+                if (bottomSheetDialog.getWindow() != null) {
+                    View bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+                    if (bottomSheet != null) {
+                        bottomSheet.setBackgroundResource(android.R.color.transparent);
+                    }
+                }
+                
+                View btnSettings = bottomSheetView.findViewById(R.id.btn_notification_settings);
+                if (btnSettings != null) {
+                    btnSettings.setOnClickListener(v2 -> {
+                        bottomSheetDialog.dismiss();
+                        startActivity(new android.content.Intent(getContext(), NotificationSettingsActivity.class));
+                    });
+                }
+                
+                bottomSheetDialog.show();
+            });
+        }
     }
 
     private void setupNotifications(View view) {

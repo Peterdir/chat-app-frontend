@@ -1,6 +1,7 @@
 package com.example.chat_app_frontend.ui;
 
 import android.os.Bundle;
+import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,9 +24,9 @@ public class ServerSettingsActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_server_settings);
 
+
         // Đã sửa: btn_close -> btn_close_server_settings
         findViewById(R.id.btn_close_server_settings).setOnClickListener(v -> finish());
-
         List<ServerSettingItem> data = new ArrayList<>();
 
         // Nhóm Cài đặt

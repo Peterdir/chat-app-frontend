@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,12 @@ public class ServerFragment extends Fragment {
 
         tvServerName = view.findViewById(R.id.tv_server_name);
         tvServerName.setText(serverName);
+
+        // Chuyển hướng đến ServerProfileActivity khi nhấn vào tên server
+        tvServerName.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ServerProfileActivity.class);
+            startActivity(intent);
+        });
 
         rvChannels = view.findViewById(R.id.rv_channels);
         rvChannels.setLayoutManager(new LinearLayoutManager(getContext()));

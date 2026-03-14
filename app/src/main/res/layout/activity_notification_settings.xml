@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/discord_background"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/discord_text_primary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Các Thông Báo"
+            android:textColor="@color/discord_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Section 1: Thông báo trong ứng dụng -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Thông báo trong ứng dụng"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_rounded_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Nhận thông báo trong Discord."
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:checked="true"
+                    app:switchMinWidth="60dp"
+                    android:switchPadding="0dp"
+                    android:splitTrack="false"
+                    android:thumb="@drawable/selector_discord_switch_thumb"
+                    android:track="@drawable/selector_discord_switch_track"
+                    app:trackTint="@color/selector_switch_track_tint"
+                    app:thumbTint="@null" />
+            </LinearLayout>
+
+            <!-- Section 2: Thông báo hệ thống -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Thông báo hệ thống"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_rounded_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Nhận thông báo ngoài Discord."
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/discord_text_primary" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="Nếu bạn đang tìm thông báo mỗi kênh hoặc mỗi máy chủ, hãy nhấn chuột vào tên máy chủ mà bạn muốn và chọn Cài Đặt Thông Báo."
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_rounded_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_weight="1"
+                    android:text="Thông báo mỗi khi có tin nhắn mới trong cuộc trò chuyện"
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:checked="true"
+                    app:switchMinWidth="60dp"
+                    android:switchPadding="0dp"
+                    android:splitTrack="false"
+                    android:thumb="@drawable/selector_discord_switch_thumb"
+                    android:track="@drawable/selector_discord_switch_track"
+                    app:trackTint="@color/selector_switch_track_tint"
+                    app:thumbTint="@null" />
+            </LinearLayout>
+
+            <!-- Section 3: Thông Báo Tương Tác -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Thông Báo Tương Tác"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radio_all_messages"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:button="@null"
+                    android:drawableEnd="@drawable/selector_discord_radio"
+                    android:checked="true"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:text="Tất cả các tin nhắn"
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#313338" />
+
+                <RadioButton
+                    android:id="@+id/radio_dm_only"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:button="@null"
+                    android:drawableEnd="@drawable/selector_discord_radio"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:text="Chỉ Tin Nhắn Trực Tiếp"
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#313338" />
+
+                <RadioButton
+                    android:id="@+id/radio_never"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:button="@null"
+                    android:drawableEnd="@drawable/selector_discord_radio"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:text="Không bao giờ"
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:text="Nhận thông báo khi tin nhắn của bạn được tương tác."
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp" />
+
+            <!-- Section 4: Thông báo khác -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Thông báo khác"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- Group A -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cảnh Báo Hoạt Động Cộng Đồng"
+                            android:textColor="@color/discord_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nhận thông báo khi có hoạt động DM hoặc hoạt động tham gia vượt quá tải lượng thông thường của máy chủ."
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_primary" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Group B -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thông báo về các Tin tức nổi bật"
+                            android:textColor="@color/discord_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Các tin tức nổi bật sẽ cung cấp thông tin cập nhật theo định kỳ khi bạn bè của bạn đang trò chuyện trong các máy chủ bận rộn, v.v."
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/discord_text_primary" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Group C -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Nhận thông báo khi bạn bè stream"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        android:checked="true"
+                        app:switchMinWidth="60dp"
+                        android:switchPadding="0dp"
+                        android:splitTrack="false"
+                        android:thumb="@drawable/selector_discord_switch_thumb"
+                        android:track="@drawable/selector_discord_switch_track"
+                        app:trackTint="@color/selector_switch_track_tint"
+                        app:thumbTint="@null" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Group D -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thông Báo Hoạt Động Âm Thanh Voice"
+                            android:textColor="@color/discord_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nhận thông báo khi bạn bè thân nhất của bạn tham gia kênh thoại trong máy chủ có 200 thành viên hoặc ít hơn."
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        android:checked="true"
+                        app:switchMinWidth="60dp"
+                        android:switchPadding="0dp"
+                        android:splitTrack="false"
+                        android:thumb="@drawable/selector_discord_switch_thumb"
+                        android:track="@drawable/selector_discord_switch_track"
+                        app:trackTint="@color/selector_switch_track_tint"
+                        app:thumbTint="@null" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Group E -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cập Nhật Hồ Sơ"
+                            android:textColor="@color/discord_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nhận thông báo khi một người bạn cập nhật hồ sơ của họ."
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        android:checked="true"
+                        app:switchMinWidth="60dp"
+                        android:switchPadding="0dp"
+                        android:splitTrack="false"
+                        android:thumb="@drawable/selector_discord_switch_thumb"
+                        android:track="@drawable/selector_discord_switch_track"
+                        app:trackTint="@color/selector_switch_track_tint"
+                        app:thumbTint="@null" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Section 5: Nhắc Nhở Trong Ứng Dụng -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Nhắc Nhở Trong Ứng Dụng"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:background="@drawable/bg_rounded_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="DM chưa trả lời từ bạn bè"
+                            android:textColor="@color/discord_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Các thông báo nhắc nhở trả lời sẽ tạm thời đưa DM chưa trả lời từ bạn bè lên đầu danh sách DM của tôi."
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        android:checked="true"
+                        app:switchMinWidth="60dp"
+                        android:switchPadding="0dp"
+                        android:splitTrack="false"
+                        android:thumb="@drawable/selector_discord_switch_thumb"
+                        android:track="@drawable/selector_discord_switch_track"
+                        app:trackTint="@color/selector_switch_track_tint"
+                        app:thumbTint="@null" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "225131628939",
+    "firebase_url": "https://discord-clone-android-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "discord-clone-android",
+    "storage_bucket": "discord-clone-android.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225131628939:android:428d77ab77d60e725e078e",
+        "android_client_info": {
+          "package_name": "com.example.chat_app_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACubbAXL1gacTpxrNkvWSnXcRo2BfPjfk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
