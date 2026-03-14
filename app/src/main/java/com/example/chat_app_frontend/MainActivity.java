@@ -38,7 +38,21 @@ public class MainActivity extends AppCompatActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            
+            // Không set padding cho root layout (v) để background tràn viền
+            // Áp dụng padding trên cho rail và container để tránh bị che bởi status bar
+            View rail = findViewById(R.id.rv_server_rail);
+            View container = findViewById(R.id.fragment_container);
+            rail.setPadding(rail.getPaddingLeft(), systemBars.top, rail.getPaddingRight(), rail.getPaddingBottom());
+            container.setPadding(container.getPaddingLeft(), systemBars.top, container.getPaddingRight(), container.getPaddingBottom());
+            
+            // Áp dụng padding dưới cho BottomNavigationView để tránh bị che bởi gesture bar
+            // Giảm bớt padding một chút để dịch chuyển icon xuống thấp hơn theo yêu cầu
+            View bottomNav = findViewById(R.id.bottom_navigation);
+            int safeBottomPadding = Math.max(0, systemBars.bottom - 12); // Nâng nhẹ lên 1 khoảng an toàn nhỏ
+            bottomNav.setPadding(bottomNav.getPaddingLeft(), bottomNav.getPaddingTop(), 
+                               bottomNav.getPaddingRight(), safeBottomPadding);
+            
             return insets;
         });
 
