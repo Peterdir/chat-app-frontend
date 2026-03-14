@@ -23,20 +23,20 @@
 
         <activity
             android:name=".ui.SplashActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Splash"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name=".ui.PrivateCallActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Chatappfrontend">
+            android:theme="@style/Theme.Splash"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.PrivateCallActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Chatappfrontend" />
 
         <activity android:name=".ui.MainActivity" android:exported="false" />
         <activity android:name=".ui.OnboardingActivity" android:exported="false" android:screenOrientation="portrait" android:theme="@style/Theme.Splash" />
