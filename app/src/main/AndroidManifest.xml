@@ -168,6 +168,11 @@
             android:exported="false"
             android:theme="@style/Theme.Chatappfrontend" />
 
+        <activity
+            android:name=".ui.EditServerProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Chatappfrontend" />
+
         <!-- Friend system screens -->
         <activity
             android:name=".ui.AddFriendActivity"

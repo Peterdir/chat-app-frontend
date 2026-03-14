@@ -3,27 +3,24 @@ package com.example.chat_app_frontend.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.chat_app_frontend.R;
 import com.google.android.material.tabs.TabLayout;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class EditServerProfileActivity extends AppCompatActivity {
 
     private TabLayout tabLayout;
     private ImageView btnBack;
-    private TextView btnSave;
-    private View btnNitroPreview;
-    private View shimmerNitroPreview;
+    private TextView tvSave;
+    private View btnGetNitro;
+    private View shimmerNitro;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_profile);
+        setContentView(R.layout.activity_edit_server_profile);
 
         initViews();
         setupTabs();
@@ -36,14 +33,14 @@ public class EditProfileActivity extends AppCompatActivity {
     private void initViews() {
         tabLayout = findViewById(R.id.tab_layout);
         btnBack = findViewById(R.id.btn_back);
-        btnSave = findViewById(R.id.btn_save);
-        btnNitroPreview = findViewById(R.id.btn_nitro_preview);
-        shimmerNitroPreview = findViewById(R.id.shimmer_nitro_preview);
+        tvSave = findViewById(R.id.tv_save);
+        btnGetNitro = findViewById(R.id.btn_get_nitro);
+        shimmerNitro = findViewById(R.id.shimmer_nitro);
     }
 
     private void setupTabs() {
-        // Mặc định chọn tab thứ 1: Hồ Sơ Chính (index 0)
-        TabLayout.Tab targetTab = tabLayout.getTabAt(0);
+        // Mặc định chọn tab thứ 2: Hồ Sơ Theo Máy Chủ (index 1)
+        TabLayout.Tab targetTab = tabLayout.getTabAt(1);
         if (targetTab != null) {
             targetTab.select();
         }
@@ -51,9 +48,9 @@ public class EditProfileActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 1) {
-                    // Chuyển sang màn hình EditServerProfileActivity (Hồ Sơ Theo Máy Chủ)
-                    Intent intent = new Intent(EditProfileActivity.this, EditServerProfileActivity.class);
+                if (tab.getPosition() == 0) {
+                    // Chuyển sang màn hình EditProfileActivity (Hồ Sơ Chính)
+                    Intent intent = new Intent(EditServerProfileActivity.this, EditProfileActivity.class);
                     startActivity(intent);
                     finish(); // Kết thúc màn hình hiện tại để tránh chồng chất
                 }
@@ -68,23 +65,10 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
-        }
-
-        if (btnSave != null) {
-            btnSave.setOnClickListener(v -> finish());
-        }
-
-        // Clear name button
-        View btnClearName = findViewById(R.id.btn_clear_name);
-        EditText etDisplayName = findViewById(R.id.et_display_name);
-        if (btnClearName != null && etDisplayName != null) {
-            btnClearName.setOnClickListener(v -> etDisplayName.setText(""));
-        }
-
-        if (btnNitroPreview != null) {
-            btnNitroPreview.setOnClickListener(v -> {
+        btnBack.setOnClickListener(v -> finish());
+        
+        if (btnGetNitro != null) {
+            btnGetNitro.setOnClickListener(v -> {
                 Intent intent = new Intent(this, NitroActivity.class);
                 startActivity(intent);
             });
@@ -92,30 +76,31 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void startShimmerAnimation() {
-        if (btnNitroPreview != null && shimmerNitroPreview != null) {
+        if (btnGetNitro != null && shimmerNitro != null) {
             Runnable shimmerRunnable = new Runnable() {
                 @Override
                 public void run() {
                     if (isDestroyed() || isFinishing()) return;
 
-                    shimmerNitroPreview.setVisibility(View.VISIBLE);
-                    shimmerNitroPreview.setTranslationX(-150f);
+                    shimmerNitro.setVisibility(View.VISIBLE);
+                    shimmerNitro.setTranslationX(-150f);
 
-                    btnNitroPreview.post(() -> {
-                        float endX = btnNitroPreview.getWidth() + 150f;
-                        shimmerNitroPreview.animate()
+                    // Lấy độ rộng của nút sau khi đã layout xong
+                    btnGetNitro.post(() -> {
+                        float endX = btnGetNitro.getWidth() + 150f;
+                        shimmerNitro.animate()
                                 .translationX(endX)
                                 .setDuration(1500)
                                 .withEndAction(() -> {
-                                    shimmerNitroPreview.setVisibility(View.INVISIBLE);
-                                    shimmerNitroPreview.setTranslationX(-150f);
-                                    shimmerNitroPreview.postDelayed(this, 3000);
+                                    shimmerNitro.setVisibility(View.INVISIBLE);
+                                    shimmerNitro.setTranslationX(-150f);
+                                    shimmerNitro.postDelayed(this, 3000); // Lặp lại sau 3 giây
                                 })
                                 .start();
                     });
                 }
             };
-            shimmerNitroPreview.postDelayed(shimmerRunnable, 1000);
+            shimmerNitro.postDelayed(shimmerRunnable, 1000);
         }
     }
 }
