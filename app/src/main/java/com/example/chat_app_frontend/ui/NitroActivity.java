@@ -58,7 +58,13 @@ public class NitroActivity extends AppCompatActivity {
 
         View btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
+//            btnBack.setOnClickListener(v -> finish());
+
+            // Test sever setting
+            btnBack.setOnClickListener(v -> {
+                Intent intent = new Intent(NitroActivity.this, ServerSettingsActivity.class);
+                startActivity(intent);
+            });
         }
 
 
