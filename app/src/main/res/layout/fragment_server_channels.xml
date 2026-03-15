@@ -12,19 +12,33 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="#1E1F22"
-        android:paddingBottom="8dp"
+        android:paddingBottom="4dp"
         android:elevation="2dp">
 
-        <TextView
-            android:id="@+id/tv_server_name"
+        <LinearLayout
+            android:id="@+id/layout_server_header"
             android:layout_width="match_parent"
             android:layout_height="56dp"
+            android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="0dp"
-            android:text="Server Name"
-            android:textColor="@color/discord_text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <TextView
+                android:id="@+id/tv_server_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Server Name"
+                android:textColor="@color/discord_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:drawableEnd="@drawable/ic_chevron_right"
+                android:drawablePadding="4dp"
+                app:drawableTint="@color/discord_text_secondary" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -79,7 +93,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingTop="8dp"
+        android:paddingTop="0dp"
         android:clipToPadding="false" />
 
 </LinearLayout>

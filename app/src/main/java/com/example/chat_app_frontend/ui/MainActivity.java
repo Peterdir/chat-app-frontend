@@ -32,16 +32,17 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView      rvServerRail;
-    private ServerAdapter     serverAdapter;
-    private FriendRepository  friendRepo;
+    private RecyclerView rvServerRail;
+    private ServerAdapter serverAdapter;
+    private FriendRepository friendRepo;
     private ValueEventListener friendRequestListener;
     private final Set<String> knownSenderIds = new HashSet<>();
-    private boolean           firstLoad      = true;
+    private boolean firstLoad = true;
 
-    private final ActivityResultLauncher<String> notifPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                // Người dùng đã chọn Allow hoặc Deny — listener đã chạy rồi, không cần làm gì thêm
+    private final ActivityResultLauncher<String> notifPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                // Người dùng đã chọn Allow hoặc Deny — listener đã chạy rồi, không cần làm gì
+                // thêm
             });
 
     @Override
@@ -58,13 +59,14 @@ public class MainActivity extends AppCompatActivity {
 
         setupServerRail();
 
-        // Tạo notification channel cho lời mời kết bạn (cần gọi trước khi hiện notification)
+        // Tạo notification channel cho lời mời kết bạn (cần gọi trước khi hiện
+        // notification)
         FriendNotificationHelper.createNotificationChannel(this);
 
         // Xin quyền POST_NOTIFICATIONS trên Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
         }
@@ -79,9 +81,14 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
-                // Hiển thị lại server rail + DM fragment
+                // Hiển thị lại server rail và fragment tương ứng với lựa chọn hiện tại
                 rvServerRail.setVisibility(View.VISIBLE);
-                loadDMFragment();
+                Server selectedServer = serverAdapter.getSelectedServer();
+                if (selectedServer != null && !selectedServer.getId().equals("0")) {
+                    loadServerFragment(selectedServer.getName());
+                } else {
+                    loadDMFragment();
+                }
                 return true;
             } else if (id == R.id.nav_notifications) {
                 rvServerRail.setVisibility(View.GONE);
@@ -119,11 +126,14 @@ public class MainActivity extends AppCompatActivity {
                 firstLoad = false;
                 knownSenderIds.clear();
                 for (FriendRequest req : list) {
-                    if (req.getSenderId() != null) knownSenderIds.add(req.getSenderId());
+                    if (req.getSenderId() != null)
+                        knownSenderIds.add(req.getSenderId());
                 }
             }
+
             @Override
-            public void onFailure(String error) {}
+            public void onFailure(String error) {
+            }
         });
     }
 

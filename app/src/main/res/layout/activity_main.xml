@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/discord_server_rail_bg"
-    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
     <!-- Server Rail (Left Sidebar) -->
@@ -15,7 +14,7 @@
         android:layout_width="72dp"
         android:layout_height="0dp"
         android:background="@color/discord_server_rail_bg"
-        android:paddingTop="12dp"
+        android:paddingTop="0dp"
         android:clipToPadding="false"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,6 +40,9 @@
         android:background="@color/discord_server_rail_bg"
         app:itemIconTint="@color/bottom_nav_color"
         app:itemTextColor="@color/bottom_nav_color"
+        app:itemIconSize="24dp"
+        app:labelVisibilityMode="labeled"
+        style="@style/Widget.App.BottomNavigationView"
         app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
