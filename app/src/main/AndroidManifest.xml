@@ -23,14 +23,21 @@
 
         <activity
             android:name=".ui.SplashActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.Splash"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.ServerMenuActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Chatappfrontend">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
 
         <activity
             android:name=".ui.PrivateCallActivity"
@@ -172,22 +179,6 @@
 <!--            android:screenOrientation="portrait"-->
 <!--            android:theme="@style/Theme.Chatappfrontend" />-->
 
-<!--        &lt;!&ndash; Main app screen – SỬA Ở ĐÂY: Thêm .ui. vào trước tên class &ndash;&gt;-->
-<!--        <activity-->
-<!--            android:name=".ui.MainActivity"-->
-<!--            android:exported="false" />-->
-
-<!--        <activity-->
-<!--            android:name=".ui.AccountSettingsActivity"-->
-<!--            android:exported="false"-->
-<!--            android:theme="@style/Theme.Chatappfrontend" />-->
-
-<!--        <activity-->
-<!--            android:name=".ui.NotificationSettingsActivity"-->
-<!--            android:exported="false"-->
-<!--            android:screenOrientation="portrait"-->
-<!--            android:theme="@style/Theme.Chatappfrontend" />-->
-
 <!--        <activity-->
 <!--            android:name=".ui.EditUsernameActivity"-->
 <!--            android:exported="false"-->
@@ -195,43 +186,17 @@
 
 <!--        <activity-->
 <!--            android:name=".ui.EditProfileActivity"-->
+
 <!--            android:exported="false"-->
 <!--            android:theme="@style/Theme.Chatappfrontend" />-->
 
 <!--        <activity-->
-<!--            android:name=".ui.ChangePasswordActivity"-->
+
 <!--            android:exported="false"-->
 <!--            android:theme="@style/Theme.Chatappfrontend" />-->
 
 <!--        <activity-->
-<!--            android:name=".ui.AppearanceSettingsActivity"-->
-<!--            android:exported="false"-->
-<!--            android:theme="@style/Theme.Chatappfrontend" />-->
 
-<!--        <activity-->
-<!--            android:name=".ui.VoiceChannelActivity"-->
-<!--            android:exported="false"-->
-<!--            android:supportsPictureInPicture="true"-->
-<!--            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"-->
-<!--            android:theme="@style/Theme.Chatappfrontend" />-->
-<!--        <activity-->
-<!--            android:name=".ui.ChannelSettingsActivity"-->
-<!--            android:exported="false"/>-->
-
-<!--        <activity-->
-<!--            android:name=".ui.ShopActivity"-->
-<!--            android:exported="false"-->
-<!--            android:theme="@style/Theme.Chatappfrontend" />-->
-
-<!--        &lt;!&ndash; Server channel chat screen &ndash;&gt;-->
-<!--        <activity-->
-<!--            android:name=".ui.ServerChatActivity"-->
-<!--            android:exported="false"-->
-<!--            android:screenOrientation="portrait"-->
-<!--            android:windowSoftInputMode="adjustResize"-->
-<!--            android:theme="@style/Theme.Chatappfrontend" />-->
-
-<!--        <activity-->
 <!--            android:name=".ui.NitroActivity"-->
 <!--            android:exported="false"-->
 <!--            android:theme="@style/Theme.Chatappfrontend" />-->
