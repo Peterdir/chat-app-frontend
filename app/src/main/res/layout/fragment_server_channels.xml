@@ -65,6 +65,7 @@
 
             <!-- Add Member Button -->
             <ImageView
+                android:id="@+id/btn_add_member"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:src="@drawable/ic_person_add" 

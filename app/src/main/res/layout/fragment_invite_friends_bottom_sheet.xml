@@ -17,6 +17,7 @@
 
     <!-- Title -->
     <TextView
+        android:id="@+id/tv_invite_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -42,10 +43,14 @@
 
             <!-- Item 1: Chia Sẻ -->
             <LinearLayout
+                android:id="@+id/action_share_invite"
                 android:layout_width="72dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless">
                 <ImageView
                     android:layout_width="56dp"
                     android:layout_height="56dp"
@@ -66,11 +71,15 @@
 
             <!-- Item 2: Sao Chép Link -->
             <LinearLayout
+                android:id="@+id/action_copy_link"
                 android:layout_width="72dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:layout_marginStart="8dp">
+                android:layout_marginStart="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless">
                 <ImageView
                     android:layout_width="56dp"
                     android:layout_height="56dp"
@@ -209,17 +218,19 @@
             app:tint="#A0A0A0" />
 
         <EditText
+            android:id="@+id/et_search_friends"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginStart="8dp"
             android:background="@null"
-            android:hint="Mời bạn bè vào Code lò"
+            android:hint="Tìm bạn bè để mời"
             android:textColorHint="#A0A0A0"
             android:textColor="#FFFFFF"
             android:textSize="14sp" />
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tv_invite_note"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"

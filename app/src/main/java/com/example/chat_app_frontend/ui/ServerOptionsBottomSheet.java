@@ -19,12 +19,15 @@ import com.example.chat_app_frontend.R;
 
 public class ServerOptionsBottomSheet extends DialogFragment {
 
+    private static final String ARG_SERVER_ID = "server_id";
     private static final String ARG_SERVER_NAME = "server_name";
+    private String serverId;
     private String serverName;
 
-    public static ServerOptionsBottomSheet newInstance(String serverName) {
+    public static ServerOptionsBottomSheet newInstance(String serverId, String serverName) {
         ServerOptionsBottomSheet fragment = new ServerOptionsBottomSheet();
         Bundle args = new Bundle();
+        args.putString(ARG_SERVER_ID, serverId);
         args.putString(ARG_SERVER_NAME, serverName);
         fragment.setArguments(args);
         return fragment;
@@ -34,6 +37,7 @@ public class ServerOptionsBottomSheet extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
+            serverId = getArguments().getString(ARG_SERVER_ID, "");
             serverName = getArguments().getString(ARG_SERVER_NAME);
         }
         setStyle(STYLE_NORMAL, R.style.FloatingServerMenuTheme);
@@ -57,7 +61,14 @@ public class ServerOptionsBottomSheet extends DialogFragment {
         // Setup click listeners
         view.findViewById(R.id.option_mark_as_read).setOnClickListener(v -> dismiss());
         view.findViewById(R.id.option_notifications).setOnClickListener(v -> dismiss());
-        
+
+        view.findViewById(R.id.option_invite_friends).setOnClickListener(v -> {
+            dismiss();
+            InviteFriendsBottomSheet inviteSheet = InviteFriendsBottomSheet
+                    .newInstanceForServer(serverId, serverName);
+            inviteSheet.show(getParentFragmentManager(), "InviteFriendsFromServerOptions");
+        });
+
         view.findViewById(R.id.option_more_settings).setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ServerSettingsActivity.class);
             startActivity(intent);

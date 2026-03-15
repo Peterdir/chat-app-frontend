@@ -56,4 +56,10 @@ dependencies {
 
     // Tải ảnh từ URL (avatar)
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    // GIF picker (GIPHY SDK)
+    implementation("com.giphy.sdk:ui:2.4.1")
+
+    // Emoji picker (Jetpack Emoji2)
+    implementation("androidx.emoji2:emoji2-emojipicker:1.5.0")
 }

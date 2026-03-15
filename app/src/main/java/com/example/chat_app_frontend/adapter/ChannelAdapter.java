@@ -27,6 +27,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
     private List<Channel> channelList;
     private Context context;
     private String serverName;
+    private String serverId;
 
     public ChannelAdapter(List<Channel> channelList) {
         this.channelList = channelList;
@@ -34,6 +35,17 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
 
     public void setServerName(String serverName) {
         this.serverName = serverName;
+    }
+
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
+    }
+
+    /** Thay thế toàn bộ danh sách channel và refresh. */
+    public void updateChannels(List<Channel> newChannels) {
+        channelList.clear();
+        channelList.addAll(newChannels);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -143,7 +155,9 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
                 } else {
                     // Only text channels open a chat screen
                     Intent intent = new Intent(context, ServerChatActivity.class);
+                    intent.putExtra(ServerChatActivity.EXTRA_CHANNEL_ID, channel.getId());
                     intent.putExtra(ServerChatActivity.EXTRA_CHANNEL_NAME, channel.getName());
+                    intent.putExtra(ServerChatActivity.EXTRA_SERVER_ID, serverId != null ? serverId : "");
                     intent.putExtra(ServerChatActivity.EXTRA_SERVER_NAME, serverName != null ? serverName : "");
                     context.startActivity(intent);
                 }
