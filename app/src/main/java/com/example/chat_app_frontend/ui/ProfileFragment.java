@@ -13,8 +13,21 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.model.Decoration;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.repository.DecorationRepository;
+import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.utils.FirebaseManager;
+import com.google.firebase.auth.FirebaseUser;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.bumptech.glide.Glide;
 
 public class ProfileFragment extends Fragment {
+
+    private ImageView ivAvatar, avatarDecoration;
+    private TextView tvDisplayName, tvUsername;
+    private View statusDot;
 
     @Nullable
     @Override
@@ -22,6 +35,7 @@ public class ProfileFragment extends Fragment {
             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
+        initViews(view);
         setupCloseImproveCard(view);
         setupEditProfileButton(view);
         setupStoreNavigation(view);
@@ -30,7 +44,68 @@ public class ProfileFragment extends Fragment {
         setupAvatarClick(view);
         animateProfileEntrance(view);
 
+        loadUserData();
+
         return view;
+    }
+
+    private void initViews(View view) {
+        ivAvatar = view.findViewById(R.id.iv_avatar);
+        avatarDecoration = view.findViewById(R.id.avatar_decoration);
+        tvDisplayName = view.findViewById(R.id.tv_display_name);
+        tvUsername = view.findViewById(R.id.tv_username);
+        statusDot = view.findViewById(R.id.status_dot);
+    }
+
+    private void loadUserData() {
+        FirebaseUser fbUser = FirebaseManager.getAuth().getCurrentUser();
+        if (fbUser == null) return;
+
+        // Sử dụng observeUser để cập nhật realtime khi có thay đổi từ EditProfileActivity
+        UserRepository.getInstance().observeUser(fbUser.getUid(), new UserRepository.OnUserLoadedListener() {
+            @Override
+            public void onUserLoaded(User user) {
+                if (getContext() == null) return;
+
+                // Cập nhật tên
+                if (tvDisplayName != null) tvDisplayName.setText(user.getDisplayName());
+                if (tvUsername != null) tvUsername.setText(user.getUserName());
+
+                // Cập nhật Avatar
+                if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
+                    Glide.with(ProfileFragment.this)
+                         .load(user.getAvatarUrl())
+                         .placeholder(R.drawable.avatar5)
+                         .into(ivAvatar);
+                }
+
+                // Cập nhật Khung trang trí
+                updateDecoration(user.getAvatarDecorationId());
+            }
+
+            @Override
+            public void onUserNotFound() {}
+
+            @Override
+            public void onFailure(String error) {}
+        });
+    }
+
+    private void updateDecoration(String decorationId) {
+        if (avatarDecoration == null) return;
+
+        Decoration decor = DecorationRepository.getInstance().findDecorationById(decorationId);
+        if (decor != null && decor.getType() != Decoration.Type.NONE && decor.getType() != Decoration.Type.STORE) {
+            avatarDecoration.setVisibility(View.VISIBLE);
+            avatarDecoration.setImageResource(decor.getDrawableResId());
+            
+            // Dừng animation xoay nếu là khung đặc biệt (tùy nhu cầu)
+            // Hoặc giữ lại nếu muốn xoay tất cả khung
+        } else {
+            // Quay lại khung mặc định hoặc ẩn đi
+            avatarDecoration.setImageResource(R.drawable.bg_avatar_decoration_ring);
+            avatarDecoration.setVisibility(View.VISIBLE); // Giữ hiển thị ring mặc định của thiết kế
+        }
     }
 
     private void setupAvatarClick(View view) {
