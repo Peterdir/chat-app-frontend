@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -288,7 +289,7 @@ public class PrivateCallActivity extends AppCompatActivity {
                 if (vRemoteSpeakingBorder != null) {
                     vRemoteSpeakingBorder.setVisibility(remoteSpeaking ? View.VISIBLE : View.GONE);
                 }
-                
+
                 // Also update global state
                 VoiceStateManager.getInstance().setSpeaking(localSpeaking);
             });
