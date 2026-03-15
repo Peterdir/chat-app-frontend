@@ -14,8 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Message;
+import com.bumptech.glide.Glide;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -34,6 +37,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     };
 
     private final List<Message> messages;
+        private static final Pattern GIPHY_PAYLOAD_PATTERN =
+            Pattern.compile("^\\[GIF\\]\\s+giphy://([A-Za-z0-9]+)$");
 
     public MessageAdapter(List<Message> messages) {
         this.messages = messages;
@@ -78,6 +83,15 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public int getItemCount() {
         return messages.size();
+    }
+
+    private static String extractGiphyGifUrl(String content) {
+        if (content == null) return null;
+        Matcher matcher = GIPHY_PAYLOAD_PATTERN.matcher(content.trim());
+        if (!matcher.matches()) return null;
+        String mediaId = matcher.group(1);
+        if (mediaId == null || mediaId.isEmpty()) return null;
+        return "https://media.giphy.com/media/" + mediaId + "/giphy.gif";
     }
 
     // ---- ViewHolders ----
@@ -151,19 +165,29 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvSenderName.setText(msg.getSenderName());
             tvTimestamp.setText(msg.getTimestamp());
 
+            String gifUrl = extractGiphyGifUrl(msg.getContent());
+
             // Content
-            if (msg.getContent() != null && !msg.getContent().isEmpty()) {
+            if (gifUrl == null && msg.getContent() != null && !msg.getContent().isEmpty()) {
                 tvMessageContent.setText(msg.getContent());
                 tvMessageContent.setVisibility(View.VISIBLE);
             } else {
                 tvMessageContent.setVisibility(View.GONE);
             }
 
-            // Image
-            if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
-                imgAttachment.setImageResource(msg.getImageResId());
+            // Image / GIF
+            if (gifUrl != null) {
                 cvImageAttachment.setVisibility(View.VISIBLE);
+                Glide.with(imgAttachment)
+                        .asGif()
+                        .load(gifUrl)
+                        .into(imgAttachment);
+            } else if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
+                cvImageAttachment.setVisibility(View.VISIBLE);
+                Glide.with(imgAttachment).clear(imgAttachment);
+                imgAttachment.setImageResource(msg.getImageResId());
             } else {
+                Glide.with(imgAttachment).clear(imgAttachment);
                 cvImageAttachment.setVisibility(View.GONE);
             }
 
@@ -191,17 +215,27 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         void bind(Message msg) {
-            if (msg.getContent() != null && !msg.getContent().isEmpty()) {
+            String gifUrl = extractGiphyGifUrl(msg.getContent());
+
+            if (gifUrl == null && msg.getContent() != null && !msg.getContent().isEmpty()) {
                 tvMessageContent.setText(msg.getContent());
                 tvMessageContent.setVisibility(View.VISIBLE);
             } else {
                 tvMessageContent.setVisibility(View.GONE);
             }
 
-            if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
-                imgAttachment.setImageResource(msg.getImageResId());
+            if (gifUrl != null) {
                 cvImageAttachment.setVisibility(View.VISIBLE);
+                Glide.with(imgAttachment)
+                        .asGif()
+                        .load(gifUrl)
+                        .into(imgAttachment);
+            } else if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
+                cvImageAttachment.setVisibility(View.VISIBLE);
+                Glide.with(imgAttachment).clear(imgAttachment);
+                imgAttachment.setImageResource(msg.getImageResId());
             } else {
+                Glide.with(imgAttachment).clear(imgAttachment);
                 cvImageAttachment.setVisibility(View.GONE);
             }
 

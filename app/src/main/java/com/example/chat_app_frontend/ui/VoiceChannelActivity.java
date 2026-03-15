@@ -267,7 +267,7 @@ public class VoiceChannelActivity extends AppCompatActivity {
         });
         btnAddUserTop.setOnClickListener(v -> {
             animateClick(v);
-            InviteFriendsBottomSheet inviteSheet = new InviteFriendsBottomSheet(channelName);
+            InviteFriendsBottomSheet inviteSheet = InviteFriendsBottomSheet.newInstanceForChannel(channelName);
             inviteSheet.show(getSupportFragmentManager(), "InviteSheet");
         });
 
@@ -275,7 +275,8 @@ public class VoiceChannelActivity extends AppCompatActivity {
         if (bannerAddPeople != null) {
             bannerAddPeople.setOnClickListener(v -> {
                 animateClick(v);
-                InviteFriendsBottomSheet inviteSheet = new InviteFriendsBottomSheet(channelName);
+                InviteFriendsBottomSheet inviteSheet = InviteFriendsBottomSheet
+                        .newInstanceForChannel(channelName);
                 inviteSheet.show(getSupportFragmentManager(), "InviteSheet");
             });
         }

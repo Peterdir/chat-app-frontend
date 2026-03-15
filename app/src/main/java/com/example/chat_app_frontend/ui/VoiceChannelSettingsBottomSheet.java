@@ -96,7 +96,8 @@ public class VoiceChannelSettingsBottomSheet extends BottomSheetDialogFragment {
                 // Đóng sheet hiện tại (VoiceChannelSettings)
                 dismiss();
                 // Mở sheet Invite Friends
-                InviteFriendsBottomSheet inviteSheet = new InviteFriendsBottomSheet(channelName);
+                InviteFriendsBottomSheet inviteSheet = InviteFriendsBottomSheet
+                        .newInstanceForChannel(channelName);
                 inviteSheet.show(requireActivity().getSupportFragmentManager(), "InviteSheet");
             });
         }
