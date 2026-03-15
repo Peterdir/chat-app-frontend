@@ -19,14 +19,20 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
 
     private List<Server> serverList;
     private OnServerClickListener listener;
+    private OnServerLongClickListener longClickListener;
 
     public interface OnServerClickListener {
         void onServerClick(Server server); // Hàm sẽ được gọi khi có user click
     }
 
-    public ServerAdapter(List<Server> serverList, OnServerClickListener listener) {
+    public interface OnServerLongClickListener {
+        void onServerLongClick(Server server);
+    }
+
+    public ServerAdapter(List<Server> serverList, OnServerClickListener listener, OnServerLongClickListener longClickListener) {
         this.serverList = serverList;
         this.listener = listener;
+        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -39,7 +45,7 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
     @Override
     public void onBindViewHolder(@NonNull ServerViewHolder holder, int position) {
         Server server = serverList.get(position);
-        holder.bind(server, listener);
+        holder.bind(server, listener, longClickListener);
     }
 
     @Override
@@ -61,7 +67,7 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
             cardView = itemView.findViewById(R.id.card_server_icon);
         }
 
-        public void bind(final Server server, final OnServerClickListener listener) {
+        public void bind(final Server server, final OnServerClickListener listener, final OnServerLongClickListener longClickListener) {
             // Set icon or initial
             if (server.getIconResId() != 0) {
                 imgServerIcon.setImageResource(server.getIconResId());
@@ -105,7 +111,15 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
             }
 
             itemView.setOnClickListener(v -> listener.onServerClick(server));
+            itemView.setOnLongClickListener(v -> {
+                if (longClickListener != null) {
+                    longClickListener.onServerLongClick(server);
+                    return true;
+                }
+                return false;
+            });
         }
+
 
         private float dpToPx(float dp) {
             return android.util.TypedValue.applyDimension(

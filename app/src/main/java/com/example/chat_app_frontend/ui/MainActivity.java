@@ -176,6 +176,11 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 loadServerFragment(server.getName());
             }
+        }, server -> {
+            if (!server.getId().equals("0")) {
+                ServerOptionsBottomSheet bottomSheet = ServerOptionsBottomSheet.newInstance(server.getName());
+                bottomSheet.show(getSupportFragmentManager(), "ServerOptionsBottomSheet");
+            }
         });
 
         // Select DM by default
