@@ -27,9 +27,26 @@ public class ProfileFragment extends Fragment {
         setupStoreNavigation(view);
         setupSettingsNavigation(view);
         setupFriendsNavigation(view);
+        setupAvatarClick(view);
         animateProfileEntrance(view);
 
         return view;
+    }
+
+    private void setupAvatarClick(View view) {
+        View avatarContainer = view.findViewById(R.id.avatar_container);
+        if (avatarContainer != null) {
+            avatarContainer.setOnClickListener(v -> {
+                // Hiệu ứng click nhẹ cho avatar
+                v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(80).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                    
+                    // Hiển thị BottomSheet thay đổi trạng thái
+                    StatusBottomSheet statusBottomSheet = new StatusBottomSheet();
+                    statusBottomSheet.show(getParentFragmentManager(), "StatusBottomSheet");
+                }).start();
+            });
+        }
     }
 
     private void setupFriendsNavigation(View view) {

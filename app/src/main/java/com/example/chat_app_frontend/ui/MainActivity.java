@@ -33,6 +33,7 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rvServerRail;
+    private View serverSidebar;
     private ServerAdapter serverAdapter;
     private FriendRepository friendRepo;
     private ValueEventListener friendRequestListener;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        serverSidebar = findViewById(R.id.server_sidebar);
         setupServerRail();
 
         // Tạo notification channel cho lời mời kết bạn (cần gọi trước khi hiện
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
                 // Hiển thị lại server rail và fragment tương ứng với lựa chọn hiện tại
-                rvServerRail.setVisibility(View.VISIBLE);
+                serverSidebar.setVisibility(View.VISIBLE);
                 Server selectedServer = serverAdapter.getSelectedServer();
                 if (selectedServer != null && !selectedServer.getId().equals("0")) {
                     loadServerFragment(selectedServer.getName());
@@ -91,14 +93,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             } else if (id == R.id.nav_notifications) {
-                rvServerRail.setVisibility(View.GONE);
+                serverSidebar.setVisibility(View.GONE);
                 getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                         .replace(R.id.fragment_container, new NotificationsFragment())
                         .commit();
                 return true;
             } else if (id == R.id.nav_profile) {
-                rvServerRail.setVisibility(View.GONE);
+                serverSidebar.setVisibility(View.GONE);
                 getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                         .replace(R.id.fragment_container, new ProfileFragment())
@@ -106,6 +108,12 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
             return false;
+        });
+
+        // Nút thêm máy chủ (+)
+        findViewById(R.id.btn_add_server).setOnClickListener(v -> {
+            AddServerBottomSheet addServerBottomSheet = new AddServerBottomSheet();
+            addServerBottomSheet.show(getSupportFragmentManager(), "AddServerBottomSheet");
         });
     }
 

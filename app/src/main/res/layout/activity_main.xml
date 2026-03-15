@@ -9,17 +9,56 @@
     tools:context=".MainActivity">
 
     <!-- Server Rail (Left Sidebar) -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_server_rail"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/server_sidebar"
         android:layout_width="72dp"
         android:layout_height="0dp"
         android:background="@color/discord_server_rail_bg"
-        android:paddingTop="0dp"
-        android:clipToPadding="false"
+        android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_server_rail" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_server_rail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingTop="0dp"
+                android:clipToPadding="false"
+                tools:listitem="@layout/item_server_rail" />
+
+            <!-- Add Server Button -->
+            <FrameLayout
+                android:id="@+id/btn_add_server"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    app:cardCornerRadius="24dp"
+                    app:cardBackgroundColor="#2B2D31"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_plus_green" />
+                </androidx.cardview.widget.CardView>
+            </FrameLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- Navigation/Content Pane (Right Sidebar) -->
     <FrameLayout
@@ -29,7 +68,7 @@
         android:background="@color/discord_sidebar_bg"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/rv_server_rail"
+        app:layout_constraintStart_toEndOf="@id/server_sidebar"
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Bottom Navigation Bar -->

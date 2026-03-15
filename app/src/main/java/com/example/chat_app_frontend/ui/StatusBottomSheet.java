@@ -56,8 +56,6 @@ public class StatusBottomSheet extends BottomSheetDialogFragment {
 
         selectedRadio.setChecked(true);
 
-        Toast.makeText(getContext(), "Đã đổi thành: " + statusName, Toast.LENGTH_SHORT).show();
-
         dismiss();
     }
 }
