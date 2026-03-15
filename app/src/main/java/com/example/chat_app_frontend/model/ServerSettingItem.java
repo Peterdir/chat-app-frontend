@@ -8,11 +8,13 @@ public class ServerSettingItem {
     public String title;
     public int iconRes;
 
+    // Constructor
     public ServerSettingItem(String title) {
         this.type = TYPE_HEADER;
         this.title = title;
     }
 
+    // Constructor
     public ServerSettingItem(String title, int iconRes) {
         this.type = TYPE_ITEM;
         this.title = title;

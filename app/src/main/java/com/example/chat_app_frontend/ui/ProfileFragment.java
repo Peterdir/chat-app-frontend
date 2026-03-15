@@ -26,9 +26,43 @@ public class ProfileFragment extends Fragment {
         setupEditProfileButton(view);
         setupStoreNavigation(view);
         setupSettingsNavigation(view);
+        setupFriendsNavigation(view);
+        setupAvatarClick(view);
         animateProfileEntrance(view);
 
         return view;
+    }
+
+    private void setupAvatarClick(View view) {
+        View avatarContainer = view.findViewById(R.id.avatar_container);
+        if (avatarContainer != null) {
+            avatarContainer.setOnClickListener(v -> {
+                // Hiệu ứng click nhẹ cho avatar
+                v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(80).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                    
+                    // Hiển thị BottomSheet thay đổi trạng thái
+                    StatusBottomSheet statusBottomSheet = new StatusBottomSheet();
+                    statusBottomSheet.show(getParentFragmentManager(), "StatusBottomSheet");
+                }).start();
+            });
+        }
+    }
+
+    private void setupFriendsNavigation(View view) {
+        View cardFriends = view.findViewById(R.id.card_friends);
+        if (cardFriends != null) {
+            cardFriends.setOnClickListener(v -> {
+                v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(80).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                    Intent intent = new Intent(getActivity(), FriendListActivity.class);
+                    startActivity(intent);
+                    if (getActivity() != null) {
+                        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    }
+                }).start();
+            });
+        }
     }
 
     private void setupSettingsNavigation(View view) {
@@ -38,12 +72,12 @@ public class ProfileFragment extends Fragment {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
 
-                    // Chuyển sang SettingsFragment
+                    // Chuyển sang UserSettingsFragment
                     if (getActivity() != null) {
                         getActivity().getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
                                         android.R.anim.fade_in, android.R.anim.fade_out)
-                                .replace(R.id.fragment_container, new SettingsFragment())
+                                .replace(R.id.fragment_container, new UserSettingsFragment())
                                 .addToBackStack(null)
                                 .commit();
                     }
@@ -154,10 +188,12 @@ public class ProfileFragment extends Fragment {
                 v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
                     v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
 
-                    Intent intent = new Intent(getActivity(), NitroActivity.class);
-                    startActivity(intent);
-                    if (getActivity() != null) {
-                        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    if (buttonId == R.id.btn_nitro_header || buttonId == R.id.btn_nitro) {
+                        Intent intent = new Intent(getActivity(), NitroActivity.class);
+                        startActivity(intent);
+                        if (getActivity() != null) {
+                            getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        }
                     }
                 }).start();
             });

@@ -9,7 +9,7 @@
     android:background="?attr/selectableItemBackground">
 
     <ImageView
-        android:id="@+id/img_icon"
+        android:id="@+id/img_server_icon"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_settings"
@@ -18,7 +18,7 @@
         android:contentDescription="icon"/>
 
     <TextView
-        android:id="@+id/tv_title"
+        android:id="@+id/tv_server_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"

@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/discord_background"
-    tools:ignore="HardcodedText">
+    android:background="@color/discord_background">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -18,15 +17,17 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="12dp"
+            android:layout_marginTop="25dp"
             android:src="@drawable/ic_arrow_back"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_gravity="center_vertical|start"
+            android:layout_gravity="top|start"
             app:tint="@color/white"
             android:contentDescription="Đóng" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:text="Cài đặt máy chủ"
             android:textColor="@color/white"
             android:textSize="17sp"

@@ -1,10 +1,15 @@
 package com.example.chat_app_frontend.ui;
 
+import android.Manifest;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -13,16 +18,33 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.adapter.ServerAdapter;
+import com.example.chat_app_frontend.model.FriendRequest;
 import com.example.chat_app_frontend.model.Server;
+import com.example.chat_app_frontend.repository.FriendRepository;
+import com.example.chat_app_frontend.utils.FriendNotificationHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rvServerRail;
+    private View serverSidebar;
     private ServerAdapter serverAdapter;
+    private FriendRepository friendRepo;
+    private ValueEventListener friendRequestListener;
+    private final Set<String> knownSenderIds = new HashSet<>();
+    private boolean firstLoad = true;
+
+    private final ActivityResultLauncher<String> notifPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                // Người dùng đã chọn Allow hoặc Deny — listener đã chạy rồi, không cần làm gì
+                // thêm
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +58,23 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        serverSidebar = findViewById(R.id.server_sidebar);
         setupServerRail();
+
+        // Tạo notification channel cho lời mời kết bạn (cần gọi trước khi hiện
+        // notification)
+        FriendNotificationHelper.createNotificationChannel(this);
+
+        // Xin quyền POST_NOTIFICATIONS trên Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+
+        // Lắng nghe lời mời kết bạn từ bất kỳ màn hình nào
+        startFriendRequestListener();
 
         // Load DM fragment by default
         loadDMFragment();
@@ -45,19 +83,24 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
-                // Hiển thị lại server rail + DM fragment
-                rvServerRail.setVisibility(View.VISIBLE);
-                loadDMFragment();
+                // Hiển thị lại server rail và fragment tương ứng với lựa chọn hiện tại
+                serverSidebar.setVisibility(View.VISIBLE);
+                Server selectedServer = serverAdapter.getSelectedServer();
+                if (selectedServer != null && !selectedServer.getId().equals("0")) {
+                    loadServerFragment(selectedServer.getName());
+                } else {
+                    loadDMFragment();
+                }
                 return true;
             } else if (id == R.id.nav_notifications) {
-                rvServerRail.setVisibility(View.GONE);
+                serverSidebar.setVisibility(View.GONE);
                 getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                         .replace(R.id.fragment_container, new NotificationsFragment())
                         .commit();
                 return true;
             } else if (id == R.id.nav_profile) {
-                rvServerRail.setVisibility(View.GONE);
+                serverSidebar.setVisibility(View.GONE);
                 getSupportFragmentManager().beginTransaction()
                         .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                         .replace(R.id.fragment_container, new ProfileFragment())
@@ -66,6 +109,48 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        // Nút thêm máy chủ (+)
+        findViewById(R.id.btn_add_server).setOnClickListener(v -> {
+            AddServerBottomSheet addServerBottomSheet = new AddServerBottomSheet();
+            addServerBottomSheet.show(getSupportFragmentManager(), "AddServerBottomSheet");
+        });
+    }
+
+    private void startFriendRequestListener() {
+        friendRepo = FriendRepository.getInstance();
+        friendRequestListener = friendRepo.observePendingRequests(new FriendRepository.OnFriendRequestListListener() {
+            @Override
+            public void onLoaded(List<FriendRequest> list) {
+                if (!firstLoad) {
+                    for (FriendRequest req : list) {
+                        String sid = req.getSenderId();
+                        if (sid != null && !knownSenderIds.contains(sid)) {
+                            FriendNotificationHelper.showFriendRequestNotification(
+                                    MainActivity.this, req);
+                        }
+                    }
+                }
+                firstLoad = false;
+                knownSenderIds.clear();
+                for (FriendRequest req : list) {
+                    if (req.getSenderId() != null)
+                        knownSenderIds.add(req.getSenderId());
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (friendRepo != null && friendRequestListener != null) {
+            friendRepo.removePendingListener(friendRequestListener);
+        }
     }
 
     private void setupServerRail() {
