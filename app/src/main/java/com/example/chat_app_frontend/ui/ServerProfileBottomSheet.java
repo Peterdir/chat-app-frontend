@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +48,16 @@ public class ServerProfileBottomSheet extends BottomSheetDialogFragment {
         TextView tvServerName = view.findViewById(R.id.tv_profile_server_name);
         if (tvServerName != null && serverName != null) {
             tvServerName.setText(serverName);
+        }
+
+        // Chỉnh sửa hồ sơ máy chủ
+        View tvEditServerProfile = view.findViewById(R.id.tv_edit_server_profile);
+        if (tvEditServerProfile != null) {
+            tvEditServerProfile.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), EditServerProfileActivity.class);
+                startActivity(intent);
+                dismiss(); // Đóng bottom sheet sau khi mở màn hình mới
+            });
         }
 
         // Ensure the background of the dialog window is transparent

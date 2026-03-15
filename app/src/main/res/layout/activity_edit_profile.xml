@@ -5,12 +5,14 @@
     android:id="@+id/root_edit_profile"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/discord_bg_dark">
+    android:background="@color/discord_bg_dark"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/discord_bg_dark"
+        android:fitsSystemWindows="true"
         app:elevation="0dp"
         app:liftOnScroll="false">
 
