@@ -57,10 +57,10 @@ public class ServerFragment extends Fragment {
         tvServerName = view.findViewById(R.id.tv_server_name);
         tvServerName.setText(serverName);
 
-        // Chuyển hướng đến ServerProfileActivity khi nhấn vào tên server
-        tvServerName.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), ServerProfileActivity.class);
-            startActivity(intent);
+        // Chuyển hướng đến ServerProfileBottomSheet khi nhấn vào tên server
+        view.findViewById(R.id.layout_server_header).setOnClickListener(v -> {
+            ServerProfileBottomSheet bottomSheet = ServerProfileBottomSheet.newInstance(serverName);
+            bottomSheet.show(getChildFragmentManager(), "ServerProfileBottomSheet");
         });
 
         rvChannels = view.findViewById(R.id.rv_channels);

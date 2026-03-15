@@ -20,8 +20,9 @@
     </style>
 
     <!-- Transparent Bottom Sheet Theme -->
-    <style name="TransparentBottomSheetDialogTheme" parent="Theme.Material3.Light.BottomSheetDialog">
+    <style name="TransparentBottomSheetDialogTheme" parent="Theme.Material3.DayNight.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/TransparentBottomSheetStyle</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowSoftInputMode">adjustResize</item>
     </style>
@@ -33,5 +34,16 @@
 
     <style name="CircleImage">
         <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemActiveIndicatorStyle">@style/Widget.App.BottomNavigationView.ActiveIndicator</item>
+        <item name="itemRippleColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.App.BottomNavigationView.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+        <item name="android:width">0dp</item>
+        <item name="android:height">0dp</item>
     </style>
 </resources>
