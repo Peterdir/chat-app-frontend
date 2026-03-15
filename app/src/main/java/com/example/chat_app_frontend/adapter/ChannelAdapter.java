@@ -18,6 +18,7 @@ import com.example.chat_app_frontend.model.Channel;
 import com.example.chat_app_frontend.ui.VoiceChannelActivity;
 import com.example.chat_app_frontend.ui.VoiceChannelPreviewBottomSheet;
 import com.example.chat_app_frontend.ui.ServerChatActivity;
+import com.example.chat_app_frontend.ui.ChannelOptionsBottomSheet;
 
 import java.util.List;
 
@@ -147,7 +148,27 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
                     context.startActivity(intent);
                 }
             });
+
+            // Lắng nghe sự kiện đè lâu (Long Click) để mở BottomSheet tùy chỉnh
+            holder.llNormalState.setOnLongClickListener(v -> {
+                if (context instanceof AppCompatActivity) {
+                    ChannelOptionsBottomSheet bottomSheet = ChannelOptionsBottomSheet.newInstance(channel.getName());
+                    bottomSheet.show(((AppCompatActivity) context).getSupportFragmentManager(), "ChannelOptions");
+                    return true;
+                }
+                return false;
+            });
         }
+
+        // Cũng áp dụng Long Click cho trạng thái đang kết nối (Connected State)
+        holder.llConnectedState.setOnLongClickListener(v -> {
+            if (context instanceof AppCompatActivity) {
+                ChannelOptionsBottomSheet bottomSheet = ChannelOptionsBottomSheet.newInstance(channel.getName());
+                bottomSheet.show(((AppCompatActivity) context).getSupportFragmentManager(), "ChannelOptions");
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
