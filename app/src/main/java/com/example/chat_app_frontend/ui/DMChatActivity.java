@@ -69,6 +69,20 @@ public class DMChatActivity extends AppCompatActivity {
         messageAdapter = new MessageAdapter(messageList);
         rvMessages.setAdapter(messageAdapter);
         rvMessages.scrollToPosition(messageList.size() - 1);
+
+        // Call buttons
+        ImageView btnCall = findViewById(R.id.btn_call);
+        ImageView btnVideoCall = findViewById(R.id.btn_video_call);
+
+        btnCall.setOnClickListener(v -> startPrivateCall(false));
+        btnVideoCall.setOnClickListener(v -> startPrivateCall(true));
+    }
+
+    private void startPrivateCall(boolean isVideo) {
+        android.content.Intent intent = new android.content.Intent(this, PrivateCallActivity.class);
+        intent.putExtra(EXTRA_FRIEND_NAME, friendName);
+        intent.putExtra("is_video", isVideo);
+        startActivity(intent);
     }
 
     private void setupToolbar(String name, String status, int avatarRes) {
