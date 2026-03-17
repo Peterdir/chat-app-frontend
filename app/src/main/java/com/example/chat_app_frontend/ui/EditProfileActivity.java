@@ -10,7 +10,14 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.model.Decoration;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.repository.DecorationRepository;
+import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseUser;
+import android.widget.Toast;
 
 public class EditProfileActivity extends AppCompatActivity {
 
@@ -19,6 +26,11 @@ public class EditProfileActivity extends AppCompatActivity {
     private TextView btnSave;
     private View btnNitroPreview;
     private View shimmerNitroPreview;
+    private EditText etDisplayName, etPronouns, etAboutMe;
+    private TextView txtDecorationNameCurrent;
+    private ImageView imgMainAvatarDecoration;
+    private User currentUser;
+    private String currentDecorationId = "none";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +40,7 @@ public class EditProfileActivity extends AppCompatActivity {
         initViews();
         setupTabs();
         setupButtons();
+        loadUserInfo();
         
         // Bắt đầu hiệu ứng lấp lánh cho nút Nitro
         startShimmerAnimation();
@@ -39,6 +52,11 @@ public class EditProfileActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btn_save);
         btnNitroPreview = findViewById(R.id.btn_nitro_preview);
         shimmerNitroPreview = findViewById(R.id.shimmer_nitro_preview);
+        etDisplayName = findViewById(R.id.et_display_name);
+        etPronouns = findViewById(R.id.et_pronouns);
+        etAboutMe = findViewById(R.id.et_about_me);
+        txtDecorationNameCurrent = findViewById(R.id.txt_decoration_name_current);
+        imgMainAvatarDecoration = findViewById(R.id.img_main_avatar_decoration);
     }
 
     private void setupTabs() {
@@ -73,7 +91,7 @@ public class EditProfileActivity extends AppCompatActivity {
         }
 
         if (btnSave != null) {
-            btnSave.setOnClickListener(v -> finish());
+            btnSave.setOnClickListener(v -> saveUserInfo());
         }
 
         // Clear name button
@@ -89,6 +107,89 @@ public class EditProfileActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         }
+
+        // Decoration item
+        View itemAvatarDecoration = findViewById(R.id.item_avatar_decoration);
+        TextView txtDecorationNameCurrent = findViewById(R.id.txt_decoration_name_current);
+        ImageView imgMainAvatarDecoration = findViewById(R.id.img_main_avatar_decoration);
+
+        if (itemAvatarDecoration != null) {
+            itemAvatarDecoration.setOnClickListener(v -> {
+                DecorationSelectionBottomSheet bottomSheet = new DecorationSelectionBottomSheet();
+                bottomSheet.setInitialDecorationId(currentDecorationId); 
+                bottomSheet.setOnDecorationAppliedListener(decoration -> {
+                    currentDecorationId = decoration.getId();
+                    updateCurrentDecorationUI(decoration);
+                });
+                bottomSheet.show(getSupportFragmentManager(), "DecorationSelectionBottomSheet");
+            });
+        }
+    }
+
+    private void updateCurrentDecorationUI(Decoration decoration) {
+        if (decoration == null || decoration.getType() == Decoration.Type.NONE) {
+            imgMainAvatarDecoration.setVisibility(View.GONE);
+            if (txtDecorationNameCurrent != null) txtDecorationNameCurrent.setText("Không");
+        } else {
+            imgMainAvatarDecoration.setVisibility(View.VISIBLE);
+            imgMainAvatarDecoration.setImageResource(decoration.getDrawableResId());
+            if (txtDecorationNameCurrent != null) txtDecorationNameCurrent.setText(decoration.getName());
+        }
+    }
+
+    private void loadUserInfo() {
+        FirebaseUser fbUser = FirebaseManager.getAuth().getCurrentUser();
+        if (fbUser == null) {
+            Toast.makeText(this, "Chưa đăng nhập", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        UserRepository.getInstance().getUserByUid(fbUser.getUid(), new UserRepository.OnUserLoadedListener() {
+            @Override
+            public void onUserLoaded(User user) {
+                currentUser = user;
+                etDisplayName.setText(user.getDisplayName());
+                etPronouns.setText(user.getPronouns());
+                etAboutMe.setText(user.getBio());
+                
+                currentDecorationId = user.getAvatarDecorationId();
+                Decoration currentDecor = DecorationRepository.getInstance().findDecorationById(currentDecorationId);
+                updateCurrentDecorationUI(currentDecor);
+            }
+
+            @Override
+            public void onUserNotFound() {
+                Toast.makeText(EditProfileActivity.this, "Không tìm thấy thông tin user", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Toast.makeText(EditProfileActivity.this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void saveUserInfo() {
+        if (currentUser == null) return;
+
+        currentUser.setDisplayName(etDisplayName.getText().toString());
+        currentUser.setPronouns(etPronouns.getText().toString());
+        currentUser.setBio(etAboutMe.getText().toString());
+        currentUser.setAvatarDecorationId(currentDecorationId);
+
+        UserRepository.getInstance().saveUser(currentUser, new UserRepository.OnCompleteListener() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(EditProfileActivity.this, "Đã lưu hồ sơ", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Toast.makeText(EditProfileActivity.this, "Lưu thất bại: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void startShimmerAnimation() {
