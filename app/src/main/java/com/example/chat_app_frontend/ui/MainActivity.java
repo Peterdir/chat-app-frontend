@@ -1,6 +1,8 @@
 package com.example.chat_app_frontend.ui;
 
 import android.Manifest;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -35,6 +37,10 @@ import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String EXTRA_OPEN_SERVER_ID = "open_server_id";
+    public static final String EXTRA_OPEN_CHANNEL_ID = "open_channel_id";
+    public static final String EXTRA_OPEN_CHANNEL_NAME = "open_channel_name";
 
     private RecyclerView rvServerRail;
     private View serverSidebar;
@@ -123,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
             AddServerBottomSheet addServerBottomSheet = new AddServerBottomSheet();
             addServerBottomSheet.show(getSupportFragmentManager(), "AddServerBottomSheet");
         });
+
+        maybeHandleNotificationNavigation(getIntent());
     }
 
     private void syncFcmToken() {
@@ -148,6 +156,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         reloadServerRail();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        maybeHandleNotificationNavigation(intent);
     }
 
     /**
@@ -283,5 +298,49 @@ public class MainActivity extends AppCompatActivity {
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                 .replace(R.id.fragment_container, ServerFragment.newInstance(server.getId(), server.getName()))
                 .commit();
+    }
+
+    private void maybeHandleNotificationNavigation(Intent intent) {
+        if (intent == null) {
+            return;
+        }
+
+        String serverId = intent.getStringExtra(EXTRA_OPEN_SERVER_ID);
+        String channelId = intent.getStringExtra(EXTRA_OPEN_CHANNEL_ID);
+        String channelName = intent.getStringExtra(EXTRA_OPEN_CHANNEL_NAME);
+
+        Uri data = intent.getData();
+        if (data != null && "chatapp".equals(data.getScheme())) {
+            if (serverId == null || serverId.trim().isEmpty()) {
+                serverId = data.getQueryParameter("serverId");
+            }
+            if (channelId == null || channelId.trim().isEmpty()) {
+                channelId = data.getQueryParameter("channelId");
+            }
+            if (channelName == null || channelName.trim().isEmpty()) {
+                channelName = data.getQueryParameter("channelName");
+            }
+        }
+
+        if (serverId == null || serverId.trim().isEmpty() || channelId == null || channelId.trim().isEmpty()) {
+            return;
+        }
+
+        String finalChannelName = (channelName == null || channelName.trim().isEmpty()) ? "channel" : channelName;
+
+        if (bottomNav != null && bottomNav.getSelectedItemId() != R.id.nav_home) {
+            bottomNav.setSelectedItemId(R.id.nav_home);
+        }
+
+        Intent openChatIntent = new Intent(this, ServerChatActivity.class);
+        openChatIntent.putExtra(ServerChatActivity.EXTRA_SERVER_ID, serverId);
+        openChatIntent.putExtra(ServerChatActivity.EXTRA_CHANNEL_ID, channelId);
+        openChatIntent.putExtra(ServerChatActivity.EXTRA_CHANNEL_NAME, finalChannelName);
+        startActivity(openChatIntent);
+
+        intent.removeExtra(EXTRA_OPEN_SERVER_ID);
+        intent.removeExtra(EXTRA_OPEN_CHANNEL_ID);
+        intent.removeExtra(EXTRA_OPEN_CHANNEL_NAME);
+        intent.setData(null);
     }
 }
