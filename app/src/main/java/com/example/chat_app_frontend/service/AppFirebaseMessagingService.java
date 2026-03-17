@@ -1,8 +1,11 @@
 package com.example.chat_app_frontend.service;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
@@ -11,6 +14,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.ui.MainActivity;
 import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -72,11 +76,34 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
+        String serverId = data != null ? data.get("serverId") : null;
+        String channelId = data != null ? data.get("channelId") : null;
+        String channelName = data != null ? data.get("channelName") : null;
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(MainActivity.EXTRA_OPEN_SERVER_ID, serverId);
+        intent.putExtra(MainActivity.EXTRA_OPEN_CHANNEL_ID, channelId);
+        intent.putExtra(MainActivity.EXTRA_OPEN_CHANNEL_NAME, channelName);
+
+        Uri deepLinkUri = Uri.parse("chatapp://server-channel"
+            + "?serverId=" + safe(serverId)
+            + "&channelId=" + safe(channelId)
+            + "&channelName=" + safe(channelName));
+        intent.setData(deepLinkUri);
+
+        int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            pendingFlags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, pendingFlags);
+
         int id = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(title)
                 .setContentText(body)
+            .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
 
@@ -96,5 +123,9 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
         if (manager != null) {
             manager.createNotificationChannel(channel);
         }
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : Uri.encode(value);
     }
 }

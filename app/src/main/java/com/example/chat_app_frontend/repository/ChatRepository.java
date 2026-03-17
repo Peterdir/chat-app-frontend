@@ -78,6 +78,7 @@ public class ChatRepository {
 
     public void sendServerChannelMessage(String serverId,
                                          String channelId,
+                                         String channelName,
                                          String senderId,
                                          String senderName,
                                          String content,
@@ -103,7 +104,7 @@ public class ChatRepository {
         messagesRef.child(msgId)
                 .setValue(message)
                 .addOnSuccessListener(unused -> {
-                    queuePushEvent(serverId, channelId, senderId, senderName, content);
+                    queuePushEvent(serverId, channelId, channelName, senderId, senderName, content);
                     callback.onSuccess();
                 })
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
@@ -134,6 +135,7 @@ public class ChatRepository {
 
     private void queuePushEvent(String serverId,
                                 String channelId,
+                                String channelName,
                                 String senderId,
                                 String senderName,
                                 String content) {
@@ -143,6 +145,7 @@ public class ChatRepository {
         payload.put("topic", getServerChannelTopic(serverId, channelId));
         payload.put("serverId", serverId);
         payload.put("channelId", channelId);
+        payload.put("channelName", channelName);
         payload.put("senderId", senderId);
         payload.put("senderName", senderName);
         payload.put("content", content);

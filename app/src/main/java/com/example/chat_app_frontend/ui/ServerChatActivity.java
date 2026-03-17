@@ -130,6 +130,7 @@ public class ServerChatActivity extends AppCompatActivity implements GiphyDialog
                 chatRepository.sendServerChannelMessage(
                                 serverId,
                                 channelId,
+                        channelName,
                                 currentUserId,
                                 currentUserName,
                                 text,
