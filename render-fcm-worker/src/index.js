@@ -109,8 +109,7 @@ async function main() {
     });
   });
 
-  process.on("SIGTERM", () => {
-    console.log("SIGTERM received. Stopping worker.");
+  process.on("SIGTERM", () => {console.log("SIGTERM received. Stopping worker.");
     queueRef.off();
     process.exit(0);
   });
