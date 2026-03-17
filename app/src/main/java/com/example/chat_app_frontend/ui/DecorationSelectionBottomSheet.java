@@ -83,11 +83,11 @@ public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
         if (initialDecor != null && initialDecor.getType() != Decoration.Type.NONE && initialDecor.getType() != Decoration.Type.STORE) {
             updatePreviewVisibility(View.VISIBLE);
             int resId = initialDecor.getDrawableResId();
-            previewDecoration.setImageResource(resId);
-            previewS1.setImageResource(resId);
-            previewS2.setImageResource(resId);
-            previewS3.setImageResource(resId);
-            previewS4.setImageResource(resId);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewDecoration);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS1);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS2);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS3);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS4);
             decorationName.setText(initialDecor.getName());
         } else {
             updatePreviewVisibility(View.GONE);
@@ -116,11 +116,11 @@ public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
         } else {
             updatePreviewVisibility(View.VISIBLE);
             int resId = decoration.getDrawableResId();
-            previewDecoration.setImageResource(resId);
-            previewS1.setImageResource(resId);
-            previewS2.setImageResource(resId);
-            previewS3.setImageResource(resId);
-            previewS4.setImageResource(resId);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewDecoration);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS1);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS2);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS3);
+            com.bumptech.glide.Glide.with(this).load(resId).into(previewS4);
         }
         decorationName.setText(decoration.getName());
 

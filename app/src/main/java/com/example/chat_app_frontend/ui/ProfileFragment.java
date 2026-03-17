@@ -22,10 +22,12 @@ import com.google.firebase.auth.FirebaseUser;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
+import com.example.chat_app_frontend.model.NamePlate;
+import com.example.chat_app_frontend.repository.NamePlateRepository;
 
 public class ProfileFragment extends Fragment {
 
-    private ImageView ivAvatar, avatarDecoration;
+    private ImageView ivAvatar, avatarDecoration, imgProfileEffect;
     private TextView tvDisplayName, tvUsername;
     private View statusDot;
 
@@ -55,6 +57,7 @@ public class ProfileFragment extends Fragment {
         tvDisplayName = view.findViewById(R.id.tv_display_name);
         tvUsername = view.findViewById(R.id.tv_username);
         statusDot = view.findViewById(R.id.status_dot);
+        imgProfileEffect = view.findViewById(R.id.img_profile_effect);
     }
 
     private void loadUserData() {
@@ -81,6 +84,12 @@ public class ProfileFragment extends Fragment {
 
                 // Cập nhật Khung trang trí
                 updateDecoration(user.getAvatarDecorationId());
+                
+                // Cập nhật Hiệu ứng hồ sơ
+                updateProfileEffect(user.getProfileEffectId());
+
+                // Cập nhật Bảng tên
+                updateNamePlate(user.getNamePlateId());
             }
 
             @Override
@@ -97,14 +106,40 @@ public class ProfileFragment extends Fragment {
         Decoration decor = DecorationRepository.getInstance().findDecorationById(decorationId);
         if (decor != null && decor.getType() != Decoration.Type.NONE && decor.getType() != Decoration.Type.STORE) {
             avatarDecoration.setVisibility(View.VISIBLE);
-            avatarDecoration.setImageResource(decor.getDrawableResId());
+            Glide.with(this)
+                 .load(decor.getDrawableResId())
+                 .into(avatarDecoration);
             
             // Dừng animation xoay nếu là khung đặc biệt (tùy nhu cầu)
-            // Hoặc giữ lại nếu muốn xoay tất cả khung
+            avatarDecoration.clearAnimation();
         } else {
             // Quay lại khung mặc định hoặc ẩn đi
             avatarDecoration.setImageResource(R.drawable.bg_avatar_decoration_ring);
             avatarDecoration.setVisibility(View.VISIBLE); // Giữ hiển thị ring mặc định của thiết kế
+        }
+    }
+
+    private void updateProfileEffect(String effectId) {
+        if (imgProfileEffect == null) return;
+
+        com.example.chat_app_frontend.model.ProfileEffect effect = com.example.chat_app_frontend.repository.ProfileEffectRepository.getInstance().findEffectById(effectId);
+        if (effect != null && effect.getType() != com.example.chat_app_frontend.model.ProfileEffect.Type.NONE && effect.getType() != com.example.chat_app_frontend.model.ProfileEffect.Type.SHOP) {
+            imgProfileEffect.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                 .load(effect.getEffectResId())
+                 .into(imgProfileEffect);
+        } else {
+            imgProfileEffect.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateNamePlate(String plateId) {
+        if (imgProfileEffect == null) return;
+        
+        NamePlate plate = NamePlateRepository.getInstance().findNamePlateById(plateId);
+        if (plate != null && plate.getType() != NamePlate.Type.NONE && plate.getType() != NamePlate.Type.STORE) {
+            imgProfileEffect.setVisibility(View.VISIBLE);
+            imgProfileEffect.setImageResource(plate.getDrawableResId());
         }
     }
 

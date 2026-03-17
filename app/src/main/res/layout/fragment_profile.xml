@@ -29,6 +29,14 @@
                     android:layout_height="130dp"
                     android:background="@drawable/bg_profile_banner" />
 
+                <!-- Profile Effect Layer -->
+                <ImageView
+                    android:id="@+id/img_profile_effect"
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
+
                 <!-- Avatar container -->
                 <FrameLayout
                     android:id="@+id/avatar_container"
@@ -36,22 +44,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="70dp">
-
-                    <!-- Avatar Decoration (Rotating Ring) -->
-                    <ImageView
-                        android:id="@+id/avatar_decoration"
-                        android:layout_width="112dp"
-                        android:layout_height="112dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/bg_avatar_decoration_ring"
-                        android:contentDescription="Avatar Decoration" />
-
-                    <!-- Avatar dark border circle -->
-                    <View
-                        android:layout_width="92dp"
-                        android:layout_height="92dp"
-                        android:layout_gravity="center"
-                        android:background="@drawable/bg_avatar_border" />
 
                     <!-- Avatar image (Circular Cropped) -->
                     <androidx.cardview.widget.CardView
@@ -70,6 +62,15 @@
                             android:scaleType="centerCrop"
                             android:contentDescription="Avatar" />
                     </androidx.cardview.widget.CardView>
+
+                    <!-- Avatar Decoration (Rotating Ring) -->
+                    <ImageView
+                        android:id="@+id/avatar_decoration"
+                        android:layout_width="112dp"
+                        android:layout_height="112dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/bg_avatar_decoration_ring"
+                        android:contentDescription="Avatar Decoration" />
 
                     <!-- Online status dot -->
                     <View
