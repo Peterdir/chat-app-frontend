@@ -2,6 +2,8 @@ package com.example.chat_app_frontend.repository;
 
 import androidx.annotation.NonNull;
 
+import com.example.chat_app_frontend.model.Category;
+import com.example.chat_app_frontend.model.CategoryWithChannels;
 import com.example.chat_app_frontend.model.Channel;
 import com.example.chat_app_frontend.model.Server;
 import com.example.chat_app_frontend.utils.FirebaseManager;
@@ -56,13 +58,32 @@ public class ServerRepository {
         void onFailure(String error);
     }
 
+    public interface OnCategoryCallback {
+        void onSuccess(Category category);
+        void onFailure(String error);
+    }
+
+    public interface OnCategoryListCallback {
+        void onSuccess(List<Category> categories);
+        void onFailure(String error);
+    }
+
+    public interface OnCategoriesWithChannelsCallback {
+        void onSuccess(List<CategoryWithChannels> categoriesWithChannels, List<Channel> uncategorizedChannels);
+        void onFailure(String error);
+    }
+
+    public interface OnCompleteCallback {
+        void onComplete();
+    }
+
     // -------------------------------------------------------------------------
     // Public API
     // -------------------------------------------------------------------------
 
     /**
-     * Tạo server mới trên Firebase với các channel mặc định.
-     * Viết vào: servers/, user_servers/, server_members/, server_channels/
+     * Tạo server mới trên Firebase.
+     * Viết vào: servers/, user_servers/, server_members/
      */
     public void createServer(String serverName, String iconUrl, OnServerCallback callback) {
         String uid = currentUid();
@@ -77,15 +98,67 @@ public class ServerRepository {
         server.setCreatedAt(System.currentTimeMillis());
 
         serversRef.child(serverId).setValue(server.toMap())
-                .addOnSuccessListener(unused -> createDefaultChannels(serverId, () -> {
+                .addOnSuccessListener(unused -> {
                     DatabaseReference userServersRef = FirebaseManager.getDatabaseReference("user_servers/" + uid + "/" + serverId);
                     DatabaseReference memberRef = FirebaseManager.getDatabaseReference("server_members/" + serverId + "/" + uid);
                     userServersRef.setValue(true);
                     memberRef.setValue(true)
                             .addOnSuccessListener(u -> callback.onSuccess(server))
                             .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
-                }))
+                })
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    /**
+     * Dọn các kênh mock mặc định cũ để chỉ giữ dữ liệu thật do user tạo.
+     */
+    public void removeLegacyDefaultChannels(String serverId, OnCompleteCallback callback) {
+        FirebaseManager.getDatabaseReference("server_channels/" + serverId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (!snapshot.exists()) {
+                            callback.onComplete();
+                            return;
+                        }
+
+                        List<DataSnapshot> toDelete = new ArrayList<>();
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            String name = child.child("name").getValue(String.class);
+                            String type = child.child("type").getValue(String.class);
+                            String categoryId = child.child("categoryId").getValue(String.class);
+
+                            boolean isLegacyText = ("welcome-and-rules".equals(name) || "general".equals(name))
+                                    && "text".equals(type);
+                            boolean isLegacyVoice = "voice-chat".equals(name) && "voice".equals(type);
+                            boolean isUncategorized = categoryId == null || categoryId.isEmpty();
+
+                            if ((isLegacyText || isLegacyVoice) && isUncategorized) {
+                                toDelete.add(child);
+                            }
+                        }
+
+                        if (toDelete.isEmpty()) {
+                            callback.onComplete();
+                            return;
+                        }
+
+                        AtomicInteger done = new AtomicInteger(0);
+                        int total = toDelete.size();
+                        for (DataSnapshot item : toDelete) {
+                            item.getRef().removeValue().addOnCompleteListener(task -> {
+                                if (done.incrementAndGet() == total) {
+                                    callback.onComplete();
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onComplete();
+                    }
+                });
     }
 
     /**
@@ -197,8 +270,125 @@ public class ServerRepository {
     }
 
     /**
-     * Tham gia server bằng invite code.
+     * Tạo category mới trong server.
      */
+    public void createCategory(String serverId, String categoryName, OnCategoryCallback callback) {
+        if (serverId == null || categoryName == null) {
+            callback.onFailure("Dữ liệu không hợp lệ");
+            return;
+        }
+
+        DatabaseReference categoriesRef = FirebaseManager.getDatabaseReference("server_categories/" + serverId);
+        String categoryId = categoriesRef.push().getKey();
+        if (categoryId == null) {
+            callback.onFailure("Không thể tạo category ID");
+            return;
+        }
+
+        Category category = new Category(categoryId, categoryName);
+        category.setPosition((int) (System.nanoTime() % Integer.MAX_VALUE)); // Use nanotime for ordering
+        categoriesRef.child(categoryId).setValue(category.toMap())
+                .addOnSuccessListener(unused -> callback.onSuccess(category))
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    /**
+     * Lấy danh sách category của server.
+     */
+    public void getServerCategories(String serverId, OnCategoryListCallback callback) {
+        FirebaseManager.getDatabaseReference("server_categories/" + serverId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Category> categories = new ArrayList<>();
+                        for (DataSnapshot child : snapshot.getChildren()) {
+                            Category category = categoryFromSnapshot(child);
+                            if (category != null) categories.add(category);
+                        }
+                        callback.onSuccess(categories);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onFailure(error.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Tạo channel mới trong server, có thể thuộc một category hoặc không.
+     */
+    public void createChannel(String serverId, String channelName, String channelType, 
+                             String categoryId, OnChannelListCallback callback) {
+        if (serverId == null || channelName == null || channelType == null) {
+            callback.onFailure("Dữ liệu không hợp lệ");
+            return;
+        }
+
+        DatabaseReference channelsRef = FirebaseManager.getDatabaseReference("server_channels/" + serverId);
+        String channelId = channelsRef.push().getKey();
+        if (channelId == null) {
+            callback.onFailure("Không thể tạo channel ID");
+            return;
+        }
+
+        Channel channel = new Channel(channelId, channelName, channelType, categoryId);
+        channel.setPosition((int) System.nanoTime());
+        channelsRef.child(channelId).setValue(channel.toMap())
+                .addOnSuccessListener(unused -> {
+                    // Lấy danh sách channel cập nhật
+                    getServerChannels(serverId, callback);
+                })
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    /**
+     * Lấy danh sách category với channels được nhóm theo category.
+     */
+    public void getServerCategoriesWithChannels(String serverId, OnCategoriesWithChannelsCallback callback) {
+        getServerCategories(serverId, new OnCategoryListCallback() {
+            @Override
+            public void onSuccess(List<Category> categories) {
+                getServerChannels(serverId, new OnChannelListCallback() {
+                    @Override
+                    public void onSuccess(List<Channel> channels) {
+                        // Group channels by category
+                        List<CategoryWithChannels> categoriesWithChannels = new ArrayList<>();
+                        List<Channel> uncategorizedChannels = new ArrayList<>();
+
+                        for (Category category : categories) {
+                            CategoryWithChannels cwc = new CategoryWithChannels(category);
+                            for (Channel channel : channels) {
+                                if (category.getId().equals(channel.getCategoryId())) {
+                                    cwc.addChannel(channel);
+                                }
+                            }
+                            categoriesWithChannels.add(cwc);
+                        }
+
+                        // Collect uncategorized channels
+                        for (Channel channel : channels) {
+                            if (channel.getCategoryId() == null) {
+                                uncategorizedChannels.add(channel);
+                            }
+                        }
+
+                        callback.onSuccess(categoriesWithChannels, uncategorizedChannels);
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        callback.onFailure("Failed to load channels: " + error);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(String error) {
+                callback.onFailure("Failed to load categories: " + error);
+            }
+        });
+    }
     public void joinServerByInviteCode(String inviteCode, OnServerCallback callback) {
         String uid = currentUid();
         if (uid == null) { callback.onFailure("Chưa đăng nhập"); return; }
@@ -259,24 +449,6 @@ public class ServerRepository {
     // Helpers
     // -------------------------------------------------------------------------
 
-    private void createDefaultChannels(String serverId, Runnable onDone) {
-        DatabaseReference channelsRef = FirebaseManager.getDatabaseReference("server_channels/" + serverId);
-
-        String[] names = {"welcome-and-rules", "general", "voice-chat"};
-        String[] types = {"text", "text", "voice"};
-
-        AtomicInteger done = new AtomicInteger(0);
-        for (int i = 0; i < names.length; i++) {
-            String channelId = channelsRef.push().getKey();
-            Channel channel = new Channel(channelId, names[i], types[i]);
-            channel.setPosition(i);
-            channelsRef.child(channelId).setValue(channel.toMap())
-                    .addOnCompleteListener(t -> {
-                        if (done.incrementAndGet() == names.length) onDone.run();
-                    });
-        }
-    }
-
     private Server serverFromSnapshot(DataSnapshot snapshot) {
         if (snapshot == null || !snapshot.exists()) return null;
         String id = snapshot.getKey();
@@ -299,10 +471,23 @@ public class ServerRepository {
         String type = snapshot.child("type").getValue(String.class);
         if (name == null || type == null) return null;
         Long pos = snapshot.child("position").getValue(Long.class);
+        String categoryId = snapshot.child("categoryId").getValue(String.class);
 
-        Channel channel = new Channel(id, name, type);
+        Channel channel = new Channel(id, name, type, categoryId);
         if (pos != null) channel.setPosition(pos.intValue());
         return channel;
+    }
+
+    private Category categoryFromSnapshot(DataSnapshot snapshot) {
+        if (snapshot == null || !snapshot.exists()) return null;
+        String id = snapshot.getKey();
+        String name = snapshot.child("name").getValue(String.class);
+        if (name == null) return null;
+        Long pos = snapshot.child("position").getValue(Long.class);
+
+        Category category = new Category(id, name);
+        if (pos != null) category.setPosition(pos.intValue());
+        return category;
     }
 
     private String currentUid() {

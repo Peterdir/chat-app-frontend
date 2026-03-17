@@ -13,11 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
-import com.example.chat_app_frontend.adapter.ChannelAdapter;
+import com.example.chat_app_frontend.adapter.CategoryChannelAdapter;
+import com.example.chat_app_frontend.model.Category;
+import com.example.chat_app_frontend.model.CategoryWithChannels;
 import com.example.chat_app_frontend.model.Channel;
 import com.example.chat_app_frontend.repository.ServerRepository;
-import com.example.chat_app_frontend.ui.InviteFriendsBottomSheet;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +30,8 @@ public class ServerFragment extends Fragment {
     private String serverId;
     private String serverName;
     private RecyclerView rvChannels;
-    private ChannelAdapter channelAdapter;
+    private CategoryChannelAdapter categoryChannelAdapter;
     private TextView tvServerName;
-    private ValueEventListener channelListener;
 
     public static ServerFragment newInstance(String serverId, String serverName) {
         ServerFragment fragment = new ServerFragment();
@@ -77,42 +76,50 @@ public class ServerFragment extends Fragment {
             sheet.show(getChildFragmentManager(), "InviteFriends");
         });
 
+        // Nút tạo danh mục
+        view.findViewById(R.id.btn_create_category).setOnClickListener(v -> {
+            CreateCategoryBottomSheet sheet = CreateCategoryBottomSheet.newInstance(serverId);
+            // Reload data khi dialog closed
+            sheet.setOnDismissListener(this::loadChannels);
+            sheet.show(getChildFragmentManager(), "CreateCategory");
+        });
+
         rvChannels = view.findViewById(R.id.rv_channels);
         rvChannels.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        List<Channel> channels = new ArrayList<>();
-        channelAdapter = new ChannelAdapter(channels);
-        channelAdapter.setServerId(serverId);
-        channelAdapter.setServerName(serverName);
-        rvChannels.setAdapter(channelAdapter);
+        categoryChannelAdapter = new CategoryChannelAdapter(new ArrayList<>(), new ArrayList<>());
+        categoryChannelAdapter.setServerId(serverId);
+        categoryChannelAdapter.setServerName(serverName);
+        categoryChannelAdapter.setOnAddChannelClickListener(this::openCreateChannelForCategory);
+        rvChannels.setAdapter(categoryChannelAdapter);
 
         loadChannels();
     }
 
     private void loadChannels() {
         if (serverId == null) return;
-        channelListener = ServerRepository.getInstance().observeServerChannels(
-                serverId,
-                new ServerRepository.OnChannelListCallback() {
-                    @Override
-                    public void onSuccess(List<Channel> channels) {
-                        channelAdapter.updateChannels(channels);
-                    }
+        ServerRepository.getInstance().removeLegacyDefaultChannels(serverId, () ->
+                ServerRepository.getInstance().getServerCategoriesWithChannels(
+                        serverId,
+                        new ServerRepository.OnCategoriesWithChannelsCallback() {
+                            @Override
+                            public void onSuccess(List<CategoryWithChannels> categoriesWithChannels, List<Channel> uncategorizedChannels) {
+                                categoryChannelAdapter.updateData(categoriesWithChannels, uncategorizedChannels);
+                            }
 
-                    @Override
-                    public void onFailure(String error) {
-                        // Kênh không tải được — giữ list rỗng
-                    }
-                });
+                            @Override
+                            public void onFailure(String error) {
+                                // Lỗi load — giữ adapter rỗng
+                            }
+                        })
+        );
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (serverId != null && channelListener != null) {
-            ServerRepository.getInstance().removeChannelListener(serverId, channelListener);
-            channelListener = null;
-        }
+    private void openCreateChannelForCategory(Category category) {
+        if (category == null || category.getId() == null) return;
+        CreateChannelBottomSheet sheet = CreateChannelBottomSheet.newInstance(serverId, category.getId());
+        sheet.setOnDismissListener(this::loadChannels);
+        sheet.show(getChildFragmentManager(), "CreateChannel");
     }
 }
 

@@ -22,7 +22,10 @@ import com.example.chat_app_frontend.model.FriendRequest;
 import com.example.chat_app_frontend.model.Server;
 import com.example.chat_app_frontend.repository.FriendRepository;
 import com.example.chat_app_frontend.repository.ServerRepository;
+import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.example.chat_app_frontend.utils.FriendNotificationHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.ValueEventListener;
 
@@ -79,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Lắng nghe lời mời kết bạn từ bất kỳ màn hình nào
         startFriendRequestListener();
+        syncFcmToken();
 
         // Load DM fragment by default
         loadDMFragment();
@@ -119,6 +123,25 @@ public class MainActivity extends AppCompatActivity {
             AddServerBottomSheet addServerBottomSheet = new AddServerBottomSheet();
             addServerBottomSheet.show(getSupportFragmentManager(), "AddServerBottomSheet");
         });
+    }
+
+    private void syncFcmToken() {
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+        if (uid == null || uid.trim().isEmpty()) {
+            return;
+        }
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(token -> {
+                    if (token == null || token.trim().isEmpty()) {
+                        return;
+                    }
+                    FirebaseManager.getDatabaseReference("user_fcm_tokens")
+                            .child(uid)
+                            .child(token)
+                            .setValue(true);
+                });
     }
 
     @Override

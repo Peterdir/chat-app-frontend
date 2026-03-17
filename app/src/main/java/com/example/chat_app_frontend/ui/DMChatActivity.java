@@ -16,11 +16,8 @@ import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.adapter.MessageAdapter;
 import com.example.chat_app_frontend.model.Message;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class DMChatActivity extends AppCompatActivity {
 
@@ -34,9 +31,8 @@ public class DMChatActivity extends AppCompatActivity {
     private EditText etMessageInput;
     private String friendName;
 
-    // Current user mock data
-    private static final String SELF_ID = "me";
-    private static final String SELF_NAME = "HoangGJinn";
+    private static final String SELF_ID = "self";
+    private static final String SELF_NAME = "You";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +61,9 @@ public class DMChatActivity extends AppCompatActivity {
         layoutManager.setStackFromEnd(true);
         rvMessages.setLayoutManager(layoutManager);
 
-        messageList = buildMockDMMessages(friendName, friendAvatarRes);
+        messageList = new ArrayList<>();
         messageAdapter = new MessageAdapter(messageList);
         rvMessages.setAdapter(messageAdapter);
-        rvMessages.scrollToPosition(messageList.size() - 1);
 
         // Call buttons
         ImageView btnCall = findViewById(R.id.btn_call);
@@ -126,8 +121,6 @@ public class DMChatActivity extends AppCompatActivity {
         String text = etMessageInput.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
 
-        String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-
         boolean isFirst = true;
         for (int i = messageList.size() - 1; i >= 0; i--) {
             Message last = messageList.get(i);
@@ -139,54 +132,12 @@ public class DMChatActivity extends AppCompatActivity {
 
         Message msg = new Message(
                 String.valueOf(System.currentTimeMillis()),
-                SELF_ID, SELF_NAME, 0, text, "Hôm nay lúc " + time,
+            SELF_ID, SELF_NAME, 0, text, "Vừa xong",
                 true, isFirst
         );
         messageList.add(msg);
         messageAdapter.notifyItemInserted(messageList.size() - 1);
         rvMessages.scrollToPosition(messageList.size() - 1);
         etMessageInput.setText("");
-    }
-
-    /**
-     * Builds sample DM messages inspired by the Discord DM screenshots.
-     */
-    private List<Message> buildMockDMMessages(String friendName, int friendAvatarRes) {
-        String friendId = "friend";
-        List<Message> list = new ArrayList<>();
-
-        // Date divider
-        list.add(new Message("3 tháng 1 năm 2026"));
-
-        // Friend message
-        list.add(new Message("1", friendId, friendName, friendAvatarRes,
-                "Có gì zui zậy Giáp 😮", "03/01/2026 17:07", false, true));
-
-        // Date divider
-        list.add(new Message("6 tháng 1 năm 2026"));
-
-        // Self message group
-        list.add(new Message("2", SELF_ID, SELF_NAME, 0,
-                "bij hack Thuy oi", "06/01/2026 01:32", true, true));
-        list.add(new Message("3", SELF_ID, SELF_NAME, 0,
-                ":v", "06/01/2026 01:32", true, false));
-
-        // Date divider
-        list.add(new Message("7 tháng 1 năm 2026"));
-
-        // Friend message
-        list.add(new Message("4", friendId, friendName, friendAvatarRes,
-                "Tui tưởng ông bay acc rồi mà vẫn lấy lại được luôn 😮",
-                "07/01/2026 00:23", false, true));
-
-        // Self message group  
-        list.add(new Message("5", SELF_ID, SELF_NAME, 0,
-                "ngta vào acc tui gửi tào lao à", "07/01/2026 19:04", true, true));
-        list.add(new Message("6", SELF_ID, SELF_NAME, 0,
-                "chứ ko có làm gì", "07/01/2026 19:04", true, false));
-        list.add(new Message("7", SELF_ID, SELF_NAME, 0,
-                ":v", "07/01/2026 19:10", true, false));
-
-        return list;
     }
 }

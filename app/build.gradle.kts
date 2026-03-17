@@ -53,6 +53,7 @@ dependencies {
 
     implementation("com.google.firebase:firebase-database") // Để làm Realtime Chat
     implementation("com.google.firebase:firebase-auth") // Để quản lý người dùng và xác thực
+    implementation("com.google.firebase:firebase-messaging") // Để nhận push notification chat realtime
 
     // Tải ảnh từ URL (avatar)
     implementation("com.github.bumptech.glide:glide:4.16.0")
