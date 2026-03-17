@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">chat-app-frontend</string>
+    <string name="giphy_api_key">zZQZOUwAstZ2YFtDn4LvzV4rrFQnMvLs</string>
 
     <string name="agora_app_id">90a91286b3974226a2876f10ce8d7a0d</string>
     <string name="gamerconnect_name">GamerConnect</string>

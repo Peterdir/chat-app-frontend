@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Server;
 
@@ -19,14 +20,20 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
 
     private List<Server> serverList;
     private OnServerClickListener listener;
+    private OnServerLongClickListener longClickListener;
 
     public interface OnServerClickListener {
         void onServerClick(Server server); // Hàm sẽ được gọi khi có user click
     }
 
-    public ServerAdapter(List<Server> serverList, OnServerClickListener listener) {
+    public interface OnServerLongClickListener {
+        void onServerLongClick(Server server);
+    }
+
+    public ServerAdapter(List<Server> serverList, OnServerClickListener listener, OnServerLongClickListener longClickListener) {
         this.serverList = serverList;
         this.listener = listener;
+        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -39,7 +46,7 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
     @Override
     public void onBindViewHolder(@NonNull ServerViewHolder holder, int position) {
         Server server = serverList.get(position);
-        holder.bind(server, listener);
+        holder.bind(server, listener, longClickListener);
     }
 
     @Override
@@ -61,16 +68,26 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
             cardView = itemView.findViewById(R.id.card_server_icon);
         }
 
-        public void bind(final Server server, final OnServerClickListener listener) {
+        public void bind(final Server server, final OnServerClickListener listener, final OnServerLongClickListener longClickListener) {
             // Set icon or initial
             if (server.getIconResId() != 0) {
+                // Local drawable (e.g. DM home item)
                 imgServerIcon.setImageResource(server.getIconResId());
                 imgServerIcon.setVisibility(View.VISIBLE);
                 tvServerInitial.setVisibility(View.GONE);
+            } else if (server.getIconUrl() != null && !server.getIconUrl().isEmpty()) {
+                // Remote icon URL — load with Glide
+                imgServerIcon.setVisibility(View.VISIBLE);
+                tvServerInitial.setVisibility(View.GONE);
+                Glide.with(imgServerIcon.getContext())
+                        .load(server.getIconUrl())
+                        .centerCrop()
+                        .into(imgServerIcon);
             } else {
+                // No icon — show first letter as initial
                 imgServerIcon.setVisibility(View.GONE);
                 tvServerInitial.setVisibility(View.VISIBLE);
-                tvServerInitial.setText(String.valueOf(server.getName().charAt(0)));
+                tvServerInitial.setText(String.valueOf(server.getName().charAt(0)).toUpperCase());
             }
 
             // Animation values
@@ -105,7 +122,15 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
             }
 
             itemView.setOnClickListener(v -> listener.onServerClick(server));
+            itemView.setOnLongClickListener(v -> {
+                if (longClickListener != null) {
+                    longClickListener.onServerLongClick(server);
+                    return true;
+                }
+                return false;
+            });
         }
+
 
         private float dpToPx(float dp) {
             return android.util.TypedValue.applyDimension(
@@ -143,6 +168,24 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
                 return server;
             }
         }
-        return null; // Should not happen if one is always selected
+        return null;
+    }
+
+    /** Thêm server mới vào cuối danh sách (không phải DM item). */
+    public void addServer(Server server) {
+        serverList.add(server);
+        notifyItemInserted(serverList.size() - 1);
+    }
+
+    /**
+     * Xóa tất cả server thật (giữ lại item DM ở vị trí 0).
+     * Dùng khi cần reload danh sách từ Firebase.
+     */
+    public void clearRealServers() {
+        int originalSize = serverList.size();
+        if (originalSize > 1) {
+            serverList.subList(1, originalSize).clear();
+            notifyItemRangeRemoved(1, originalSize - 1);
+        }
     }
 }

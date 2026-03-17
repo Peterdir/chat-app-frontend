@@ -26,6 +26,7 @@ public class User {
     private boolean isEmailVerified;
     private UserStatus status;
     private List<String> roles;   // ["USER", "ADMIN"]
+    private String avatarDecorationId; // ID của khung trang trí hiện tại
 
     // =========================================================================
     // Constructors
@@ -169,6 +170,14 @@ public class User {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
+    }
+
+    public String getAvatarDecorationId() {
+        return avatarDecorationId;
+    }
+
+    public void setAvatarDecorationId(String avatarDecorationId) {
+        this.avatarDecorationId = avatarDecorationId;
     }
 
     // =========================================================================

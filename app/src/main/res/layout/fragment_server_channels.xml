@@ -65,6 +65,7 @@
 
             <!-- Add Member Button -->
             <ImageView
+                android:id="@+id/btn_add_member"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:src="@drawable/ic_person_add" 
@@ -88,12 +89,51 @@
         android:background="@color/discord_divider"/>
 
     <!-- Channel List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_channels"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingTop="0dp"
-        android:clipToPadding="false" />
+        android:orientation="vertical">
+
+        <!-- Channel List RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_channels"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingTop="0dp"
+            android:clipToPadding="false" />
+
+        <LinearLayout
+            android:id="@+id/btn_create_category"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_edit_input"
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_plus_green"
+                app:tint="@color/discord_text_secondary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Thêm danh mục"
+                android:textColor="@color/discord_text_secondary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

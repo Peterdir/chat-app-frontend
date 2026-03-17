@@ -21,7 +21,11 @@ import com.example.chat_app_frontend.adapter.ServerAdapter;
 import com.example.chat_app_frontend.model.FriendRequest;
 import com.example.chat_app_frontend.model.Server;
 import com.example.chat_app_frontend.repository.FriendRepository;
+import com.example.chat_app_frontend.repository.ServerRepository;
+import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.example.chat_app_frontend.utils.FriendNotificationHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.ValueEventListener;
 
@@ -34,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rvServerRail;
     private View serverSidebar;
+    private BottomNavigationView bottomNav;
     private ServerAdapter serverAdapter;
     private FriendRepository friendRepo;
     private ValueEventListener friendRequestListener;
@@ -54,7 +59,9 @@ public class MainActivity extends AppCompatActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            // Keep top/side safe area, but do not pad the root at the bottom.
+            // Bottom padding here pushes BottomNavigationView too far above the gesture area.
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
             return insets;
         });
 
@@ -75,11 +82,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Lắng nghe lời mời kết bạn từ bất kỳ màn hình nào
         startFriendRequestListener();
+        syncFcmToken();
 
         // Load DM fragment by default
         loadDMFragment();
 
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
@@ -87,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 serverSidebar.setVisibility(View.VISIBLE);
                 Server selectedServer = serverAdapter.getSelectedServer();
                 if (selectedServer != null && !selectedServer.getId().equals("0")) {
-                    loadServerFragment(selectedServer.getName());
+                    loadServerFragment(selectedServer);
                 } else {
                     loadDMFragment();
                 }
@@ -115,6 +123,39 @@ public class MainActivity extends AppCompatActivity {
             AddServerBottomSheet addServerBottomSheet = new AddServerBottomSheet();
             addServerBottomSheet.show(getSupportFragmentManager(), "AddServerBottomSheet");
         });
+    }
+
+    private void syncFcmToken() {
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+        if (uid == null || uid.trim().isEmpty()) {
+            return;
+        }
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(token -> {
+                    if (token == null || token.trim().isEmpty()) {
+                        return;
+                    }
+                    FirebaseManager.getDatabaseReference("user_fcm_tokens")
+                            .child(uid)
+                            .child(token)
+                            .setValue(true);
+                });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        reloadServerRail();
+    }
+
+    /**
+     * Được gọi khi user chấp nhận lời mời server trong Notifications.
+     * Reload rail ngay và chuyển về Trang chủ để thấy server mới.
+     */
+    public void onServerInviteAccepted(String serverId) {
+        reloadServerRail(serverId, true);
     }
 
     private void startFriendRequestListener() {
@@ -158,30 +199,76 @@ public class MainActivity extends AppCompatActivity {
         rvServerRail.setLayoutManager(new LinearLayoutManager(this));
 
         List<Server> servers = new ArrayList<>();
-        // ID "0" is reserved for DM/Home (Discord Logo)
-        // Using 0 as iconResId will trigger the 'initial' text fallback,
-        // to make it look like Discord button we might need a drawable.
-        // For now let's use a placeholder or implement specific logic for the top
-        // button.
+        // ID "0" — DM / Trang chủ, giữ cố định
         servers.add(new Server("0", "Direct Messages", R.drawable.ic_chat_bubble));
-        servers.add(new Server("1", "CP Man", 0));
-        servers.add(new Server("2", "Vietnam Gamers", 0));
-        servers.add(new Server("3", "Study Group", 0));
-        // Add more servers as needed
 
         serverAdapter = new ServerAdapter(servers, server -> {
             serverAdapter.setSelectedServer(server.getId());
             if (server.getId().equals("0")) {
                 loadDMFragment();
             } else {
-                loadServerFragment(server.getName());
+                loadServerFragment(server);
+            }
+        }, server -> {
+            if (!server.getId().equals("0")) {
+                ServerOptionsBottomSheet bottomSheet = ServerOptionsBottomSheet
+                        .newInstance(server.getId(), server.getName());
+                bottomSheet.show(getSupportFragmentManager(), "ServerOptionsBottomSheet");
             }
         });
 
-        // Select DM by default
         serverAdapter.setSelectedServer("0");
-
         rvServerRail.setAdapter(serverAdapter);
+    }
+
+    /** Tải lại danh sách server từ Firebase, giữ lại lựa chọn hiện tại nếu có thể. */
+    private void reloadServerRail() {
+        reloadServerRail(null, false);
+    }
+
+    private void reloadServerRail(String preferredServerId, boolean navigateHomeAfterLoad) {
+        Server selected = serverAdapter.getSelectedServer();
+        String selectedId = selected != null ? selected.getId() : "0";
+        String targetId = (preferredServerId != null && !preferredServerId.trim().isEmpty())
+                ? preferredServerId
+                : selectedId;
+
+        serverAdapter.clearRealServers();
+
+        ServerRepository.getInstance().getMyServers(new ServerRepository.OnServerListCallback() {
+            @Override
+            public void onSuccess(List<Server> servers) {
+                boolean targetExists = false;
+                for (Server server : servers) {
+                    serverAdapter.addServer(server);
+                    if (server.getId() != null && server.getId().equals(targetId)) {
+                        targetExists = true;
+                    }
+                }
+
+                String finalSelectedId = targetExists ? targetId : "0";
+                serverAdapter.setSelectedServer(finalSelectedId);
+
+                if (navigateHomeAfterLoad) {
+                    serverSidebar.setVisibility(View.VISIBLE);
+                    if (bottomNav != null && bottomNav.getSelectedItemId() != R.id.nav_home) {
+                        bottomNav.setSelectedItemId(R.id.nav_home);
+                    } else {
+                        Server selectedServer = serverAdapter.getSelectedServer();
+                        if (selectedServer != null && !"0".equals(selectedServer.getId())) {
+                            loadServerFragment(selectedServer);
+                        } else {
+                            loadDMFragment();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                // Không hiện lỗi — list vẫn show DM item
+            }
+        });
     }
 
     private void loadDMFragment() {
@@ -191,10 +278,10 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    private void loadServerFragment(String serverName) {
+    private void loadServerFragment(Server server) {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                .replace(R.id.fragment_container, ServerFragment.newInstance(serverName))
+                .replace(R.id.fragment_container, ServerFragment.newInstance(server.getId(), server.getName()))
                 .commit();
     }
 }
