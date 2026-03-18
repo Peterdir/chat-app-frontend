@@ -16,8 +16,13 @@ import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.adapter.MessageAdapter;
 import com.example.chat_app_frontend.model.Message;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class DMChatActivity extends AppCompatActivity {
 
@@ -33,6 +38,12 @@ public class DMChatActivity extends AppCompatActivity {
 
     private static final String SELF_ID = "self";
     private static final String SELF_NAME = "You";
+    private static final Locale VIETNAMESE_LOCALE = new Locale("vi", "VN");
+    private static final long GROUP_BREAK_THRESHOLD_MS = TimeUnit.MINUTES.toMillis(10);
+
+    private String lastMessageDayKey;
+    private String lastMessageSenderId;
+    private long lastMessageAtMillis = -1L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,23 +132,94 @@ public class DMChatActivity extends AppCompatActivity {
         String text = etMessageInput.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
 
-        boolean isFirst = true;
-        for (int i = messageList.size() - 1; i >= 0; i--) {
-            Message last = messageList.get(i);
-            if (!Message.TYPE_DATE_DIVIDER.equals(last.getMessageType())) {
-                isFirst = !SELF_ID.equals(last.getSenderId());
-                break;
-            }
+        long now = System.currentTimeMillis();
+        String currentDayKey = buildDayKey(now);
+        if (!currentDayKey.equals(lastMessageDayKey)) {
+            messageList.add(new Message(formatDateDividerLabel(now)));
+            messageAdapter.notifyItemInserted(messageList.size() - 1);
+            lastMessageDayKey = currentDayKey;
         }
 
+        boolean isFirst = !SELF_ID.equals(lastMessageSenderId)
+                || isGroupBreak(lastMessageAtMillis, now);
+
         Message msg = new Message(
-                String.valueOf(System.currentTimeMillis()),
-            SELF_ID, SELF_NAME, 0, text, "Vừa xong",
-                true, isFirst
+                String.valueOf(now),
+                SELF_ID,
+                SELF_NAME,
+                0,
+                text,
+                formatMessageTimestamp(now),
+                true,
+                isFirst
         );
+
         messageList.add(msg);
         messageAdapter.notifyItemInserted(messageList.size() - 1);
         rvMessages.scrollToPosition(messageList.size() - 1);
         etMessageInput.setText("");
+
+        lastMessageSenderId = SELF_ID;
+        lastMessageAtMillis = now;
+    }
+
+    private String formatMessageTimestamp(long millis) {
+        Date date = new Date(millis);
+        String timeText = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(date);
+        if (isToday(millis)) {
+            return "Hôm nay lúc " + timeText;
+        }
+        if (isYesterday(millis)) {
+            return "Hôm qua lúc " + timeText;
+        }
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(date);
+    }
+
+    private String formatDateDividerLabel(long millis) {
+        String fullDate = capitalizeFirst(new SimpleDateFormat(
+                "EEEE, d 'tháng' M 'năm' yyyy", VIETNAMESE_LOCALE
+        ).format(new Date(millis)));
+        return fullDate;
+    }
+
+    private boolean isGroupBreak(long previousMillis, long currentMillis) {
+        if (previousMillis <= 0 || currentMillis <= 0) {
+            return false;
+        }
+        return (currentMillis - previousMillis) > GROUP_BREAK_THRESHOLD_MS;
+    }
+
+    private String capitalizeFirst(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        return text.substring(0, 1).toUpperCase(VIETNAMESE_LOCALE) + text.substring(1);
+    }
+
+    private String buildDayKey(long millis) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(millis);
+        int year = cal.get(Calendar.YEAR);
+        int dayOfYear = cal.get(Calendar.DAY_OF_YEAR);
+        return year + "-" + dayOfYear;
+    }
+
+    private boolean isToday(long millis) {
+        Calendar now = Calendar.getInstance();
+        Calendar target = Calendar.getInstance();
+        target.setTimeInMillis(millis);
+        return now.get(Calendar.YEAR) == target.get(Calendar.YEAR)
+                && now.get(Calendar.DAY_OF_YEAR) == target.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private boolean isYesterday(long millis) {
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DAY_OF_YEAR, -1);
+
+        Calendar target = Calendar.getInstance();
+        target.setTimeInMillis(millis);
+
+        return yesterday.get(Calendar.YEAR) == target.get(Calendar.YEAR)
+                && yesterday.get(Calendar.DAY_OF_YEAR) == target.get(Calendar.DAY_OF_YEAR);
     }
 }

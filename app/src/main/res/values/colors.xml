@@ -20,6 +20,8 @@
     <color name="discord_server_rail_bg">#1E1F22</color>
     <color name="discord_sidebar_bg">#2B2D31</color>
     <color name="discord_divider">#313338</color>
+    <color name="discord_divider_soft">#4A313338</color>
+    <color name="discord_date_divider_text">#9A9FA8</color>
     <color name="discord_profile_banner_end">#E87BA8</color>
     <color name="discord_button_secondary">#4E5058</color>
 

@@ -83,6 +83,30 @@ public class ChatRepository {
                                          String senderName,
                                          String content,
                                          OnCompleteListener callback) {
+        sendServerChannelMessage(
+            serverId,
+            channelId,
+            channelName,
+            senderId,
+            senderName,
+            content,
+            null,
+            null,
+            null,
+            callback
+        );
+        }
+
+        public void sendServerChannelMessage(String serverId,
+                         String channelId,
+                         String channelName,
+                         String senderId,
+                         String senderName,
+                         String content,
+                         String replyToMessageId,
+                         String replyToSenderName,
+                         String replyToContent,
+                         OnCompleteListener callback) {
         DatabaseReference messagesRef = getServerChannelMessagesRef(serverId, channelId);
         String msgId = messagesRef.push().getKey();
         if (msgId == null) {
@@ -98,7 +122,10 @@ public class ChatRepository {
                 content,
                 serverId,
                 channelId,
-                createdAt
+                createdAt,
+                replyToMessageId,
+                replyToSenderName,
+                replyToContent
         );
 
         messagesRef.child(msgId)
@@ -131,6 +158,91 @@ public class ChatRepository {
         return FirebaseManager.getDatabaseReference("chat_messages/server_channels")
                 .child(serverId + "_" + channelId)
                 .child("messages");
+    }
+
+    public void toggleMessageReaction(String serverId,
+                                      String channelId,
+                                      String messageId,
+                                      String emoji,
+                                      String uid,
+                                      OnCompleteListener callback) {
+        if (messageId == null || messageId.trim().isEmpty()) {
+            callback.onFailure("Thiếu messageId");
+            return;
+        }
+        if (emoji == null || emoji.trim().isEmpty()) {
+            callback.onFailure("Thiếu emoji");
+            return;
+        }
+        if (uid == null || uid.trim().isEmpty()) {
+            callback.onFailure("Thiếu uid");
+            return;
+        }
+
+        DatabaseReference reactionRef = getServerChannelMessagesRef(serverId, channelId)
+                .child(messageId)
+                .child("reactions")
+                .child(emoji)
+                .child(uid);
+
+        reactionRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    reactionRef.removeValue()
+                            .addOnSuccessListener(unused -> callback.onSuccess())
+                            .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+                    return;
+                }
+
+                reactionRef.setValue(true)
+                        .addOnSuccessListener(unused -> callback.onSuccess())
+                        .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.getMessage());
+            }
+        });
+    }
+
+    public void updateMessageContent(String serverId,
+                                     String channelId,
+                                     String messageId,
+                                     String newContent,
+                                     OnCompleteListener callback) {
+        if (messageId == null || messageId.trim().isEmpty()) {
+            callback.onFailure("Thiếu messageId");
+            return;
+        }
+        if (newContent == null || newContent.trim().isEmpty()) {
+            callback.onFailure("Nội dung tin nhắn không hợp lệ");
+            return;
+        }
+
+        getServerChannelMessagesRef(serverId, channelId)
+                .child(messageId)
+                .child("content")
+                .setValue(newContent.trim())
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public void deleteMessage(String serverId,
+                              String channelId,
+                              String messageId,
+                              OnCompleteListener callback) {
+        if (messageId == null || messageId.trim().isEmpty()) {
+            callback.onFailure("Thiếu messageId");
+            return;
+        }
+
+        getServerChannelMessagesRef(serverId, channelId)
+                .child(messageId)
+                .removeValue()
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
     }
 
     private void queuePushEvent(String serverId,

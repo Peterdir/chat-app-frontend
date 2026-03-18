@@ -5,7 +5,12 @@ This worker replaces Firebase Cloud Functions for chat push notifications.
 It listens on Realtime Database path:
 - chat_push_events
 
-For each child added event, it sends FCM to the topic in payload and then deletes that queue item.
+For each child added event, it:
+- reads server members from `server_members/{serverId}`
+- excludes the `senderId` from recipients
+- collects recipient device tokens from `user_fcm_tokens/{uid}`
+- sends FCM multicast to those recipient tokens
+- deletes the queue item
 
 ## Runtime
 - Node.js 18+
@@ -42,6 +47,9 @@ The Android app writes queue events with fields:
 - senderName
 - content
 - createdAt
+
+Notes:
+- `topic` is kept for backward compatibility in payload, but worker routing is based on `serverId` + `senderId` + user token map.
 
 ## Deep link payload sent to app
 FCM data payload includes:

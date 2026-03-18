@@ -1,5 +1,7 @@
 package com.example.chat_app_frontend.model;
 
+import java.util.Map;
+
 public class Message {
     public static final String TYPE_TEXT = "text";
     public static final String TYPE_IMAGE = "image";
@@ -16,6 +18,10 @@ public class Message {
     private int imageResId;
     private boolean isFirstInGroup; // first msg of consecutive msgs from same sender
     private boolean isSelf;         // sent by current user
+    private Map<String, Map<String, Boolean>> reactions;
+    private String replyToMessageId;
+    private String replyToSenderName;
+    private String replyToContent;
 
     // Constructor for date divider
     public Message(String dateLabel) {
@@ -60,6 +66,14 @@ public class Message {
     public int getImageResId() { return imageResId; }
     public boolean isFirstInGroup() { return isFirstInGroup; }
     public boolean isSelf() { return isSelf; }
+    public Map<String, Map<String, Boolean>> getReactions() { return reactions; }
+    public String getReplyToMessageId() { return replyToMessageId; }
+    public String getReplyToSenderName() { return replyToSenderName; }
+    public String getReplyToContent() { return replyToContent; }
 
     public void setFirstInGroup(boolean firstInGroup) { isFirstInGroup = firstInGroup; }
+    public void setReactions(Map<String, Map<String, Boolean>> reactions) { this.reactions = reactions; }
+    public void setReplyToMessageId(String replyToMessageId) { this.replyToMessageId = replyToMessageId; }
+    public void setReplyToSenderName(String replyToSenderName) { this.replyToSenderName = replyToSenderName; }
+    public void setReplyToContent(String replyToContent) { this.replyToContent = replyToContent; }
 }
