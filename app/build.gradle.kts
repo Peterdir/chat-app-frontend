@@ -73,4 +73,5 @@ dependencies {
 
     // Emoji picker (Jetpack Emoji2)
     implementation("androidx.emoji2:emoji2-emojipicker:1.5.0")
+    implementation("com.google.firebase:firebase-storage")
 }

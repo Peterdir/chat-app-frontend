@@ -13,6 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Server;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -23,7 +28,7 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
     private OnServerLongClickListener longClickListener;
 
     public interface OnServerClickListener {
-        void onServerClick(Server server); // Hàm sẽ được gọi khi có user click
+        void onServerClick(Server server);
     }
 
     public interface OnServerLongClickListener {
@@ -60,6 +65,10 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
         View indicator;
         CardView cardView;
 
+        // Thêm 2 biến này để lắng nghe Real-time
+        private DatabaseReference serverRef;
+        private ValueEventListener serverListener;
+
         public ServerViewHolder(@NonNull View itemView) {
             super(itemView);
             imgServerIcon = itemView.findViewById(R.id.img_server_icon);
@@ -69,36 +78,39 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
         }
 
         public void bind(final Server server, final OnServerClickListener listener, final OnServerLongClickListener longClickListener) {
-            // Set icon or initial
-            if (server.getIconResId() != 0) {
-                // Local drawable (e.g. DM home item)
-                imgServerIcon.setImageResource(server.getIconResId());
-                imgServerIcon.setVisibility(View.VISIBLE);
-                tvServerInitial.setVisibility(View.GONE);
-            } else if (server.getIconUrl() != null && !server.getIconUrl().isEmpty()) {
-                // Remote icon URL — load with Glide
-                imgServerIcon.setVisibility(View.VISIBLE);
-                tvServerInitial.setVisibility(View.GONE);
-                Glide.with(imgServerIcon.getContext())
-                        .load(server.getIconUrl())
-                        .centerCrop()
-                        .into(imgServerIcon);
-            } else {
-                // No icon — show first letter as initial
-                imgServerIcon.setVisibility(View.GONE);
-                tvServerInitial.setVisibility(View.VISIBLE);
-                tvServerInitial.setText(String.valueOf(server.getName().charAt(0)).toUpperCase());
+
+            if (serverRef != null && serverListener != null) {
+                serverRef.removeEventListener(serverListener);
             }
 
-            // Animation values
-            float targetRadius = server.isSelected() ? 16f : 48f; // Rounded rect vs Circle
+            updateIconUI(server);
+
+            if (server.getIconResId() == 0 && server.getId() != null && !server.getId().isEmpty()) {
+                serverRef = FirebaseDatabase.getInstance().getReference("servers").child(server.getId());
+                serverListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            String newIconUrl = snapshot.child("iconUrl").getValue(String.class);
+                            String newName = snapshot.child("name").getValue(String.class);
+
+                            server.setIconUrl(newIconUrl != null ? newIconUrl : "");
+                            if (newName != null) server.setName(newName);
+
+                            updateIconUI(server);
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                };
+                serverRef.addValueEventListener(serverListener);
+            }
+
+            float targetRadius = server.isSelected() ? 16f : 48f;
             float currentRadius = cardView.getRadius();
 
-            // Only animate if there is a significant change to avoid layout trashing on
-            // scroll
             if (Math.abs(currentRadius - dpToPx(targetRadius)) > 1f) {
-                android.animation.ValueAnimator radiusAnim = android.animation.ValueAnimator.ofFloat(currentRadius,
-                        dpToPx(targetRadius));
+                android.animation.ValueAnimator radiusAnim = android.animation.ValueAnimator.ofFloat(currentRadius, dpToPx(targetRadius));
                 radiusAnim.setDuration(200);
                 radiusAnim.addUpdateListener(animation -> cardView.setRadius((float) animation.getAnimatedValue()));
                 radiusAnim.start();
@@ -106,8 +118,6 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
                 cardView.setRadius(dpToPx(targetRadius));
             }
 
-            // Indicator Animation (Scale/Visibility)
-            // We can animate height or visibility. Simple fade/scale is easier.
             if (server.isSelected()) {
                 if (indicator.getVisibility() != View.VISIBLE) {
                     indicator.setVisibility(View.VISIBLE);
@@ -131,6 +141,28 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
             });
         }
 
+        private void updateIconUI(Server server) {
+            if (server.getIconResId() != 0) {
+                // Icon cục bộ (Ví dụ nút Trang chủ DM)
+                imgServerIcon.setImageResource(server.getIconResId());
+                imgServerIcon.setVisibility(View.VISIBLE);
+                tvServerInitial.setVisibility(View.GONE);
+            } else if (server.getIconUrl() != null && !server.getIconUrl().isEmpty()) {
+                // Đã có link ảnh hoặc chuỗi Base64
+                imgServerIcon.setVisibility(View.VISIBLE);
+                tvServerInitial.setVisibility(View.GONE);
+                Glide.with(imgServerIcon.getContext())
+                        .load(server.getIconUrl())
+                        .centerCrop()
+                        .into(imgServerIcon);
+            } else {
+                imgServerIcon.setVisibility(View.GONE);
+                tvServerInitial.setVisibility(View.VISIBLE);
+                if (server.getName() != null && !server.getName().isEmpty()) {
+                    tvServerInitial.setText(String.valueOf(server.getName().charAt(0)).toUpperCase());
+                }
+            }
+        }
 
         private float dpToPx(float dp) {
             return android.util.TypedValue.applyDimension(
@@ -156,10 +188,8 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
             }
         }
 
-        if (oldPosition != -1)
-            notifyItemChanged(oldPosition);
-        if (newPosition != -1)
-            notifyItemChanged(newPosition);
+        if (oldPosition != -1) notifyItemChanged(oldPosition);
+        if (newPosition != -1) notifyItemChanged(newPosition);
     }
 
     public Server getSelectedServer() {
@@ -171,16 +201,11 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
         return null;
     }
 
-    /** Thêm server mới vào cuối danh sách (không phải DM item). */
     public void addServer(Server server) {
         serverList.add(server);
         notifyItemInserted(serverList.size() - 1);
     }
 
-    /**
-     * Xóa tất cả server thật (giữ lại item DM ở vị trí 0).
-     * Dùng khi cần reload danh sách từ Firebase.
-     */
     public void clearRealServers() {
         int originalSize = serverList.size();
         if (originalSize > 1) {

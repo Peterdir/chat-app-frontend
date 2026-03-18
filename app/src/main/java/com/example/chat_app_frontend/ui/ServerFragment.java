@@ -65,7 +65,7 @@ public class ServerFragment extends Fragment {
         tvServerName.setText(serverName);
 
         view.findViewById(R.id.layout_server_header).setOnClickListener(v -> {
-            ServerProfileBottomSheet bottomSheet = ServerProfileBottomSheet.newInstance(serverName);
+            ServerProfileBottomSheet bottomSheet = ServerProfileBottomSheet.newInstance(serverId, serverName);
             bottomSheet.show(getChildFragmentManager(), "ServerProfileBottomSheet");
         });
 
