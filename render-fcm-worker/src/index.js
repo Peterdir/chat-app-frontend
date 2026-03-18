@@ -50,25 +50,65 @@ function buildNotification(eventData) {
   return { title, body };
 }
 
+function chunkArray(items, chunkSize) {
+  const result = [];
+  for (let i = 0; i < items.length; i += chunkSize) {
+    result.push(items.slice(i, i + chunkSize));
+  }
+  return result;
+}
+
+async function collectRecipientTokens(serverId, senderId) {
+  const membersSnapshot = await admin.database().ref(`server_members/${serverId}`).once("value");
+  const members = membersSnapshot.val() || {};
+  const memberIds = Object.keys(members).filter((uid) => uid && uid !== senderId);
+
+  if (memberIds.length === 0) {
+    return [];
+  }
+
+  const tokenSnapshots = await Promise.all(
+    memberIds.map((uid) => admin.database().ref(`user_fcm_tokens/${uid}`).once("value"))
+  );
+
+  const uniqueTokens = new Set();
+  tokenSnapshots.forEach((snapshot) => {
+    const tokenMap = snapshot.val() || {};
+    Object.keys(tokenMap).forEach((token) => {
+      if (token && token.trim()) {
+        uniqueTokens.add(token);
+      }
+    });
+  });
+
+  return Array.from(uniqueTokens);
+}
+
 async function handlePushEvent(snapshot) {
   const eventId = snapshot.key;
   const eventData = snapshot.val() || {};
 
-  const topic = eventData.topic;
   const serverId = eventData.serverId;
   const channelId = eventData.channelId;
   const channelName = eventData.channelName || "channel";
+  const senderId = eventData.senderId || "";
 
-  if (!topic || !serverId || !channelId) {
+  if (!serverId || !channelId) {
     console.warn(`[skip] invalid event payload id=${eventId}`);
+    await snapshot.ref.remove();
+    return;
+  }
+
+  const recipientTokens = await collectRecipientTokens(serverId, senderId);
+  if (recipientTokens.length === 0) {
+    console.log(`[skip] event=${eventId} has no recipient tokens`);
     await snapshot.ref.remove();
     return;
   }
 
   const notification = buildNotification(eventData);
 
-  const message = {
-    topic,
+  const messageTemplate = {
     notification,
     android: {
       priority: "high",
@@ -86,8 +126,29 @@ async function handlePushEvent(snapshot) {
   };
 
   try {
-    const response = await admin.messaging().send(message);
-    console.log(`[sent] event=${eventId} topic=${topic} msg=${response}`);
+    const tokenBatches = chunkArray(recipientTokens, 500);
+    let successCount = 0;
+
+    for (const tokens of tokenBatches) {
+      const response = await admin.messaging().sendEachForMulticast({
+        ...messageTemplate,
+        tokens,
+      });
+
+      successCount += response.successCount;
+
+      response.responses.forEach((result, index) => {
+        if (!result.success) {
+          console.warn(
+            `[failed-token] event=${eventId} token=${tokens[index]} error=${result.error?.code || result.error?.message || "unknown"}`
+          );
+        }
+      });
+    }
+
+    console.log(
+      `[sent] event=${eventId} recipients=${recipientTokens.length} delivered=${successCount}`
+    );
   } catch (error) {
     console.error(`[failed] event=${eventId}`, error);
   } finally {
@@ -109,7 +170,8 @@ async function main() {
     });
   });
 
-  process.on("SIGTERM", () => {console.log("SIGTERM received. Stopping worker.");
+  process.on("SIGTERM", () => {
+    console.log("SIGTERM received. Stopping worker.");
     queueRef.off();
     process.exit(0);
   });

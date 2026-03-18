@@ -5,34 +5,36 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingTop="16dp"
-    android:paddingBottom="8dp">
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:paddingTop="22dp"
+    android:paddingBottom="12dp">
 
     <!-- Left line -->
     <View
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_weight="1"
-        android:background="#3A3B41" />
+        android:background="@color/discord_divider_soft" />
 
     <TextView
         android:id="@+id/tv_date_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="10 tháng 1 năm 2026"
-        android:textColor="#72767D"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp" />
+        android:textColor="@color/discord_date_divider_text"
+        android:textSize="11sp"
+        android:textStyle="normal"
+        android:letterSpacing="0.02"
+        android:includeFontPadding="false"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp" />
 
     <!-- Right line -->
     <View
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_weight="1"
-        android:background="#3A3B41" />
+        android:background="@color/discord_divider_soft" />
 
 </LinearLayout>

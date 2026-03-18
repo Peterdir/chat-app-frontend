@@ -19,6 +19,8 @@
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
     </style>
 
+    <style name="Theme.Splash.Launcher" parent="Theme.Splash" />
+
     <!-- Transparent Bottom Sheet Theme -->
     <style name="TransparentBottomSheetDialogTheme" parent="Theme.Material3.DayNight.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/TransparentBottomSheetStyle</item>
