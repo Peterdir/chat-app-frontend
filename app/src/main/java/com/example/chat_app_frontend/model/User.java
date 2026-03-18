@@ -27,6 +27,8 @@ public class User {
     private UserStatus status;
     private List<String> roles;   // ["USER", "ADMIN"]
     private String avatarDecorationId; // ID của khung trang trí hiện tại
+    private String profileEffectId;    // ID của hiệu ứng hồ sơ hiện tại
+    private String namePlateId;        // ID của bảng tên hiện tại
 
     // =========================================================================
     // Constructors
@@ -178,6 +180,22 @@ public class User {
 
     public void setAvatarDecorationId(String avatarDecorationId) {
         this.avatarDecorationId = avatarDecorationId;
+    }
+
+    public String getProfileEffectId() {
+        return profileEffectId;
+    }
+
+    public void setProfileEffectId(String profileEffectId) {
+        this.profileEffectId = profileEffectId;
+    }
+
+    public String getNamePlateId() {
+        return namePlateId;
+    }
+
+    public void setNamePlateId(String namePlateId) {
+        this.namePlateId = namePlateId;
     }
 
     // =========================================================================

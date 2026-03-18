@@ -36,6 +36,10 @@ android {
             pickFirsts.add("**/*.so")
         }
     }
+
+    androidResources {
+        noCompress.add("png")
+    }
 }
 
 dependencies {
@@ -57,6 +61,12 @@ dependencies {
 
     // Tải ảnh từ URL (avatar)
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    
+    // Hỗ trợ ảnh động APNG/GIF/WebP
+    implementation("com.github.penfeizhou.android.animation:apng:3.0.5")
+    implementation("com.github.penfeizhou.android.animation:glide-plugin:3.0.5")
+    implementation("com.github.penfeizhou.android.animation:frameanimation:3.0.5")
 
     // GIF picker (GIPHY SDK)
     implementation("com.giphy.sdk:ui:2.4.1")

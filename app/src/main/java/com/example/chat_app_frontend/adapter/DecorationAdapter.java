@@ -61,7 +61,9 @@ public class DecorationAdapter extends RecyclerView.Adapter<DecorationAdapter.Vi
                 break;
             case REGULAR:
                 holder.imgDecoration.setVisibility(View.VISIBLE);
-                holder.imgDecoration.setImageResource(decoration.getDrawableResId());
+                com.bumptech.glide.Glide.with(holder.itemView.getContext())
+                    .load(decoration.getDrawableResId())
+                    .into(holder.imgDecoration);
                 holder.avatarPlaceholder.setVisibility(View.VISIBLE);
                 if (decoration.isNitro()) holder.imgNitro.setVisibility(View.VISIBLE);
                 if (decoration.isLocked()) holder.imgLock.setVisibility(View.VISIBLE);

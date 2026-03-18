@@ -14,12 +14,21 @@ import com.example.chat_app_frontend.model.Decoration;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.DecorationRepository;
 import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.model.ProfileEffect;
+import com.example.chat_app_frontend.repository.ProfileEffectRepository;
 import com.example.chat_app_frontend.utils.FirebaseManager;
+import com.example.chat_app_frontend.model.NamePlate;
+import com.example.chat_app_frontend.repository.NamePlateRepository;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.android.material.badge.BadgeDrawable;
 import android.widget.Toast;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.graphics.Color;
+import com.bumptech.glide.Glide;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class EditProfileActivity extends AppCompatActivity implements NamePlateSelectionBottomSheet.OnNamePlateSelectedListener {
 
     private TabLayout tabLayout;
     private ImageView btnBack;
@@ -27,10 +36,13 @@ public class EditProfileActivity extends AppCompatActivity {
     private View btnNitroPreview;
     private View shimmerNitroPreview;
     private EditText etDisplayName, etPronouns, etAboutMe;
-    private TextView txtDecorationNameCurrent;
-    private ImageView imgMainAvatarDecoration;
+    private TextView txtDecorationNameCurrent, txtProfileEffectNameCurrent, txtNamePlateNameCurrent;
+    private TextView txtPreviewDisplayName, txtPreviewUsername, txtPreviewBio, txtPreviewPronouns, txtAboutMeCharCount;
+    private ImageView imgMainAvatar, imgMainAvatarDecoration, imgMainProfileEffect;
     private User currentUser;
     private String currentDecorationId = "none";
+    private String currentProfileEffectId = "none";
+    private String currentNamePlateId = "none";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +54,12 @@ public class EditProfileActivity extends AppCompatActivity {
         setupButtons();
         loadUserInfo();
         
+        setupTextWatchers();
+        updateSaveButtonState(false);
+        
         // Bắt đầu hiệu ứng lấp lánh cho nút Nitro
         startShimmerAnimation();
     }
-
     private void initViews() {
         tabLayout = findViewById(R.id.tab_layout);
         btnBack = findViewById(R.id.btn_back);
@@ -56,7 +70,16 @@ public class EditProfileActivity extends AppCompatActivity {
         etPronouns = findViewById(R.id.et_pronouns);
         etAboutMe = findViewById(R.id.et_about_me);
         txtDecorationNameCurrent = findViewById(R.id.txt_decoration_name_current);
+        txtProfileEffectNameCurrent = findViewById(R.id.txt_profile_effect_name_current);
+        txtNamePlateNameCurrent = findViewById(R.id.txt_name_plate_name_current);
+        txtPreviewDisplayName = findViewById(R.id.txt_preview_display_name);
+        txtPreviewUsername = findViewById(R.id.txt_preview_username);
+        txtPreviewBio = findViewById(R.id.txt_preview_bio);
+        txtPreviewPronouns = findViewById(R.id.txt_preview_pronouns);
+        txtAboutMeCharCount = findViewById(R.id.txt_about_me_char_count);
+        imgMainAvatar = findViewById(R.id.img_main_avatar);
         imgMainAvatarDecoration = findViewById(R.id.img_main_avatar_decoration);
+        imgMainProfileEffect = findViewById(R.id.img_main_profile_effect);
     }
 
     private void setupTabs() {
@@ -96,7 +119,6 @@ public class EditProfileActivity extends AppCompatActivity {
 
         // Clear name button
         View btnClearName = findViewById(R.id.btn_clear_name);
-        EditText etDisplayName = findViewById(R.id.et_display_name);
         if (btnClearName != null && etDisplayName != null) {
             btnClearName.setOnClickListener(v -> etDisplayName.setText(""));
         }
@@ -120,9 +142,72 @@ public class EditProfileActivity extends AppCompatActivity {
                 bottomSheet.setOnDecorationAppliedListener(decoration -> {
                     currentDecorationId = decoration.getId();
                     updateCurrentDecorationUI(decoration);
+                    checkChanges();
                 });
                 bottomSheet.show(getSupportFragmentManager(), "DecorationSelectionBottomSheet");
             });
+        }
+
+        // Profile Effect item
+        View itemProfileEffect = findViewById(R.id.item_profile_effect);
+        if (itemProfileEffect != null) {
+            itemProfileEffect.setOnClickListener(v -> {
+                ProfileEffectSelectionBottomSheet bottomSheet = new ProfileEffectSelectionBottomSheet();
+                bottomSheet.setInitialEffectId(currentProfileEffectId);
+                bottomSheet.setUser(currentUser);
+                bottomSheet.setOnEffectAppliedListener(effect -> {
+                    currentProfileEffectId = effect.getId();
+                    updateCurrentProfileEffectUI(effect);
+                    checkChanges();
+                });
+                bottomSheet.show(getSupportFragmentManager(), "ProfileEffectSelectionBottomSheet");
+            });
+        }
+        // Name Plate item
+        View itemNamePlate = findViewById(R.id.item_name_plate);
+        if (itemNamePlate != null) {
+            itemNamePlate.setOnClickListener(v -> {
+                NamePlateSelectionBottomSheet bottomSheet = NamePlateSelectionBottomSheet.newInstance(currentNamePlateId);
+                bottomSheet.show(getSupportFragmentManager(), "NamePlateSelectionBottomSheet");
+            });
+        }
+    }
+
+    @Override
+    public void onNamePlateSelected(NamePlate plate) {
+        currentNamePlateId = plate.getId();
+        updateCurrentNamePlateUI(plate);
+        checkChanges();
+    }
+
+    private void updateCurrentNamePlateUI(NamePlate plate) {
+        if (txtNamePlateNameCurrent != null) {
+            txtNamePlateNameCurrent.setText(plate.getName());
+        }
+        if (imgMainProfileEffect != null) {
+            if (plate.getType() == NamePlate.Type.NONE) {
+                imgMainProfileEffect.setImageResource(0);
+                imgMainProfileEffect.setVisibility(View.GONE);
+            } else {
+                imgMainProfileEffect.setImageResource(plate.getDrawableResId());
+                imgMainProfileEffect.setVisibility(View.VISIBLE);
+                // Adjust height for "Bảng Tên" feel if needed, though img_main_profile_effect is already 320dp
+            }
+        }
+    }
+
+    private void updateCurrentProfileEffectUI(ProfileEffect effect) {
+        if (effect == null || effect.getType() == ProfileEffect.Type.NONE || effect.getType() == ProfileEffect.Type.SHOP) {
+            if (imgMainProfileEffect != null) imgMainProfileEffect.setVisibility(View.GONE);
+            if (txtProfileEffectNameCurrent != null) txtProfileEffectNameCurrent.setText("Không");
+        } else {
+            if (imgMainProfileEffect != null) {
+                imgMainProfileEffect.setVisibility(View.VISIBLE);
+                Glide.with(this)
+                    .load(effect.getEffectResId())
+                    .into(imgMainProfileEffect);
+            }
+            if (txtProfileEffectNameCurrent != null) txtProfileEffectNameCurrent.setText(effect.getName());
         }
     }
 
@@ -132,7 +217,9 @@ public class EditProfileActivity extends AppCompatActivity {
             if (txtDecorationNameCurrent != null) txtDecorationNameCurrent.setText("Không");
         } else {
             imgMainAvatarDecoration.setVisibility(View.VISIBLE);
-            imgMainAvatarDecoration.setImageResource(decoration.getDrawableResId());
+            Glide.with(this)
+                .load(decoration.getDrawableResId())
+                .into(imgMainAvatarDecoration);
             if (txtDecorationNameCurrent != null) txtDecorationNameCurrent.setText(decoration.getName());
         }
     }
@@ -149,13 +236,55 @@ public class EditProfileActivity extends AppCompatActivity {
             @Override
             public void onUserLoaded(User user) {
                 currentUser = user;
-                etDisplayName.setText(user.getDisplayName());
-                etPronouns.setText(user.getPronouns());
-                etAboutMe.setText(user.getBio());
+                etDisplayName.setText(user.getDisplayName() != null ? user.getDisplayName() : "");
+                etPronouns.setText(user.getPronouns() != null ? user.getPronouns() : "");
+                etAboutMe.setText(user.getBio() != null ? user.getBio() : "");
                 
-                currentDecorationId = user.getAvatarDecorationId();
+                currentDecorationId = user.getAvatarDecorationId() != null ? user.getAvatarDecorationId() : "none";
                 Decoration currentDecor = DecorationRepository.getInstance().findDecorationById(currentDecorationId);
                 updateCurrentDecorationUI(currentDecor);
+
+                currentProfileEffectId = user.getProfileEffectId() != null ? user.getProfileEffectId() : "none";
+                ProfileEffect currentEffect = ProfileEffectRepository.getInstance().findEffectById(currentProfileEffectId);
+                updateCurrentProfileEffectUI(currentEffect);
+
+                currentNamePlateId = user.getNamePlateId() != null ? user.getNamePlateId() : "none";
+                NamePlate currentPlate = NamePlateRepository.getInstance().findNamePlateById(currentNamePlateId);
+                updateCurrentNamePlateUI(currentPlate);
+
+                // Update Preview Info
+                if (txtPreviewDisplayName != null) {
+                    txtPreviewDisplayName.setText(user.getDisplayNameOrUserName());
+                }
+                if (txtPreviewUsername != null) {
+                    txtPreviewUsername.setText(user.getUserName());
+                }
+                if (txtPreviewBio != null) {
+                    txtPreviewBio.setText(user.getBio() != null ? user.getBio() : "");
+                }
+                if (txtPreviewPronouns != null) {
+                    String pr = user.getPronouns();
+                    if (pr != null && !pr.isEmpty()) {
+                        txtPreviewPronouns.setVisibility(View.VISIBLE);
+                        txtPreviewPronouns.setText(pr);
+                    } else {
+                        txtPreviewPronouns.setVisibility(View.GONE);
+                    }
+                }
+                
+                // Avatar loading
+                if (imgMainAvatar != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
+                    Glide.with(EditProfileActivity.this)
+                        .load(user.getAvatarUrl())
+                        .placeholder(R.drawable.img_discord)
+                        .into(imgMainAvatar);
+                }
+
+                // Initial char count
+                updateCharCount(user.getBio());
+                
+                // Reset checkChanges because we just loaded new data
+                updateSaveButtonState(false);
             }
 
             @Override
@@ -170,6 +299,85 @@ public class EditProfileActivity extends AppCompatActivity {
         });
     }
 
+    private void setupTextWatchers() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                checkChanges();
+                if (etDisplayName.hasFocus() && txtPreviewDisplayName != null) {
+                    String previewName = s.length() > 0 ? s.toString() : (currentUser != null ? currentUser.getUserName() : "");
+                    txtPreviewDisplayName.setText(previewName);
+                }
+                if (etPronouns.hasFocus() && txtPreviewPronouns != null) {
+                    if (s.length() > 0) {
+                        txtPreviewPronouns.setVisibility(View.VISIBLE);
+                        txtPreviewPronouns.setText(s.toString());
+                    } else {
+                        txtPreviewPronouns.setVisibility(View.GONE);
+                    }
+                }
+                if (etAboutMe.hasFocus()) {
+                    updateCharCount(s.toString());
+                    if (txtPreviewBio != null) {
+                        txtPreviewBio.setText(s.toString());
+                    }
+                }
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        };
+
+        etDisplayName.addTextChangedListener(watcher);
+        etPronouns.addTextChangedListener(watcher);
+        etAboutMe.addTextChangedListener(watcher);
+    }
+
+    private void checkChanges() {
+        if (currentUser == null) return;
+
+        boolean changed = false;
+
+        String displayName = etDisplayName.getText().toString();
+        String pronouns = etPronouns.getText().toString();
+        String aboutMe = etAboutMe.getText().toString();
+
+        if (!displayName.equals(currentUser.getDisplayName())) changed = true;
+        
+        String currentPronounsValue = currentUser.getPronouns() != null ? currentUser.getPronouns() : "";
+        if (!pronouns.equals(currentPronounsValue)) changed = true;
+        
+        String currentBioValue = currentUser.getBio() != null ? currentUser.getBio() : "";
+        if (!aboutMe.equals(currentBioValue)) changed = true;
+        
+        String userDecorationId = currentUser.getAvatarDecorationId() != null ? currentUser.getAvatarDecorationId() : "none";
+        if (!currentDecorationId.equals(userDecorationId)) changed = true;
+        
+        String userEffectId = currentUser.getProfileEffectId() != null ? currentUser.getProfileEffectId() : "none";
+        if (!currentProfileEffectId.equals(userEffectId)) changed = true;
+
+        String userNamePlateId = currentUser.getNamePlateId() != null ? currentUser.getNamePlateId() : "none";
+        if (!currentNamePlateId.equals(userNamePlateId)) changed = true;
+
+        updateSaveButtonState(changed);
+    }
+
+    private void updateSaveButtonState(boolean enabled) {
+        if (btnSave != null) {
+            btnSave.setEnabled(enabled);
+            btnSave.setAlpha(enabled ? 1.0f : 0.5f);
+            btnSave.setTextColor(enabled ? Color.WHITE : Color.parseColor("#80FFFFFF"));
+        }
+    }
+
+    private void updateCharCount(String bio) {
+        if (txtAboutMeCharCount != null) {
+            int length = bio != null ? bio.length() : 0;
+            txtAboutMeCharCount.setText(String.valueOf(190 - length));
+        }
+    }
+
     private void saveUserInfo() {
         if (currentUser == null) return;
 
@@ -177,6 +385,8 @@ public class EditProfileActivity extends AppCompatActivity {
         currentUser.setPronouns(etPronouns.getText().toString());
         currentUser.setBio(etAboutMe.getText().toString());
         currentUser.setAvatarDecorationId(currentDecorationId);
+        currentUser.setProfileEffectId(currentProfileEffectId);
+        currentUser.setNamePlateId(currentNamePlateId);
 
         UserRepository.getInstance().saveUser(currentUser, new UserRepository.OnCompleteListener() {
             @Override

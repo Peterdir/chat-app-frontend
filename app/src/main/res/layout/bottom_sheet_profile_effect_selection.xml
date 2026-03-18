@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_dark"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:background="#36393F" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:text="Thay đổi Hiệu Ứng Hồ Sơ"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Preview Card Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:layout_marginHorizontal="8dp"
+        android:background="@drawable/bg_rounded_card"
+        android:backgroundTint="#111214">
+
+        <!-- Outer Border for Glow/Depth -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_card_outline"
+            android:alpha="0.2" />
+
+        <!-- Profile Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- Banner gradient -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="#1E1F22" />
+
+            <!-- Info Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="12dp">
+
+                <!-- Avatar Container -->
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-60dp">
+
+                    <!-- Avatar Decoration -->
+                    <ImageView
+                        android:id="@+id/img_preview_decoration"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center"
+                        android:scaleType="centerInside"
+                        android:translationX="0dp"
+                        android:translationY="0dp" />
+
+                    <!-- Avatar Card -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_gravity="center"
+                        app:cardCornerRadius="36sp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#111214">
+                        <ImageView
+                            android:id="@+id/img_preview_avatar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/img_discord"
+                            android:scaleType="centerCrop" />
+                    </androidx.cardview.widget.CardView>
+                </FrameLayout>
+
+                <!-- Name & Username -->
+                <TextView
+                    android:id="@+id/txt_preview_display_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Duy"
+                    android:textColor="@android:color/white"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/txt_preview_username"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="peter_18352"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="14sp" />
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@drawable/ic_quest_badge"
+                        app:tint="@null" />
+                </LinearLayout>
+
+                <!-- Joined Date Box -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_pill_dark"
+                    android:backgroundTint="#1E1F22"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GIA NHẬP TỪ"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_discord_logo"
+                            app:tint="@color/discord_text_secondary" />
+                        <TextView
+                            android:id="@+id/txt_preview_join_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="5 thg 10, 2023"
+                            android:textColor="@color/discord_text_secondary"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Profile Effect Overlay -->
+        <ImageView
+            android:id="@+id/img_preview_profile_effect"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Selected Effect Info -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txt_selected_effect_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Song Tử"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_selected_effect_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Đã nhận vào tháng 1 năm 2026"
+            android:textColor="@color/discord_text_secondary"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="12dp"
+        android:text="Hiệu ứng của bạn"
+        android:textColor="@color/discord_text_secondary"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <!-- Effects RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_profile_effects"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Hủy"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btn_apply"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_blurple"
+            android:text="Áp dụng"
+            android:textColor="@android:color/white"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+</LinearLayout>
