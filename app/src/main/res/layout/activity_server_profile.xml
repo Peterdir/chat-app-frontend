@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/discord_bg_dark">
@@ -34,25 +33,31 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Server Avatar with Ring -->
             <FrameLayout
+                android:id="@+id/fl_avatar_container"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:layout_marginTop="0dp">
+                android:layout_marginTop="0dp"
+                android:clickable="true"
+                android:focusable="true">
+
                 <ImageView
+                    android:id="@+id/iv_server_avatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/avatar1"
                     android:scaleType="centerCrop"
                     android:background="@drawable/bg_circle_dark"
                     android:padding="4dp" />
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:clickable="false"
+                    android:focusable="false"
                     android:background="@drawable/bg_avatar_decoration_ring" />
             </FrameLayout>
 
-            <!-- Server Name -->
             <TextView
                 android:id="@+id/tv_profile_server_name"
                 android:layout_width="match_parent"
@@ -63,7 +68,6 @@
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
-            <!-- Online/Member Count -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -100,7 +104,6 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -108,13 +111,41 @@
                 android:orientation="horizontal"
                 android:gravity="center">
 
-                <!-- Boost -->
+                <LinearLayout
+                    android:id="@+id/btn_edit_avatar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_circle_dark"
+                        android:padding="16dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Đổi ảnh"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical">
+
                     <ImageView
                         android:layout_width="56dp"
                         android:layout_height="56dp"
@@ -122,6 +153,7 @@
                         android:padding="16dp"
                         android:src="@drawable/ic_nitro_boost"
                         app:tint="#EB459E" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -131,13 +163,13 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <!-- Invite -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical">
+
                     <ImageView
                         android:layout_width="56dp"
                         android:layout_height="56dp"
@@ -145,6 +177,7 @@
                         android:padding="16dp"
                         android:src="@drawable/ic_person_add"
                         app:tint="@color/white" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -154,13 +187,13 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <!-- Notifications -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical">
+
                     <ImageView
                         android:layout_width="56dp"
                         android:layout_height="56dp"
@@ -168,6 +201,7 @@
                         android:padding="16dp"
                         android:src="@drawable/ic_notifications"
                         app:tint="@color/white" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -178,8 +212,7 @@
                 </LinearLayout>
 
             </LinearLayout>
-bottom_sheet_user_options.xml
-            <!-- Main Settings List -->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -187,7 +220,6 @@ bottom_sheet_user_options.xml
                 android:background="@drawable/bg_rounded_card"
                 android:orientation="vertical">
 
-                <!-- Edit Per-server Profile -->
                 <TextView
                     android:id="@+id/tv_edit_server_profile"
                     android:layout_width="match_parent"
@@ -205,11 +237,11 @@ bottom_sheet_user_options.xml
                     android:layout_height="1dp"
                     android:background="@color/discord_divider" />
 
-                <!-- Hide Muted Channels -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -217,6 +249,7 @@ bottom_sheet_user_options.xml
                         android:text="Ẩn kênh đã tắt tiếng"
                         android:textColor="@color/white"
                         android:textSize="16sp" />
+
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/switch_hide_muted"
                         android:layout_width="wrap_content"
@@ -230,22 +263,24 @@ bottom_sheet_user_options.xml
                     android:layout_height="1dp"
                     android:background="@color/discord_divider" />
 
-                <!-- Allow Direct Messages -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp">
+
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:orientation="vertical">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Cho phép tin nhắn trực tiếp"
                             android:textColor="@color/white"
                             android:textSize="16sp" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -253,6 +288,7 @@ bottom_sheet_user_options.xml
                             android:textColor="@color/discord_text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
+
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -265,22 +301,24 @@ bottom_sheet_user_options.xml
                     android:layout_height="1dp"
                     android:background="@color/discord_divider" />
 
-                <!-- Allow Message Requests -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp">
+
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:orientation="vertical">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Cho phép tin nhắn chờ"
                             android:textColor="@color/white"
                             android:textSize="16sp" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -288,6 +326,7 @@ bottom_sheet_user_options.xml
                             android:textColor="@color/discord_text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
+
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -300,7 +339,6 @@ bottom_sheet_user_options.xml
                     android:layout_height="1dp"
                     android:background="@color/discord_divider" />
 
-                <!-- Report Server -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -314,7 +352,6 @@ bottom_sheet_user_options.xml
                     android:layout_height="1dp"
                     android:background="@color/discord_divider" />
 
-                <!-- Leave Server -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
