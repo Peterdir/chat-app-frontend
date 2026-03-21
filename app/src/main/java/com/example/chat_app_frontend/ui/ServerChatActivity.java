@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,6 +27,7 @@ import com.example.chat_app_frontend.model.Message;
 import com.example.chat_app_frontend.model.RealtimeChatMessage;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.ChatRepository;
+import com.example.chat_app_frontend.utils.ChatThemeHelper;
 import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.giphy.sdk.core.models.Media;
 import com.giphy.sdk.ui.GPHContentType;
@@ -76,6 +79,8 @@ public class ServerChatActivity extends AppCompatActivity
         private String currentUserId = "";
         private String currentUserName = "You";
         private Message pendingReplyMessage;
+        private ConstraintLayout rootLayout;
+        private String chatThemeId;
 
         // Keep constants for legacy payload formatting usage only
         private static final String SELF_NAME_FALLBACK = "You";
@@ -146,6 +151,15 @@ public class ServerChatActivity extends AppCompatActivity
 
                 chatRepository.subscribeToServerChannelTopic(serverId, channelId);
                 attachRealtimeMessages();
+
+        // Theme
+        rootLayout = findViewById(R.id.root_layout);
+        chatThemeId = serverId + "_" + channelId;
+        int savedTheme = ChatThemeHelper.getTheme(this, chatThemeId);
+        ChatThemeHelper.applyTheme(rootLayout, savedTheme);
+
+        ImageView btnTheme = findViewById(R.id.btn_theme);
+        btnTheme.setOnClickListener(v -> showThemePicker());
     }
 
     private void sendMessage() {
@@ -881,5 +895,56 @@ public class ServerChatActivity extends AppCompatActivity
                                 // Keep fallback name
                         }
                 });
+    }
+
+    private void showThemePicker() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View content = getLayoutInflater().inflate(R.layout.bottom_sheet_chat_theme, null, false);
+        dialog.setContentView(content);
+
+        LinearLayout llSwatches = content.findViewById(R.id.ll_theme_swatches);
+        int currentTheme = ChatThemeHelper.getTheme(this, chatThemeId);
+        int swatchSize = dp(56);
+        int margin = dp(8);
+
+        for (int i = 0; i < ChatThemeHelper.THEME_PREVIEW_COLORS.length; i++) {
+            final int index = i;
+
+            // Outer frame for selection ring
+            FrameLayout frame = new FrameLayout(this);
+            LinearLayout.LayoutParams frameLp = new LinearLayout.LayoutParams(swatchSize, swatchSize);
+            frameLp.setMarginEnd(margin);
+            frame.setLayoutParams(frameLp);
+
+            // Inner circle swatch
+            View swatch = new View(this);
+            int inset = dp(4);
+            FrameLayout.LayoutParams swatchLp = new FrameLayout.LayoutParams(
+                    swatchSize - inset * 2, swatchSize - inset * 2);
+            swatchLp.setMargins(inset, inset, inset, inset);
+            swatch.setLayoutParams(swatchLp);
+
+            android.graphics.drawable.GradientDrawable circle = new android.graphics.drawable.GradientDrawable();
+            circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            circle.setColor(ChatThemeHelper.THEME_PREVIEW_COLORS[i]);
+            swatch.setBackground(circle);
+
+            frame.addView(swatch);
+
+            // Selection ring
+            if (i == currentTheme) {
+                frame.setForeground(getDrawable(R.drawable.bg_theme_selected_ring));
+            }
+
+            frame.setOnClickListener(v -> {
+                ChatThemeHelper.saveTheme(this, chatThemeId, index);
+                ChatThemeHelper.applyTheme(rootLayout, index);
+                dialog.dismiss();
+            });
+
+            llSwatches.addView(frame);
+        }
+
+        dialog.show();
     }
 }
