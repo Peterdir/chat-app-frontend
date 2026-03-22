@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
@@ -38,7 +39,7 @@ public class EditServerProfileActivity extends AppCompatActivity implements Name
     
     // New Views for synchronization
     private ShapeableImageView imgServerIcon, imgPreviewAvatar;
-    private ImageView imgPreviewAvatarDecoration, imgPreviewProfileEffect;
+    private ImageView imgPreviewAvatarDecoration, imgPreviewProfileEffect, imgPreviewNamePlate, imgFullEffectAnimation;
     private TextView txtServerName, txtPreviewDisplayName, txtPreviewUsername;
     private EditText etServerNickname, etServerPronouns;
     private TextView txtDecorationNameCurrent, txtProfileEffectNameCurrent, txtNamePlateNameCurrent;
@@ -76,6 +77,8 @@ public class EditServerProfileActivity extends AppCompatActivity implements Name
         imgPreviewAvatar = findViewById(R.id.img_preview_avatar);
         imgPreviewAvatarDecoration = findViewById(R.id.img_preview_avatar_decoration);
         imgPreviewProfileEffect = findViewById(R.id.img_preview_profile_effect);
+        imgPreviewNamePlate = findViewById(R.id.img_preview_name_plate);
+        imgFullEffectAnimation = findViewById(R.id.img_full_effect_animation);
         txtPreviewDisplayName = findViewById(R.id.txt_preview_display_name);
         txtPreviewUsername = findViewById(R.id.txt_preview_username);
         etServerNickname = findViewById(R.id.et_server_nickname);
@@ -153,18 +156,20 @@ public class EditServerProfileActivity extends AppCompatActivity implements Name
         NamePlate plate = NamePlateRepository.getInstance().findNamePlateById(plateId);
         if (plate != null && txtNamePlateNameCurrent != null) {
             txtNamePlateNameCurrent.setText(plate.getName());
-            if (imgPreviewProfileEffect != null) {
-                if (plate.getType() == NamePlate.Type.NONE) {
-                    imgPreviewProfileEffect.setImageResource(0);
-                    imgPreviewProfileEffect.setVisibility(View.GONE);
+            if (imgPreviewNamePlate != null) {
+                if (plate.getType() == NamePlate.Type.NONE || plate.getType() == NamePlate.Type.STORE) {
+                    imgPreviewNamePlate.setImageResource(0);
+                    imgPreviewNamePlate.setVisibility(View.GONE);
                 } else {
-                    imgPreviewProfileEffect.setVisibility(View.VISIBLE);
-                    imgPreviewProfileEffect.setImageResource(plate.getDrawableResId());
+                    imgPreviewNamePlate.setVisibility(View.VISIBLE);
+                    Glide.with(this)
+                        .load(plate.getDrawableResId())
+                        .into(imgPreviewNamePlate);
                 }
             }
         } else if (txtNamePlateNameCurrent != null) {
             txtNamePlateNameCurrent.setText("Sử Dụng Mặc Định");
-            if (imgPreviewProfileEffect != null) imgPreviewProfileEffect.setVisibility(View.GONE);
+            if (imgPreviewNamePlate != null) imgPreviewNamePlate.setVisibility(View.GONE);
         }
     }
 
@@ -241,6 +246,7 @@ public class EditServerProfileActivity extends AppCompatActivity implements Name
                 bottomSheet.setOnEffectAppliedListener(effect -> {
                     currentProfileEffectId = effect.getId();
                     updateProfileEffectUI(currentProfileEffectId);
+                    playProfileEffectAnimation(effect);
                     checkChanges();
                 });
                 bottomSheet.show(getSupportFragmentManager(), "ProfileEffectSelectionBottomSheet");
@@ -249,7 +255,7 @@ public class EditServerProfileActivity extends AppCompatActivity implements Name
         
         if (itemNamePlate != null) {
             itemNamePlate.setOnClickListener(v -> {
-                NamePlateSelectionBottomSheet bottomSheet = NamePlateSelectionBottomSheet.newInstance(currentNamePlateId);
+                NamePlateSelectionBottomSheet bottomSheet = NamePlateSelectionBottomSheet.newInstance(currentNamePlateId, currentUser);
                 bottomSheet.show(getSupportFragmentManager(), "NamePlateSelectionBottomSheet");
             });
         }
@@ -326,6 +332,58 @@ public class EditServerProfileActivity extends AppCompatActivity implements Name
                 Toast.makeText(EditServerProfileActivity.this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void playProfileEffectAnimation(ProfileEffect effect) {
+        if (effect == null || effect.getType() == ProfileEffect.Type.NONE || effect.getType() == ProfileEffect.Type.SHOP) {
+            if (imgFullEffectAnimation != null) {
+                imgFullEffectAnimation.animate().cancel();
+                imgFullEffectAnimation.setVisibility(View.GONE);
+            }
+            return;
+        }
+
+        if (imgFullEffectAnimation != null) {
+            // Cancel any running animation and reset
+            imgFullEffectAnimation.animate().cancel();
+            imgFullEffectAnimation.setAlpha(0.0f);
+            imgFullEffectAnimation.setVisibility(View.VISIBLE);
+
+            Glide.with(this)
+                .load(effect.getEffectResId())
+                .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable com.bumptech.glide.load.engine.GlideException e, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, boolean isFirstResource) {
+                        if (!isFinishing() && !isDestroyed()) imgFullEffectAnimation.setVisibility(View.GONE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(android.graphics.drawable.Drawable resource, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
+                        // Resource is loaded, now start the perfect animation sequence
+                        if (!isFinishing() && !isDestroyed()) {
+                            imgFullEffectAnimation.animate()
+                                .alpha(1.0f)
+                                .setDuration(400) // Fade in
+                                .withEndAction(() -> {
+                                    // Stay visible for 1.2 seconds while animation plays
+                                    imgFullEffectAnimation.animate()
+                                        .alpha(0.0f)
+                                        .setStartDelay(1200)
+                                        .setDuration(800) // Fade out
+                                        .withEndAction(() -> {
+                                            imgFullEffectAnimation.setVisibility(View.GONE);
+                                            imgFullEffectAnimation.setImageDrawable(null);
+                                        })
+                                        .start();
+                                })
+                                .start();
+                        }
+                        return false;
+                    }
+                })
+                .into(imgFullEffectAnimation);
+        }
     }
 
     private void startShimmerAnimation() {

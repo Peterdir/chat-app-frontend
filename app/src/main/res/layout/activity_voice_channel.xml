@@ -107,26 +107,53 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- Hình Avatar/Logo ở giữa thẻ -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cv_center_avatar"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                app:cardCornerRadius="50dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@android:color/transparent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+            <!-- Name Plate Background Layer -->
+            <ImageView
+                android:id="@+id/img_card_name_plate"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
 
-                <ImageView
-                    android:id="@+id/iv_center_avatar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/avatar1" />
-            </androidx.cardview.widget.CardView>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- Avatar Container with Decoration -->
+                <FrameLayout
+                    android:id="@+id/fl_center_avatar_container"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cv_center_avatar"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center"
+                        app:cardCornerRadius="50dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@android:color/transparent">
+
+                        <ImageView
+                            android:id="@+id/iv_center_avatar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/avatar1" />
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Avatar Decoration Layer -->
+                    <ImageView
+                        android:id="@+id/iv_center_avatar_decoration"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+                </FrameLayout>
 
             <!-- Pill trạng thái dưới góc trái của thẻ Avatar (vd: 🎤 Duy) -->
             <LinearLayout
@@ -169,6 +196,8 @@
             android:layout_height="match_parent"
             android:background="@drawable/bg_border_green_large"
             android:visibility="gone" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 

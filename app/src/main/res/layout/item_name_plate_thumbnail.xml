@@ -61,6 +61,18 @@
             android:visibility="gone"
             app:tint="@android:color/white" />
 
+        <!-- Nitro Icon -->
+        <ImageView
+            android:id="@+id/img_nitro"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="4dp"
+            android:src="@drawable/ic_nitro_boost"
+            android:visibility="gone"
+            app:tint="@color/white" />
+
         <!-- Selection border -->
         <View
             android:id="@+id/view_selection"

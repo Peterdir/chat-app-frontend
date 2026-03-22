@@ -210,6 +210,14 @@ public class AuthManager {
     }
 
     /**
+     * Lấy Firebase UID hiện tại trực tiếp từ FirebaseAuth.
+     */
+    public String getUid() {
+        FirebaseUser fbUser = auth.getCurrentUser();
+        return (fbUser != null) ? fbUser.getUid() : null;
+    }
+
+    /**
      * Load profile user hiện tại từ RTDB khi app khởi động.
      * Dùng sau khi kiểm tra isLoggedIn() == true.
      */

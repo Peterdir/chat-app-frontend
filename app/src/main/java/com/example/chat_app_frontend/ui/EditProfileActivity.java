@@ -7,6 +7,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chat_app_frontend.R;
@@ -38,7 +39,7 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
     private EditText etDisplayName, etPronouns, etAboutMe;
     private TextView txtDecorationNameCurrent, txtProfileEffectNameCurrent, txtNamePlateNameCurrent;
     private TextView txtPreviewDisplayName, txtPreviewUsername, txtPreviewBio, txtPreviewPronouns, txtAboutMeCharCount;
-    private ImageView imgMainAvatar, imgMainAvatarDecoration, imgMainProfileEffect;
+    private ImageView imgMainAvatar, imgMainAvatarDecoration, imgMainProfileEffect, imgMainNamePlate, imgFullEffectAnimation;
     private User currentUser;
     private String currentDecorationId = "none";
     private String currentProfileEffectId = "none";
@@ -80,6 +81,8 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
         imgMainAvatar = findViewById(R.id.img_main_avatar);
         imgMainAvatarDecoration = findViewById(R.id.img_main_avatar_decoration);
         imgMainProfileEffect = findViewById(R.id.img_main_profile_effect);
+        imgMainNamePlate = findViewById(R.id.img_main_name_plate);
+        imgFullEffectAnimation = findViewById(R.id.img_full_effect_animation);
     }
 
     private void setupTabs() {
@@ -158,6 +161,7 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
                 bottomSheet.setOnEffectAppliedListener(effect -> {
                     currentProfileEffectId = effect.getId();
                     updateCurrentProfileEffectUI(effect);
+                    playProfileEffectAnimation(effect);
                     checkChanges();
                 });
                 bottomSheet.show(getSupportFragmentManager(), "ProfileEffectSelectionBottomSheet");
@@ -167,7 +171,7 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
         View itemNamePlate = findViewById(R.id.item_name_plate);
         if (itemNamePlate != null) {
             itemNamePlate.setOnClickListener(v -> {
-                NamePlateSelectionBottomSheet bottomSheet = NamePlateSelectionBottomSheet.newInstance(currentNamePlateId);
+                NamePlateSelectionBottomSheet bottomSheet = NamePlateSelectionBottomSheet.newInstance(currentNamePlateId, currentUser);
                 bottomSheet.show(getSupportFragmentManager(), "NamePlateSelectionBottomSheet");
             });
         }
@@ -184,14 +188,15 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
         if (txtNamePlateNameCurrent != null) {
             txtNamePlateNameCurrent.setText(plate.getName());
         }
-        if (imgMainProfileEffect != null) {
-            if (plate.getType() == NamePlate.Type.NONE) {
-                imgMainProfileEffect.setImageResource(0);
-                imgMainProfileEffect.setVisibility(View.GONE);
+        if (imgMainNamePlate != null) {
+            if (plate == null || plate.getType() == NamePlate.Type.NONE || plate.getType() == NamePlate.Type.STORE) {
+                imgMainNamePlate.setImageResource(0);
+                imgMainNamePlate.setVisibility(View.GONE);
             } else {
-                imgMainProfileEffect.setImageResource(plate.getDrawableResId());
-                imgMainProfileEffect.setVisibility(View.VISIBLE);
-                // Adjust height for "Bảng Tên" feel if needed, though img_main_profile_effect is already 320dp
+                imgMainNamePlate.setVisibility(View.VISIBLE);
+                Glide.with(this)
+                    .load(plate.getDrawableResId())
+                    .into(imgMainNamePlate);
             }
         }
     }
@@ -400,6 +405,58 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
                 Toast.makeText(EditProfileActivity.this, "Lưu thất bại: " + error, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void playProfileEffectAnimation(ProfileEffect effect) {
+        if (effect == null || effect.getType() == ProfileEffect.Type.NONE || effect.getType() == ProfileEffect.Type.SHOP) {
+            if (imgFullEffectAnimation != null) {
+                imgFullEffectAnimation.animate().cancel();
+                imgFullEffectAnimation.setVisibility(View.GONE);
+            }
+            return;
+        }
+
+        if (imgFullEffectAnimation != null) {
+            // Cancel any running animation and reset
+            imgFullEffectAnimation.animate().cancel();
+            imgFullEffectAnimation.setAlpha(0.0f);
+            imgFullEffectAnimation.setVisibility(View.VISIBLE);
+
+            Glide.with(this)
+                    .load(effect.getEffectResId())
+                    .listener(new com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable com.bumptech.glide.load.engine.GlideException e, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, boolean isFirstResource) {
+                            if (!isFinishing() && !isDestroyed()) imgFullEffectAnimation.setVisibility(View.GONE);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(android.graphics.drawable.Drawable resource, Object model, com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable> target, com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
+                            // Resource is loaded, now start the perfect animation sequence
+                            if (!isFinishing() && !isDestroyed()) {
+                                imgFullEffectAnimation.animate()
+                                        .alpha(1.0f)
+                                        .setDuration(400) // Fade in
+                                        .withEndAction(() -> {
+                                            // Stay visible for 1.2 seconds while animation plays
+                                            imgFullEffectAnimation.animate()
+                                                    .alpha(0.0f)
+                                                    .setStartDelay(1200)
+                                                    .setDuration(800) // Fade out
+                                                    .withEndAction(() -> {
+                                                        imgFullEffectAnimation.setVisibility(View.GONE);
+                                                        imgFullEffectAnimation.setImageDrawable(null);
+                                                    })
+                                                    .start();
+                                        })
+                                        .start();
+                            }
+                            return false;
+                        }
+                    })
+                    .into(imgFullEffectAnimation);
+        }
     }
 
     private void startShimmerAnimation() {

@@ -12,9 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Message;
-import com.bumptech.glide.Glide;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.utils.ProfileUIUtils;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +52,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private final List<Message> messages;
     private final OnMessageInteractionListener interactionListener;
     private final String currentUserId;
+
+    private final Map<RecyclerView.ViewHolder, ValueEventListener> listeners = new java.util.HashMap<>();
+    private final Map<RecyclerView.ViewHolder, String> holderToUid = new java.util.HashMap<>();
 
     private static final Pattern GIPHY_PAYLOAD_PATTERN =
             Pattern.compile("^\\[GIF\\]\\s+giphy://([A-Za-z0-9]+)$");
@@ -94,9 +101,64 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if (holder instanceof DateViewHolder) {
             ((DateViewHolder) holder).bind(msg);
         } else if (holder instanceof GroupStartViewHolder) {
-            ((GroupStartViewHolder) holder).bind(msg, interactionListener, currentUserId);
+            GroupStartViewHolder groupHolder = (GroupStartViewHolder) holder;
+            groupHolder.bind(msg, interactionListener, currentUserId);
+            
+            removeListener(groupHolder);
+            String uid = msg.getSenderId();
+            if (uid != null && !uid.trim().isEmpty()) {
+                holderToUid.put(groupHolder, uid);
+                ValueEventListener listener = UserRepository.getInstance().observeUser(uid, new UserRepository.OnUserLoadedListener() {
+                    @Override
+                    public void onUserLoaded(User updatedUser) {
+                        bindUserToGroupHolder(groupHolder, updatedUser);
+                    }
+                    @Override
+                    public void onUserNotFound() {}
+                    @Override
+                    public void onFailure(String error) {}
+                });
+                listeners.put(groupHolder, listener);
+            }
         } else if (holder instanceof ContinuationViewHolder) {
             ((ContinuationViewHolder) holder).bind(msg, interactionListener, currentUserId);
+        }
+    }
+
+    private void bindUserToGroupHolder(GroupStartViewHolder holder, User user) {
+        String display = user.getDisplayNameOrUserName();
+        if (display == null || display.trim().isEmpty()) {
+            display = "Unknown";
+        }
+        
+        ProfileUIUtils.loadUserProfile(holder.itemView.getContext(), user, 
+                holder.imgAvatar, holder.imgDecoration, holder.imgNamePlate, null);
+                
+        if (user.getAvatarUrl() == null || user.getAvatarUrl().isEmpty()) {
+            holder.imgAvatar.setVisibility(View.GONE);
+            holder.tvAvatarInitial.setVisibility(View.VISIBLE);
+            holder.tvAvatarInitial.setText(display.isEmpty() ? "?" : String.valueOf(display.charAt(0)).toUpperCase());
+            int idx = (user.getFirebaseUid() != null ? user.getFirebaseUid().hashCode() : 0) & 0x7FFFFFFF;
+            holder.cvAvatar.setCardBackgroundColor(AVATAR_COLORS[idx % AVATAR_COLORS.length]);
+        } else {
+            holder.imgAvatar.setVisibility(View.VISIBLE);
+            holder.tvAvatarInitial.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewRecycled(holder);
+        removeListener(holder);
+    }
+
+    private void removeListener(RecyclerView.ViewHolder holder) {
+        if (listeners.containsKey(holder) && holderToUid.containsKey(holder)) {
+            ValueEventListener oldListener = listeners.get(holder);
+            String oldUid = holderToUid.get(holder);
+            UserRepository.getInstance().removeListener(oldUid, oldListener);
+            listeners.remove(holder);
+            holderToUid.remove(holder);
         }
     }
 
@@ -260,6 +322,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     static class GroupStartViewHolder extends RecyclerView.ViewHolder {
         CardView cvAvatar;
         ImageView imgAvatar;
+        ImageView imgDecoration;
+        ImageView imgNamePlate;
         TextView tvAvatarInitial;
         TextView tvSenderName;
         TextView tvTimestamp;
@@ -277,6 +341,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             super(itemView);
             cvAvatar = itemView.findViewById(R.id.cv_avatar);
             imgAvatar = itemView.findViewById(R.id.img_avatar);
+            imgDecoration = itemView.findViewById(R.id.img_decoration);
+            imgNamePlate = itemView.findViewById(R.id.img_name_plate);
             tvAvatarInitial = itemView.findViewById(R.id.tv_avatar_initial);
             tvSenderName = itemView.findViewById(R.id.tv_sender_name);
             tvTimestamp = itemView.findViewById(R.id.tv_timestamp);
