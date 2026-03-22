@@ -444,43 +444,72 @@
                     android:layout_marginStart="64dp" />
 
                 <!-- Mục 3.2: User hiện tại -->
-                <LinearLayout
+                <RelativeLayout
                     android:id="@+id/btn_user_profile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="?attr/selectableItemBackground"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="16dp">
+                    android:background="?attr/selectableItemBackground">
 
+                    <!-- Name Plate Background for Member Row -->
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_discord_logo"
-                        android:background="@drawable/bg_circle_dark"
-                        android:backgroundTint="#5865F2"
-                        android:padding="6dp" />
+                        android:id="@+id/img_member_name_plate"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:scaleType="centerCrop"
+                        android:alpha="0.3"
+                        android:visibility="gone" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="16dp"
-                        android:text="Duy"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
 
-                    <!-- Trạng thái Mic của user này -->
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_mic_off"
-                        app:tint="#A0A0A0" />
-                </LinearLayout>
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp">
+
+                            <ImageView
+                                android:id="@+id/img_member_avatar"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_discord_logo"
+                                android:background="@drawable/bg_circle_dark"
+                                android:backgroundTint="#5865F2"
+                                android:padding="6dp" />
+
+                            <ImageView
+                                android:id="@+id/img_member_decoration"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/tv_member_name"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
+                            android:text="Duy"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <!-- Trạng thái Mic của user này -->
+                        <ImageView
+                            android:id="@+id/iv_member_mic_status"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_mic_off"
+                            app:tint="#A0A0A0" />
+                    </LinearLayout>
+                </RelativeLayout>
 
             </LinearLayout>
 

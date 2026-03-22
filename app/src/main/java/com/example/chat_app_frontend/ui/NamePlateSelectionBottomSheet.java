@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.adapter.NamePlateAdapter;
 import com.example.chat_app_frontend.model.NamePlate;
+import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.NamePlateRepository;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -32,14 +33,16 @@ public class NamePlateSelectionBottomSheet extends BottomSheetDialogFragment {
     private NamePlate selectedPlate;
     private String initialPlateId;
 
-    private ImageView imgPreviewNamePlate;
-    private TextView txtSelectedName, txtSelectedDesc;
+    private ImageView imgPreviewNamePlate, imgPreviewAvatar, imgPreviewDecoration;
+    private TextView txtSelectedName, txtSelectedDesc, txtPreviewDisplayName;
+    private User user;
 
-    public static NamePlateSelectionBottomSheet newInstance(String currentPlateId) {
+    public static NamePlateSelectionBottomSheet newInstance(String currentPlateId, User user) {
         NamePlateSelectionBottomSheet fragment = new NamePlateSelectionBottomSheet();
         Bundle args = new Bundle();
         args.putString("current_plate_id", currentPlateId);
         fragment.setArguments(args);
+        fragment.user = user;
         return fragment;
     }
 
@@ -68,8 +71,13 @@ public class NamePlateSelectionBottomSheet extends BottomSheetDialogFragment {
         selectedPlate = NamePlateRepository.getInstance().findNamePlateById(initialPlateId);
 
         imgPreviewNamePlate = view.findViewById(R.id.img_preview_name_plate);
+        imgPreviewAvatar = view.findViewById(R.id.img_preview_avatar);
+        imgPreviewDecoration = view.findViewById(R.id.img_preview_decoration);
         txtSelectedName = view.findViewById(R.id.txt_selected_plate_name);
         txtSelectedDesc = view.findViewById(R.id.txt_selected_plate_desc);
+        txtPreviewDisplayName = view.findViewById(R.id.txt_preview_display_name);
+
+        loadUserDataIntoPreview();
 
         updatePreview(selectedPlate);
 
@@ -110,20 +118,52 @@ public class NamePlateSelectionBottomSheet extends BottomSheetDialogFragment {
         shopAdapter.setSelectedId(selectedPlate.getId());
     }
 
+    private void loadUserDataIntoPreview() {
+        if (user != null) {
+            if (txtPreviewDisplayName != null) txtPreviewDisplayName.setText(user.getDisplayNameOrUserName());
+            
+            if (imgPreviewAvatar != null && user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
+                com.bumptech.glide.Glide.with(this).load(user.getAvatarUrl()).placeholder(R.drawable.img_discord).into(imgPreviewAvatar);
+            }
+
+            String decorId = user.getAvatarDecorationId();
+            if (decorId != null && !decorId.equals("none") && imgPreviewDecoration != null) {
+                com.example.chat_app_frontend.model.Decoration decor = com.example.chat_app_frontend.repository.DecorationRepository.getInstance().findDecorationById(decorId);
+                if (decor != null) {
+                    imgPreviewDecoration.setVisibility(View.VISIBLE);
+                    com.bumptech.glide.Glide.with(this).load(decor.getDrawableResId()).into(imgPreviewDecoration);
+                }
+            } else if (imgPreviewDecoration != null) {
+                imgPreviewDecoration.setVisibility(View.GONE);
+            }
+        }
+    }
+
     private void updatePreview(NamePlate plate) {
+        if (plate == null) return;
+        
         if (plate.getType() == NamePlate.Type.NONE) {
             imgPreviewNamePlate.setImageResource(0);
             imgPreviewNamePlate.setBackgroundResource(R.drawable.bg_rounded_card);
             txtSelectedName.setText("Không");
             txtSelectedDesc.setText("Không sử dụng bảng tên");
         } else if (plate.getType() == NamePlate.Type.STORE) {
-            // Keep current or show something
+            // Usually handle shop plates separately
         } else {
-            imgPreviewNamePlate.setImageResource(plate.getDrawableResId());
+            imgPreviewNamePlate.setVisibility(View.VISIBLE);
+            com.bumptech.glide.Glide.with(this)
+                .load(plate.getDrawableResId())
+                .into(imgPreviewNamePlate);
             txtSelectedName.setText(plate.getName());
-            txtSelectedDesc.setText(plate.getDescription());
-            if (!plate.getReceivedDate().isEmpty()) {
+            
+            if (plate.isNitro()) {
+                txtSelectedName.setText(plate.getName() + " 💎"); // Nitro indicator
+            }
+
+            if (plate.getReceivedDate() != null && !plate.getReceivedDate().isEmpty()) {
                 txtSelectedDesc.setText("Đã nhận vào " + plate.getReceivedDate());
+            } else {
+                txtSelectedDesc.setText(plate.getDescription());
             }
         }
     }

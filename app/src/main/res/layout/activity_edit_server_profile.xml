@@ -146,6 +146,14 @@
                         android:layout_height="100dp"
                         android:background="#000000" />
 
+                    <!-- Name Plate Preview -->
+                    <ImageView
+                        android:id="@+id/img_preview_name_plate"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+
                     <!-- Profile Effect Preview -->
                     <ImageView
                         android:id="@+id/img_preview_profile_effect"
@@ -153,6 +161,16 @@
                         android:layout_height="100dp"
                         android:scaleType="centerCrop"
                         android:visibility="gone" />
+
+                    <!-- Full Profile Effect Animation Overlay -->
+                    <ImageView
+                        android:id="@+id/img_full_effect_animation"
+                        android:layout_width="match_parent"
+                        android:layout_height="160dp"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        android:alpha="0"
+                        android:background="@android:color/transparent" />
 
                     <FrameLayout
                         android:layout_width="90dp"

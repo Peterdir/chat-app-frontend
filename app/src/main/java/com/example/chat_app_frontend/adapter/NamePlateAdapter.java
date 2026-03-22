@@ -46,6 +46,7 @@ public class NamePlateAdapter extends RecyclerView.Adapter<NamePlateAdapter.View
         holder.placeholderContainer.setVisibility(View.GONE);
         holder.overlay.setVisibility(View.GONE);
         holder.imgLock.setVisibility(View.GONE);
+        holder.imgNitro.setVisibility(View.GONE);
         holder.txtNewBadge.setVisibility(View.GONE);
         holder.viewSelection.setVisibility(plate.getId().equals(selectedId) ? View.VISIBLE : View.GONE);
 
@@ -61,10 +62,18 @@ public class NamePlateAdapter extends RecyclerView.Adapter<NamePlateAdapter.View
             holder.txtLabel.setText("Cửa hàng");
             if (plate.isNew()) holder.txtNewBadge.setVisibility(View.VISIBLE);
         } else {
-            holder.imgPlate.setImageResource(plate.getDrawableResId());
+            // Regular plate item
+            holder.imgPlate.setVisibility(View.VISIBLE);
+            com.bumptech.glide.Glide.with(holder.itemView.getContext())
+                .load(plate.getDrawableResId())
+                .into(holder.imgPlate);
+            
             if (plate.isLocked()) {
                 holder.overlay.setVisibility(View.VISIBLE);
                 holder.imgLock.setVisibility(View.VISIBLE);
+            }
+            if (plate.isNitro()) {
+                holder.imgNitro.setVisibility(View.VISIBLE);
             }
         }
 
@@ -86,7 +95,7 @@ public class NamePlateAdapter extends RecyclerView.Adapter<NamePlateAdapter.View
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView imgPlate, imgIcon, imgLock;
+        ImageView imgPlate, imgIcon, imgLock, imgNitro;
         TextView txtLabel, txtNewBadge;
         View viewSelection, overlay, placeholderContainer;
 
@@ -95,6 +104,7 @@ public class NamePlateAdapter extends RecyclerView.Adapter<NamePlateAdapter.View
             imgPlate = itemView.findViewById(R.id.img_plate);
             imgIcon = itemView.findViewById(R.id.img_icon);
             imgLock = itemView.findViewById(R.id.img_lock);
+            imgNitro = itemView.findViewById(R.id.img_nitro);
             txtLabel = itemView.findViewById(R.id.txt_label);
             txtNewBadge = itemView.findViewById(R.id.txt_new_badge);
             viewSelection = itemView.findViewById(R.id.view_selection);

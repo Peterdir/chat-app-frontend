@@ -140,6 +140,31 @@
                                 android:src="@drawable/ic_edit_pencil"
                                 app:tint="@android:color/white" />
 
+                            <!-- Name Plate Layer - Behind Profile Effect -->
+                            <ImageView
+                                android:id="@+id/img_main_name_plate"
+                                android:layout_width="match_parent"
+                                android:layout_height="160dp"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone" />
+
+                            <!-- Profile Effect Layer - Behind Avatar, on top of Banner -->
+                            <ImageView
+                                android:id="@+id/img_main_profile_effect"
+                                android:layout_width="match_parent"
+                                android:layout_height="160dp"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone" />
+
+                            <ImageView
+                                android:id="@+id/img_full_effect_animation"
+                                android:layout_width="match_parent"
+                                android:layout_height="160dp"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone"
+                                android:alpha="0"
+                                android:background="@android:color/transparent" />
+
                             <!-- Avatar and Status Row -->
                             <LinearLayout
                                 android:id="@+id/avatar_status_row"
@@ -280,14 +305,6 @@
                                 android:textSize="14sp" />
                         </LinearLayout>
                     </LinearLayout>
-
-                    <!-- Profile Effect Overlay - Covers everything! -->
-                    <ImageView
-                        android:id="@+id/img_main_profile_effect"
-                        android:layout_width="match_parent"
-                        android:layout_height="320dp"
-                        android:scaleType="centerCrop"
-                        android:visibility="gone" />
                 </FrameLayout>
 
                 <!-- Inputs Area -->

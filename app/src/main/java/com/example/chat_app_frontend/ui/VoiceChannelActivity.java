@@ -23,7 +23,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.manager.AuthManager;
 import com.example.chat_app_frontend.manager.VoiceStateManager;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.utils.ProfileUIUtils;
+import com.google.firebase.database.ValueEventListener;
+import android.widget.ImageView;
 
 import io.agora.rtc2.ChannelMediaOptions;
 import io.agora.rtc2.Constants;
@@ -59,6 +65,11 @@ public class VoiceChannelActivity extends AppCompatActivity {
 
     private FrameLayout flLocalVideo;
     private View vMainSpeakingBorder;
+    private ImageView imgCardNamePlate;
+    private ImageView ivCenterAvatar;
+    private ImageView ivCenterAvatarDecoration;
+
+    private ValueEventListener userProfileListener;
 
     // Biến cấu hình phòng gọi
     private String channelName = "test_channel";
@@ -92,6 +103,10 @@ public class VoiceChannelActivity extends AppCompatActivity {
         vMainSpeakingBorder = findViewById(R.id.v_main_speaking_border);
         btnAddUserTop = findViewById(R.id.btn_add_user_top);
         btnSpeakerTop = findViewById(R.id.btn_speaker_top);
+
+        imgCardNamePlate = findViewById(R.id.img_card_name_plate);
+        ivCenterAvatar = findViewById(R.id.iv_center_avatar);
+        ivCenterAvatarDecoration = findViewById(R.id.iv_center_avatar_decoration);
 
         btnVideo = findViewById(R.id.btn_video);
         btnMuteMain = findViewById(R.id.btn_mute_main);
@@ -171,6 +186,37 @@ public class VoiceChannelActivity extends AppCompatActivity {
                 ivUserMicStatus.setColorFilter(android.graphics.Color.parseColor("#43B581")); // Màu Xanh Lá
             }
         }
+        // Bắt đầu lắng nghe thay đổi hồ sơ user để đồng bộ
+        startObservingUserProfile();
+    }
+
+    private void startObservingUserProfile() {
+        String uid = AuthManager.getInstance(this).getUid();
+        if (uid == null) return;
+
+        userProfileListener = UserRepository.getInstance().observeUser(uid, new UserRepository.OnUserLoadedListener() {
+            @Override
+            public void onUserLoaded(User user) {
+                if (isFinishing() || isDestroyed()) return;
+                
+                // Đồng bộ Avatar, Trang trí và Bảng tên bằng Utility
+                ProfileUIUtils.loadUserProfile(VoiceChannelActivity.this, user, 
+                        ivCenterAvatar, ivCenterAvatarDecoration, imgCardNamePlate, null);
+                
+                // Cập nhật tên hiển thị trong Pill
+                if (user.getDisplayName() != null) {
+                    tvUserNameStatus.setText("🎤 " + user.getDisplayName());
+                }
+            }
+
+            @Override
+            public void onUserNotFound() {}
+
+            @Override
+            public void onFailure(String error) {
+                Log.e(TAG, "Lỗi đồng bộ hồ sơ: " + error);
+            }
+        });
     }
 
     private void setupClickListeners() {
@@ -256,8 +302,9 @@ public class VoiceChannelActivity extends AppCompatActivity {
         if (pillChannelName != null) {
             pillChannelName.setOnClickListener(v -> {
                 animateClick(v);
-                VoiceChannelSettingsBottomSheet settingsSheet = new VoiceChannelSettingsBottomSheet(channelName, "Duy");
-                settingsSheet.show(getSupportFragmentManager(), "SettingsSheet");
+                String uid = AuthManager.getInstance(this).getUid();
+                VoiceChannelSettingsBottomSheet settingsSheet = new VoiceChannelSettingsBottomSheet(channelName, uid != null ? uid : "User");
+                settingsSheet.show(getSupportFragmentManager(), "VoiceChannelSettings");
             });
         }
         btnEventMain.setOnClickListener(v -> {
@@ -458,6 +505,13 @@ public class VoiceChannelActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        
+        // Hủy lắng nghe hồ sơ
+        String uid = AuthManager.getInstance(this).getUid();
+        if (uid != null && userProfileListener != null) {
+            UserRepository.getInstance().removeListener(uid, userProfileListener);
+        }
+
         if (mRtcEngine != null) {
             mRtcEngine.leaveChannel();
             RtcEngine.destroy();

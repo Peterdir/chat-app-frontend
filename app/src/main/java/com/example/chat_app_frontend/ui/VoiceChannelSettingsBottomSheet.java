@@ -13,15 +13,25 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.manager.AuthManager;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.utils.ProfileUIUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.firebase.database.ValueEventListener;
+import android.widget.ImageView;
 
 public class VoiceChannelSettingsBottomSheet extends BottomSheetDialogFragment {
 
     private String channelName;
     private String userName; // We might want to pass this down if available, otherwise default to "You" or
                              // "Duy"
+    
+    private ValueEventListener userProfileListener;
+    private ImageView imgMemberAvatar, imgMemberDecoration, imgMemberNamePlate;
+    private TextView tvMemberName, tvSettingsUserName;
 
     public VoiceChannelSettingsBottomSheet(String channelName, String userName) {
         this.channelName = channelName;
@@ -107,7 +117,8 @@ public class VoiceChannelSettingsBottomSheet extends BottomSheetDialogFragment {
         if (btnUserProfile != null) {
             btnUserProfile.setOnClickListener(v -> {
                 dismiss();
-                UserProfileBottomSheet profileSheet = new UserProfileBottomSheet(displayUserName);
+                String uid = AuthManager.getInstance(requireContext()).getUid();
+                UserProfileBottomSheet profileSheet = new UserProfileBottomSheet(displayUserName, uid);
                 profileSheet.show(requireActivity().getSupportFragmentManager(), "UserProfileSheet");
             });
         }
@@ -137,6 +148,52 @@ public class VoiceChannelSettingsBottomSheet extends BottomSheetDialogFragment {
             switchVideoOnly.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 // Xử lý chỉ xem video
             });
+        }
+
+        // Bắt đầu quan sát hồ sơ để đồng bộ thời gian thực
+        startObservingUserProfile(view);
+    }
+
+    private void startObservingUserProfile(View view) {
+        tvSettingsUserName = view.findViewById(R.id.tv_settings_user_name);
+        tvMemberName = view.findViewById(R.id.tv_member_name);
+        imgMemberAvatar = view.findViewById(R.id.img_member_avatar);
+        imgMemberDecoration = view.findViewById(R.id.img_member_decoration);
+        imgMemberNamePlate = view.findViewById(R.id.img_member_name_plate);
+
+        String uid = AuthManager.getInstance(requireContext()).getUid();
+        if (uid == null) return;
+
+        userProfileListener = UserRepository.getInstance().observeUser(uid, new UserRepository.OnUserLoadedListener() {
+            @Override
+            public void onUserLoaded(User user) {
+                if (!isAdded()) return;
+
+                // Cập nhật tên ở các vị trí
+                if (user.getDisplayName() != null) {
+                    if (tvSettingsUserName != null) tvSettingsUserName.setText(user.getDisplayName());
+                    if (tvMemberName != null) tvMemberName.setText(user.getDisplayName());
+                }
+
+                // Cập nhật Avatar, Trang trí và Bảng tên hàng thành viên
+                ProfileUIUtils.loadUserProfile(requireContext(), user, 
+                        imgMemberAvatar, imgMemberDecoration, imgMemberNamePlate, null);
+            }
+
+            @Override
+            public void onUserNotFound() {}
+
+            @Override
+            public void onFailure(String error) {}
+        });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        String uid = AuthManager.getInstance(requireContext()).getUid();
+        if (uid != null && userProfileListener != null) {
+            UserRepository.getInstance().removeListener(uid, userProfileListener);
         }
     }
 }
