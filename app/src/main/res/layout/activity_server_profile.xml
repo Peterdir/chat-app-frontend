@@ -391,12 +391,16 @@
                     android:background="@color/discord_divider" />
 
                 <TextView
+                    android:id="@+id/tv_leave_server"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp"
                     android:text="Rời máy chủ"
                     android:textColor="#F38688"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground" />
 
             </LinearLayout>
 

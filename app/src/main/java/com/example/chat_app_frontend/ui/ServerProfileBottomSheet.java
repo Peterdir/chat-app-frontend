@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,8 +31,13 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -208,6 +214,12 @@ public class ServerProfileBottomSheet extends BottomSheetDialogFragment {
             });
         }
 
+        // === RỜI MÁY CHỦ ===
+        View tvLeaveServer = view.findViewById(R.id.tv_leave_server);
+        if (tvLeaveServer != null) {
+            tvLeaveServer.setOnClickListener(v -> showLeaveServerDialog());
+        }
+
         if (getDialog() != null && getDialog().getWindow() != null) {
             getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
@@ -278,5 +290,57 @@ public class ServerProfileBottomSheet extends BottomSheetDialogFragment {
                 }
             }
         }).start();
+    }
+
+    private void showLeaveServerDialog() {
+        if (getContext() == null) return;
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("Rời khỏi máy chủ?")
+                .setMessage("Bạn có chắc chắn muốn rời khỏi máy chủ này không? Bạn sẽ không thể xem lại tin nhắn trừ khi được mời lại.")
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .setPositiveButton("Rời khỏi", (dialog, which) -> leaveServer())
+                .show();
+    }
+
+    private void leaveServer() {
+        if (serverId == null || serverId.isEmpty()) {
+            Toast.makeText(getContext(), "Lỗi: Không có Server ID!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "Lỗi: Bạn chưa đăng nhập!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String uid = currentUser.getUid();
+
+        // Xóa đồng thời 2 node: server_members/{serverId}/{uid} và user_servers/{uid}/{serverId}
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("server_members/" + serverId + "/" + uid, null);
+        updates.put("user_servers/" + uid + "/" + serverId, null);
+
+        FirebaseDatabase.getInstance().getReference()
+                .updateChildren(updates)
+                .addOnSuccessListener(aVoid -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Đã rời máy chủ", Toast.LENGTH_SHORT).show();
+                    }
+                    // Chuyển về MainActivity, dọn sạch stack
+                    if (getActivity() != null) {
+                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        dismiss();
+                        getActivity().finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Lỗi rời máy chủ: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
