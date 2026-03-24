@@ -311,6 +311,13 @@ public class MainActivity extends AppCompatActivity {
 
         Uri data = intent.getData();
         if (data != null && "chatapp".equals(data.getScheme())) {
+            if ("nitro-payment".equals(data.getHost())) {
+                Intent nitroIntent = new Intent(this, NitroActivity.class);
+                nitroIntent.setData(data);
+                startActivity(nitroIntent);
+                intent.setData(null);
+                return;
+            }
             if (serverId == null || serverId.trim().isEmpty()) {
                 serverId = data.getQueryParameter("serverId");
             }

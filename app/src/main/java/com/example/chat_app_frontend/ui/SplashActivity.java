@@ -63,6 +63,27 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // Ping Render FCM Worker to wake it up
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL("https://chat-app-frontend-vxcr.onrender.com/health");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                // Tăng timeout lên 30s vì Render worker (bản free) có thể mất 15-30s để khởi động lại
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(30000);
+                int code = conn.getResponseCode();
+                conn.disconnect();
+                Log.d("SplashActivity", "Render Worker wake up ping success (Code: " + code + ")");
+            } catch (java.net.SocketTimeoutException timeoutEx) {
+                // Rất bình thường nếu Render đang ngủ (Sleep), request đầu tiên sẽ mất nhiều thời gian
+                // và có thể timeout, nhưng Render load balancer vẫn sẽ tiếp tục đánh thức worker.
+                Log.d("SplashActivity", "Ping timeout (Render is waking up now)");
+            } catch (Exception e) {
+                Log.w("SplashActivity", "Failed to ping Render worker: " + e.getMessage());
+            }
+        }).start();
+
         logoGroup        = findViewById(R.id.logo_group);
         ivControllerIcon = findViewById(R.id.iv_controller_icon);
         ivLogoWordmark   = findViewById(R.id.tv_logo_text);

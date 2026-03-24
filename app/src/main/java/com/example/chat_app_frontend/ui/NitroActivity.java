@@ -1,7 +1,10 @@
 package com.example.chat_app_frontend.ui;
 
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,19 +13,40 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
+
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.utils.FirebaseManager;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import android.content.Intent;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class NitroActivity extends AppCompatActivity {
 
+    private static final String PAYMENT_SERVICE_BASE_URL = "https://chat-app-frontend-vxcr.onrender.com";
+    private static final String PACKAGE_NITRO = "NITRO";
+    private static final String PACKAGE_BASIC = "BASIC";
+
     private ViewPager2 viewPagerPerks;
     private LinearLayout layoutDots;
+    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +58,7 @@ public class NitroActivity extends AppCompatActivity {
 
         setupAnimations();
         setupSlider();
+        handlePaymentResultIntent(getIntent());
     }
 
     private void setupAnimations() {
@@ -67,6 +92,7 @@ public class NitroActivity extends AppCompatActivity {
         setupShimmerButton(R.id.btn_get_basic, R.id.view_shine_basic);
 
         setupShimmerButton(R.id.btn_get_nitro_footer, R.id.view_shine_footer);
+        setupPurchaseButtons();
     }
 
     private void setupShimmerButton(int btnId, int shineId) {
@@ -77,14 +103,135 @@ public class NitroActivity extends AppCompatActivity {
             Animation animShimmer = AnimationUtils.loadAnimation(this, R.anim.anim_shimmer);
             viewShine.startAnimation(animShimmer);
 
-            btnContainer.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Animation animClick = AnimationUtils.loadAnimation(NitroActivity.this, R.anim.anim_click);
-                    v.startAnimation(animClick);
-                }
+            btnContainer.setOnClickListener(v -> {
+                Animation animClick = AnimationUtils.loadAnimation(NitroActivity.this, R.anim.anim_click);
+                v.startAnimation(animClick);
             });
         }
+    }
+
+    private void setupPurchaseButtons() {
+        View btnNitroTop = findViewById(R.id.btn_get_nitro);
+        View btnNitroFooter = findViewById(R.id.btn_get_nitro_footer);
+        View btnBasic = findViewById(R.id.btn_get_basic);
+
+        if (btnNitroTop != null) {
+            btnNitroTop.setOnClickListener(v -> startVnpayCheckout(PACKAGE_NITRO));
+        }
+        if (btnNitroFooter != null) {
+            btnNitroFooter.setOnClickListener(v -> startVnpayCheckout(PACKAGE_NITRO));
+        }
+        if (btnBasic != null) {
+            btnBasic.setOnClickListener(v -> startVnpayCheckout(PACKAGE_BASIC));
+        }
+    }
+
+    private void startVnpayCheckout(String packageType) {
+        if (FirebaseManager.getAuth().getCurrentUser() == null) {
+            Toast.makeText(this, "Bạn cần đăng nhập để mua Nitro", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this, "Đang tạo phiên thanh toán...", Toast.LENGTH_SHORT).show();
+        FirebaseManager.getAuth().getCurrentUser().getIdToken(true)
+                .addOnSuccessListener(result -> createPaymentWithToken(packageType, result.getToken()))
+                .addOnFailureListener(error -> Toast.makeText(
+                        NitroActivity.this,
+                        "Không lấy được token đăng nhập: " + error.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show());
+    }
+
+    private void createPaymentWithToken(String packageType, String idToken) {
+        networkExecutor.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(PAYMENT_SERVICE_BASE_URL + "/vnpay/create-payment");
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setConnectTimeout(12000);
+                conn.setReadTimeout(12000);
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("Authorization", "Bearer " + idToken);
+
+                JSONObject body = new JSONObject();
+                body.put("packageType", packageType);
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                }
+
+                int code = conn.getResponseCode();
+                String response = readAll(conn);
+                if (code < 200 || code >= 300) {
+                    throw new IllegalStateException("Không thể tạo thanh toán. Mã lỗi: " + code);
+                }
+
+                JSONObject json = new JSONObject(response);
+                String paymentUrl = json.optString("paymentUrl", "");
+                if (paymentUrl.isEmpty()) {
+                    throw new IllegalStateException("Không nhận được payment URL");
+                }
+
+                mainHandler.post(() -> {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
+                    startActivity(browserIntent);
+                });
+            } catch (Exception e) {
+                mainHandler.post(() -> Toast.makeText(
+                        NitroActivity.this,
+                        "Tạo thanh toán thất bại: " + e.getMessage(),
+                        Toast.LENGTH_LONG
+                ).show());
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        });
+    }
+
+    private String readAll(HttpURLConnection conn) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                conn.getResponseCode() >= 400 ? conn.getErrorStream() : conn.getInputStream(),
+                StandardCharsets.UTF_8
+        ));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handlePaymentResultIntent(intent);
+    }
+
+    private void handlePaymentResultIntent(Intent intent) {
+        if (intent == null || intent.getData() == null) return;
+        Uri data = intent.getData();
+        if (!"chatapp".equals(data.getScheme()) || !"nitro-payment".equals(data.getHost())) return;
+
+        String status = data.getQueryParameter("status");
+        String packageType = data.getQueryParameter("packageType");
+        if ("success".equalsIgnoreCase(status)) {
+            Toast.makeText(this, "Thanh toán thành công gói " + (packageType == null ? "Nitro" : packageType), Toast.LENGTH_LONG).show();
+        } else {
+            String code = data.getQueryParameter("code");
+            Toast.makeText(this, "Thanh toán thất bại (mã: " + (code == null ? "?" : code) + ")", Toast.LENGTH_LONG).show();
+        }
+        intent.setData(null);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkExecutor.shutdownNow();
     }
 
     private void setupSlider() {
