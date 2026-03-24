@@ -4,17 +4,22 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.adapter.MessageAdapter;
 import com.example.chat_app_frontend.model.Message;
+import com.example.chat_app_frontend.utils.ChatThemeHelper;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,6 +40,8 @@ public class DMChatActivity extends AppCompatActivity {
     private List<Message> messageList;
     private EditText etMessageInput;
     private String friendName;
+    private ConstraintLayout rootLayout;
+    private String chatId;
 
     private static final String SELF_ID = "self";
     private static final String SELF_NAME = "You";
@@ -82,6 +89,15 @@ public class DMChatActivity extends AppCompatActivity {
 
         btnCall.setOnClickListener(v -> startPrivateCall(false));
         btnVideoCall.setOnClickListener(v -> startPrivateCall(true));
+
+        // Theme
+        rootLayout = findViewById(R.id.root_layout);
+        chatId = "dm_" + friendName;
+        int savedTheme = ChatThemeHelper.getTheme(this, chatId);
+        ChatThemeHelper.applyTheme(rootLayout, savedTheme);
+
+        ImageView btnTheme = findViewById(R.id.btn_theme);
+        btnTheme.setOnClickListener(v -> showThemePicker());
     }
 
     private void startPrivateCall(boolean isVideo) {
@@ -221,5 +237,56 @@ public class DMChatActivity extends AppCompatActivity {
 
         return yesterday.get(Calendar.YEAR) == target.get(Calendar.YEAR)
                 && yesterday.get(Calendar.DAY_OF_YEAR) == target.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private void showThemePicker() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View content = getLayoutInflater().inflate(R.layout.bottom_sheet_chat_theme, null, false);
+        dialog.setContentView(content);
+
+        LinearLayout llSwatches = content.findViewById(R.id.ll_theme_swatches);
+        int currentTheme = ChatThemeHelper.getTheme(this, chatId);
+        int swatchSize = (int) (56 * getResources().getDisplayMetrics().density);
+        int margin = (int) (8 * getResources().getDisplayMetrics().density);
+
+        for (int i = 0; i < ChatThemeHelper.THEME_PREVIEW_COLORS.length; i++) {
+            final int index = i;
+
+            // Outer frame for selection ring
+            FrameLayout frame = new FrameLayout(this);
+            LinearLayout.LayoutParams frameLp = new LinearLayout.LayoutParams(swatchSize, swatchSize);
+            frameLp.setMarginEnd(margin);
+            frame.setLayoutParams(frameLp);
+
+            // Inner circle swatch
+            View swatch = new View(this);
+            int inset = (int) (4 * getResources().getDisplayMetrics().density);
+            FrameLayout.LayoutParams swatchLp = new FrameLayout.LayoutParams(
+                    swatchSize - inset * 2, swatchSize - inset * 2);
+            swatchLp.setMargins(inset, inset, inset, inset);
+            swatch.setLayoutParams(swatchLp);
+
+            android.graphics.drawable.GradientDrawable circle = new android.graphics.drawable.GradientDrawable();
+            circle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+            circle.setColor(ChatThemeHelper.THEME_PREVIEW_COLORS[i]);
+            swatch.setBackground(circle);
+
+            frame.addView(swatch);
+
+            // Selection ring
+            if (i == currentTheme) {
+                frame.setForeground(getDrawable(R.drawable.bg_theme_selected_ring));
+            }
+
+            frame.setOnClickListener(v -> {
+                ChatThemeHelper.saveTheme(this, chatId, index);
+                ChatThemeHelper.applyTheme(rootLayout, index);
+                dialog.dismiss();
+            });
+
+            llSwatches.addView(frame);
+        }
+
+        dialog.show();
     }
 }

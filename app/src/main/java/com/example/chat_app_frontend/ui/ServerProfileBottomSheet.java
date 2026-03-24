@@ -1,15 +1,19 @@
 package com.example.chat_app_frontend.ui;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,8 +29,15 @@ import com.bumptech.glide.Glide;
 import com.example.chat_app_frontend.R;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -85,11 +96,103 @@ public class ServerProfileBottomSheet extends BottomSheetDialogFragment {
         TextView tvServerName = view.findViewById(R.id.tv_profile_server_name);
         ivServerAvatar = view.findViewById(R.id.iv_server_avatar);
 
+        // === ĐỔI TÊN SERVER: ánh xạ view ===
+        TextInputLayout tilServerName = view.findViewById(R.id.til_server_name);
+        EditText etServerName = view.findViewById(R.id.et_server_name);
+        MaterialButton btnSaveServerName = view.findViewById(R.id.btn_save_server_name);
+
         if (tvServerName != null && serverName != null) {
             tvServerName.setText(serverName);
         }
 
         loadServerAvatar();
+
+        // === ĐỔI TÊN SERVER: load tên hiện tại và setup logic ===
+        final String[] originalName = {serverName != null ? serverName : ""};
+
+        if (etServerName != null) {
+            etServerName.setText(originalName[0]);
+        }
+
+        // Mặc định disable nút Save
+        if (btnSaveServerName != null) {
+            btnSaveServerName.setEnabled(false);
+            btnSaveServerName.setAlpha(0.5f);
+        }
+
+        // TextWatcher: enable/disable nút khi user gõ
+        if (etServerName != null && btnSaveServerName != null) {
+            final MaterialButton finalBtn = btnSaveServerName;
+            etServerName.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String current = s.toString().trim();
+                    boolean shouldEnable = current.length() > 0 && !current.equals(originalName[0]);
+                    finalBtn.setEnabled(shouldEnable);
+                    finalBtn.setAlpha(shouldEnable ? 1.0f : 0.5f);
+                    if (tilServerName != null) {
+                        tilServerName.setError(null);
+                    }
+                }
+            });
+        }
+
+        // Click nút Lưu: cập nhật tên lên Firebase
+        if (btnSaveServerName != null && etServerName != null) {
+            final EditText finalEt = etServerName;
+            final MaterialButton finalBtn2 = btnSaveServerName;
+            btnSaveServerName.setOnClickListener(v -> {
+                String newName = finalEt.getText().toString().trim();
+
+                if (newName.isEmpty()) {
+                    if (tilServerName != null) {
+                        tilServerName.setError("Tên Server không được để trống");
+                    }
+                    return;
+                }
+
+                if (serverId == null || serverId.isEmpty()) {
+                    Toast.makeText(getContext(), "Lỗi: Không có Server ID!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Disable nút khi đang lưu
+                finalBtn2.setEnabled(false);
+                finalBtn2.setAlpha(0.5f);
+
+                DatabaseReference nameRef = FirebaseDatabase.getInstance()
+                        .getReference("servers").child(serverId).child("name");
+
+                nameRef.setValue(newName)
+                        .addOnSuccessListener(aVoid -> {
+                            if (getContext() != null) {
+                                Toast.makeText(getContext(), "Đổi tên thành công!", Toast.LENGTH_SHORT).show();
+                            }
+                            originalName[0] = newName;
+                            // Cập nhật tên trên Toolbar
+                            if (tvServerName != null) {
+                                tvServerName.setText(newName);
+                            }
+                            serverName = newName;
+                            finalBtn2.setEnabled(false);
+                            finalBtn2.setAlpha(0.5f);
+                        })
+                        .addOnFailureListener(e -> {
+                            if (getContext() != null) {
+                                Toast.makeText(getContext(), "Lỗi đổi tên: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                            // Cho phép bấm lại
+                            finalBtn2.setEnabled(true);
+                            finalBtn2.setAlpha(1.0f);
+                        });
+            });
+        }
 
         LinearLayout btnEditAvatar = view.findViewById(R.id.btn_edit_avatar);
         if (btnEditAvatar != null) {
@@ -109,6 +212,12 @@ public class ServerProfileBottomSheet extends BottomSheetDialogFragment {
                 startActivity(intent);
                 dismiss();
             });
+        }
+
+        // === RỜI MÁY CHỦ ===
+        View tvLeaveServer = view.findViewById(R.id.tv_leave_server);
+        if (tvLeaveServer != null) {
+            tvLeaveServer.setOnClickListener(v -> showLeaveServerDialog());
         }
 
         if (getDialog() != null && getDialog().getWindow() != null) {
@@ -181,5 +290,57 @@ public class ServerProfileBottomSheet extends BottomSheetDialogFragment {
                 }
             }
         }).start();
+    }
+
+    private void showLeaveServerDialog() {
+        if (getContext() == null) return;
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("Rời khỏi máy chủ?")
+                .setMessage("Bạn có chắc chắn muốn rời khỏi máy chủ này không? Bạn sẽ không thể xem lại tin nhắn trừ khi được mời lại.")
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .setPositiveButton("Rời khỏi", (dialog, which) -> leaveServer())
+                .show();
+    }
+
+    private void leaveServer() {
+        if (serverId == null || serverId.isEmpty()) {
+            Toast.makeText(getContext(), "Lỗi: Không có Server ID!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "Lỗi: Bạn chưa đăng nhập!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String uid = currentUser.getUid();
+
+        // Xóa đồng thời 2 node: server_members/{serverId}/{uid} và user_servers/{uid}/{serverId}
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("server_members/" + serverId + "/" + uid, null);
+        updates.put("user_servers/" + uid + "/" + serverId, null);
+
+        FirebaseDatabase.getInstance().getReference()
+                .updateChildren(updates)
+                .addOnSuccessListener(aVoid -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Đã rời máy chủ", Toast.LENGTH_SHORT).show();
+                    }
+                    // Chuyển về MainActivity, dọn sạch stack
+                    if (getActivity() != null) {
+                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        dismiss();
+                        getActivity().finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Lỗi rời máy chủ: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

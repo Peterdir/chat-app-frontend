@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/discord_background"
@@ -12,12 +13,12 @@
         android:id="@+id/ll_toolbar"
         android:layout_width="0dp"
         android:layout_height="56dp"
-        android:background="@color/discord_sidebar_bg"
+        android:background="@android:color/transparent"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="4dp"
         android:paddingEnd="8dp"
-        android:elevation="4dp"
+        android:elevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -30,7 +31,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="10dp"
             android:src="@drawable/ic_chevron_left"
-            app:tint="@color/discord_text_secondary" />
+            app:tint="@android:color/white" />
 
         <!-- Friend avatar -->
         <androidx.cardview.widget.CardView
@@ -73,7 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Friend Name"
-                android:textColor="@color/discord_text_primary"
+                android:textColor="@android:color/white"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:maxLines="1"
@@ -96,7 +97,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="6dp"
             android:src="@drawable/ic_phone"
-            app:tint="@color/discord_text_secondary" />
+            app:tint="@android:color/white" />
 
         <!-- Video call -->
         <ImageView
@@ -106,7 +107,17 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="6dp"
             android:src="@drawable/ic_video_call"
-            app:tint="@color/discord_text_secondary" />
+            app:tint="@android:color/white" />
+
+        <!-- Theme picker -->
+        <ImageView
+            android:id="@+id/btn_theme"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:src="@drawable/ic_palette"
+            app:tint="@android:color/white" />
 
         <!-- Search -->
         <ImageView
@@ -116,7 +127,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="6dp"
             android:src="@drawable/ic_search"
-            app:tint="@color/discord_text_secondary" />
+            app:tint="@android:color/white" />
 
     </LinearLayout>
 
