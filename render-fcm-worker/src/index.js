@@ -114,16 +114,28 @@ function mapSearchParamsToObject(searchParams) {
   return output;
 }
 
-function nowVnpDate(date) {
-  const pad = (n) => String(n).padStart(2, "0");
-  return (
-    date.getFullYear() +
-    pad(date.getMonth() + 1) +
-    pad(date.getDate()) +
-    pad(date.getHours()) +
-    pad(date.getMinutes()) +
-    pad(date.getSeconds())
-  );
+/**
+ * VNPay yêu cầu vnp_CreateDate / vnp_ExpireDate theo **giờ Việt Nam (Asia/Ho_Chi_Minh)**,
+ * định dạng yyyyMMddHHmmss. Nếu dùng getHours()/getDate() của Date theo múi giờ máy chủ (thường UTC
+ * trên Render/Fly/Heroku), thời điểm gửi lệch ~7 giờ → sandbox báo "quá thời gian chờ" ngay.
+ */
+function formatVnpDateInVietnam(date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+
+  const map = {};
+  for (const p of parts) {
+    if (p.type !== "literal") map[p.type] = p.value;
+  }
+  return `${map.year}${map.month}${map.day}${map.hour}${map.minute}${map.second}`;
 }
 
 function randomTxnRef() {
@@ -151,8 +163,8 @@ async function createVnpayPayment(payload, req) {
   const amountVnd = packagePriceMap[packageType];
   const orderInfo = `Nitro ${packageType} - ${uid}`;
   const txnRef = randomTxnRef();
-  const createDate = nowVnpDate(new Date());
-  const expireDate = nowVnpDate(new Date(Date.now() + 15 * 60 * 1000));
+  const createDate = formatVnpDateInVietnam(new Date());
+  const expireDate = formatVnpDateInVietnam(new Date(Date.now() + 15 * 60 * 1000));
 
   const vnpParams = sortObjectByKeys({
     vnp_Version: "2.1.0",
