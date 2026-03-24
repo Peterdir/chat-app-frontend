@@ -9,6 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Decoration;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.utils.NitroEligibility;
+
 import java.util.List;
 
 public class DecorationAdapter extends RecyclerView.Adapter<DecorationAdapter.ViewHolder> {
@@ -19,11 +22,17 @@ public class DecorationAdapter extends RecyclerView.Adapter<DecorationAdapter.Vi
 
     private List<Decoration> decorations;
     private OnDecorationClickListener listener;
+    private User user;
     private int selectedPosition = -1;
 
     public DecorationAdapter(List<Decoration> decorations, OnDecorationClickListener listener) {
+        this(decorations, listener, null);
+    }
+
+    public DecorationAdapter(List<Decoration> decorations, OnDecorationClickListener listener, User user) {
         this.decorations = decorations;
         this.listener = listener;
+        this.user = user;
     }
 
     @NonNull
@@ -66,7 +75,11 @@ public class DecorationAdapter extends RecyclerView.Adapter<DecorationAdapter.Vi
                     .into(holder.imgDecoration);
                 holder.avatarPlaceholder.setVisibility(View.VISIBLE);
                 if (decoration.isNitro()) holder.imgNitro.setVisibility(View.VISIBLE);
-                if (decoration.isLocked()) holder.imgLock.setVisibility(View.VISIBLE);
+                boolean nitroUnlocked = !decoration.isNitro()
+                        || (user != null && NitroEligibility.hasBasicOrFull(user));
+                if (!nitroUnlocked) {
+                    holder.imgLock.setVisibility(View.VISIBLE);
+                }
                 break;
         }
         

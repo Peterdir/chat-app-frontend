@@ -19,7 +19,10 @@ import com.example.chat_app_frontend.adapter.NamePlateAdapter;
 import com.example.chat_app_frontend.model.NamePlate;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.NamePlateRepository;
+import com.example.chat_app_frontend.utils.CosmeticsEntitlements;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -85,6 +88,10 @@ public class NamePlateSelectionBottomSheet extends BottomSheetDialogFragment {
 
         view.findViewById(R.id.btn_cancel).setOnClickListener(v -> dismiss());
         view.findViewById(R.id.btn_apply).setOnClickListener(v -> {
+            if (!CosmeticsEntitlements.canEquipNamePlate(user, selectedPlate)) {
+                Toast.makeText(requireContext(), "Cần Nitro Basic hoặc Nitro để dùng bảng tên này", Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (listener != null) {
                 listener.onNamePlateSelected(selectedPlate);
             }
@@ -96,19 +103,18 @@ public class NamePlateSelectionBottomSheet extends BottomSheetDialogFragment {
         RecyclerView rvYourPlates = view.findViewById(R.id.rv_your_plates);
         RecyclerView rvShopPlates = view.findViewById(R.id.rv_shop_plates);
 
-        List<NamePlate> yourPlates = NamePlateRepository.getInstance().getYourNamePlates();
-        List<NamePlate> shopPlates = NamePlateRepository.getInstance().getShopNamePlates();
+        List<NamePlate> yourPlates = NamePlateRepository.getInstance().getFreeNamePlates();
+        List<NamePlate> shopPlates = NamePlateRepository.getInstance().getPremiumNamePlates();
 
         NamePlateAdapter yourAdapter = new NamePlateAdapter(yourPlates, selectedPlate.getId(), plate -> {
             selectedPlate = plate;
             updatePreview(plate);
-        });
+        }, user);
 
         NamePlateAdapter shopAdapter = new NamePlateAdapter(shopPlates, selectedPlate.getId(), plate -> {
-            // Even if locked, we show preview but maybe with different state
             selectedPlate = plate;
             updatePreview(plate);
-        });
+        }, user);
 
         rvYourPlates.setAdapter(yourAdapter);
         rvShopPlates.setAdapter(shopAdapter);

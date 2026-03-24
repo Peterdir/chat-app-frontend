@@ -13,13 +13,13 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
+import android.widget.Toast;
 
 import com.example.chat_app_frontend.R;
-import com.example.chat_app_frontend.model.Decoration;
 import com.example.chat_app_frontend.model.ProfileEffect;
 import com.example.chat_app_frontend.model.User;
-import com.example.chat_app_frontend.repository.DecorationRepository;
 import com.example.chat_app_frontend.repository.ProfileEffectRepository;
+import com.example.chat_app_frontend.utils.CosmeticsEntitlements;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.text.SimpleDateFormat;
@@ -88,6 +88,12 @@ public class ProfileEffectSelectionBottomSheet extends BottomSheetDialogFragment
         btnCancel = view.findViewById(R.id.btn_cancel);
 
         btnApply.setOnClickListener(v -> {
+            if (selectedEffect != null && selectedEffect.getType() == ProfileEffect.Type.EFFECT
+                    && !CosmeticsEntitlements.canEquipProfileEffect(currentUser, selectedEffect)) {
+                Toast.makeText(requireContext(), "Cần Nitro Basic hoặc Nitro để dùng hiệu ứng này", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(requireContext(), NitroActivity.class));
+                return;
+            }
             if (onEffectAppliedListener != null) {
                 onEffectAppliedListener.onEffectApplied(selectedEffect);
             }
@@ -100,12 +106,15 @@ public class ProfileEffectSelectionBottomSheet extends BottomSheetDialogFragment
     private void setupRecyclerView(View view) {
         RecyclerView rv = view.findViewById(R.id.rv_profile_effects);
         List<ProfileEffect> effects = ProfileEffectRepository.getInstance().getAvailableEffects();
-        
-        adapter = new ProfileEffectsAdapter(effects, selectedEffect, effect -> {
+
+        adapter = new ProfileEffectsAdapter(effects, selectedEffect, currentUser, effect -> {
             if (effect.getType() == ProfileEffect.Type.SHOP) {
-                // Open Shop
-                // Intent intent = new Intent(getContext(), ShopActivity.class);
-                // startActivity(intent);
+                return;
+            }
+            if (effect.getType() == ProfileEffect.Type.EFFECT
+                    && !CosmeticsEntitlements.canEquipProfileEffect(currentUser, effect)) {
+                Toast.makeText(requireContext(), "Mở khóa với Nitro Basic hoặc Nitro", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(requireContext(), NitroActivity.class));
                 return;
             }
             selectedEffect = effect;
@@ -173,11 +182,18 @@ public class ProfileEffectSelectionBottomSheet extends BottomSheetDialogFragment
     private static class ProfileEffectsAdapter extends RecyclerView.Adapter<ProfileEffectsAdapter.ViewHolder> {
         private final List<ProfileEffect> effects;
         private ProfileEffect currentSelected;
+        private final User user;
         private final OnEffectClickListener listener;
 
-        public ProfileEffectsAdapter(List<ProfileEffect> effects, ProfileEffect currentSelected, OnEffectClickListener listener) {
+        public ProfileEffectsAdapter(
+                List<ProfileEffect> effects,
+                ProfileEffect currentSelected,
+                User user,
+                OnEffectClickListener listener
+        ) {
             this.effects = effects;
             this.currentSelected = currentSelected;
+            this.user = user;
             this.listener = listener;
         }
 
@@ -195,7 +211,7 @@ public class ProfileEffectSelectionBottomSheet extends BottomSheetDialogFragment
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             ProfileEffect effect = effects.get(position);
-            holder.bind(effect, effect == currentSelected, listener);
+            holder.bind(effect, effect == currentSelected, user, listener);
         }
 
         @Override
@@ -204,7 +220,7 @@ public class ProfileEffectSelectionBottomSheet extends BottomSheetDialogFragment
         }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            ImageView imgThumbnail, imgNone, imgShop;
+            ImageView imgThumbnail, imgNone, imgShop, imgLock;
             TextView txtEffectName;
             View selectionBorder, badge;
 
@@ -213,16 +229,18 @@ public class ProfileEffectSelectionBottomSheet extends BottomSheetDialogFragment
                 imgThumbnail = itemView.findViewById(R.id.img_effect_thumbnail);
                 imgNone = itemView.findViewById(R.id.img_none_icon);
                 imgShop = itemView.findViewById(R.id.img_shop_icon);
+                imgLock = itemView.findViewById(R.id.img_lock_effect);
                 txtEffectName = itemView.findViewById(R.id.txt_effect_name);
                 selectionBorder = itemView.findViewById(R.id.view_selection_border);
                 badge = itemView.findViewById(R.id.txt_new_badge);
             }
 
-            public void bind(ProfileEffect effect, boolean isSelected, OnEffectClickListener listener) {
+            public void bind(ProfileEffect effect, boolean isSelected, User user, OnEffectClickListener listener) {
                 imgThumbnail.setVisibility(View.GONE);
                 imgNone.setVisibility(View.GONE);
                 imgShop.setVisibility(View.GONE);
                 badge.setVisibility(View.GONE);
+                imgLock.setVisibility(View.GONE);
 
                 if (effect.getType() == ProfileEffect.Type.NONE) {
                     imgNone.setVisibility(View.VISIBLE);
@@ -239,6 +257,8 @@ public class ProfileEffectSelectionBottomSheet extends BottomSheetDialogFragment
                         .load(effect.getThumbnailResId())
                         .into(imgThumbnail);
                     txtEffectName.setVisibility(View.GONE);
+                    boolean unlocked = CosmeticsEntitlements.canEquipProfileEffect(user, effect);
+                    imgLock.setVisibility(unlocked ? View.GONE : View.VISIBLE);
                 }
 
                 selectionBorder.setVisibility(isSelected ? View.VISIBLE : View.GONE);

@@ -30,6 +30,9 @@ public class User {
     private String profileEffectId;    // ID của hiệu ứng hồ sơ hiện tại
     private String namePlateId;        // ID của bảng tên hiện tại
 
+    /** Gói Nitro từ RTDB (users/{uid}/nitro) sau thanh toán VNPay. */
+    private UserNitro nitro;
+
     // =========================================================================
     // Constructors
     // =========================================================================
@@ -196,6 +199,14 @@ public class User {
 
     public void setNamePlateId(String namePlateId) {
         this.namePlateId = namePlateId;
+    }
+
+    public UserNitro getNitro() {
+        return nitro;
+    }
+
+    public void setNitro(UserNitro nitro) {
+        this.nitro = nitro;
     }
 
     // =========================================================================

@@ -300,7 +300,7 @@
             android:layout_marginHorizontal="24dp"
             android:layout_marginBottom="16dp"
             android:background="@drawable/bg_nitro_button_gradient"
-            android:text="Đăng ký"
+            android:text="Áp dụng"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="16sp"

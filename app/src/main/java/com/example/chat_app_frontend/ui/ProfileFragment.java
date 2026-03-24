@@ -16,14 +16,17 @@ import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Decoration;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.DecorationRepository;
+import com.example.chat_app_frontend.repository.ProfileEffectRepository;
 import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.utils.CosmeticsEntitlements;
 import com.example.chat_app_frontend.utils.FirebaseManager;
+import com.example.chat_app_frontend.utils.NitroEligibility;
 import com.google.firebase.auth.FirebaseUser;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
-import com.example.chat_app_frontend.model.NamePlate;
-import com.example.chat_app_frontend.repository.NamePlateRepository;
+import com.example.chat_app_frontend.model.ProfileEffect;
 
 public class ProfileFragment extends Fragment {
 
@@ -82,14 +85,9 @@ public class ProfileFragment extends Fragment {
                          .into(ivAvatar);
                 }
 
-                // Cập nhật Khung trang trí
-                updateDecoration(user.getAvatarDecorationId());
-                
-                // Cập nhật Hiệu ứng hồ sơ
-                updateProfileEffect(user.getProfileEffectId());
-
-                // Cập nhật Bảng tên
-                updateNamePlate(user.getNamePlateId());
+                updateDecoration(user);
+                updateProfileEffect(user);
+                syncNitroUi(getView(), user);
             }
 
             @Override
@@ -100,30 +98,30 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    private void updateDecoration(String decorationId) {
+    private void updateDecoration(User user) {
         if (avatarDecoration == null) return;
 
-        Decoration decor = DecorationRepository.getInstance().findDecorationById(decorationId);
+        Decoration raw = DecorationRepository.getInstance().findDecorationById(user.getAvatarDecorationId());
+        Decoration decor = CosmeticsEntitlements.effectiveDecoration(user, raw);
         if (decor != null && decor.getType() != Decoration.Type.NONE && decor.getType() != Decoration.Type.STORE) {
             avatarDecoration.setVisibility(View.VISIBLE);
             Glide.with(this)
                  .load(decor.getDrawableResId())
                  .into(avatarDecoration);
-            
-            // Dừng animation xoay nếu là khung đặc biệt (tùy nhu cầu)
+
             avatarDecoration.clearAnimation();
         } else {
-            // Quay lại khung mặc định hoặc ẩn đi
             avatarDecoration.setImageResource(R.drawable.bg_avatar_decoration_ring);
-            avatarDecoration.setVisibility(View.VISIBLE); // Giữ hiển thị ring mặc định của thiết kế
+            avatarDecoration.setVisibility(View.VISIBLE);
         }
     }
 
-    private void updateProfileEffect(String effectId) {
+    private void updateProfileEffect(User user) {
         if (imgProfileEffect == null) return;
 
-        com.example.chat_app_frontend.model.ProfileEffect effect = com.example.chat_app_frontend.repository.ProfileEffectRepository.getInstance().findEffectById(effectId);
-        if (effect != null && effect.getType() != com.example.chat_app_frontend.model.ProfileEffect.Type.NONE && effect.getType() != com.example.chat_app_frontend.model.ProfileEffect.Type.SHOP) {
+        ProfileEffect raw = ProfileEffectRepository.getInstance().findEffectById(user.getProfileEffectId());
+        ProfileEffect effect = CosmeticsEntitlements.effectiveProfileEffect(user, raw);
+        if (effect != null && effect.getType() != ProfileEffect.Type.NONE && effect.getType() != ProfileEffect.Type.SHOP) {
             imgProfileEffect.setVisibility(View.VISIBLE);
             Glide.with(this)
                  .load(effect.getEffectResId())
@@ -133,13 +131,28 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void updateNamePlate(String plateId) {
-        if (imgProfileEffect == null) return;
-        
-        NamePlate plate = NamePlateRepository.getInstance().findNamePlateById(plateId);
-        if (plate != null && plate.getType() != NamePlate.Type.NONE && plate.getType() != NamePlate.Type.STORE) {
-            imgProfileEffect.setVisibility(View.VISIBLE);
-            imgProfileEffect.setImageResource(plate.getDrawableResId());
+    private void syncNitroUi(View root, User user) {
+        if (root == null) return;
+        TextView btnNitro = root.findViewById(R.id.btn_nitro);
+        String label = NitroEligibility.subscriptionLabel(user);
+        if (btnNitro != null) {
+            if (label != null) {
+                btnNitro.setText("  " + label);
+            } else {
+                btnNitro.setText("  Nhận Nitro");
+            }
+        }
+        LinearLayout header = root.findViewById(R.id.btn_nitro_header);
+        if (header != null && header.getChildCount() > 1) {
+            View child = header.getChildAt(1);
+            if (child instanceof TextView) {
+                ((TextView) child).setText(label != null ? label : "Nitro");
+            }
+        }
+        View shimmer = root.findViewById(R.id.shimmer_view);
+        if (shimmer != null && label != null) {
+            shimmer.animate().cancel();
+            shimmer.setVisibility(View.INVISIBLE);
         }
     }
 

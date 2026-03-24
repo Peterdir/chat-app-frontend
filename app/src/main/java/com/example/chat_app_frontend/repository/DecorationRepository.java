@@ -46,11 +46,15 @@ public class DecorationRepository {
         return allDecorations;
     }
 
+    /**
+     * Khung không yêu cầu Nitro đầy đủ — không còn mock “aespa/witch miễn phí”.
+     */
     public List<Decoration> getYourDecorations() {
         List<Decoration> list = new ArrayList<>();
         for (Decoration d : allDecorations) {
-            if (d.getType() == Decoration.Type.NONE || d.getType() == Decoration.Type.STORE || 
-                d.getId().equals("aespa") || d.getId().equals("witch")) {
+            if (d.getType() == Decoration.Type.NONE || d.getType() == Decoration.Type.STORE) {
+                list.add(d);
+            } else if (d.getType() == Decoration.Type.REGULAR && !d.isNitro()) {
                 list.add(d);
             }
         }

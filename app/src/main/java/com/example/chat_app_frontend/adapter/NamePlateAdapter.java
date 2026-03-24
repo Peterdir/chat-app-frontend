@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.NamePlate;
+import com.example.chat_app_frontend.model.User;
+import com.example.chat_app_frontend.utils.CosmeticsEntitlements;
 
 import java.util.List;
 
@@ -19,15 +21,21 @@ public class NamePlateAdapter extends RecyclerView.Adapter<NamePlateAdapter.View
     private List<NamePlate> namePlates;
     private String selectedId;
     private OnItemClickListener listener;
+    private User user;
 
     public interface OnItemClickListener {
         void onItemClick(NamePlate plate);
     }
 
     public NamePlateAdapter(List<NamePlate> namePlates, String selectedId, OnItemClickListener listener) {
+        this(namePlates, selectedId, listener, null);
+    }
+
+    public NamePlateAdapter(List<NamePlate> namePlates, String selectedId, OnItemClickListener listener, User user) {
         this.namePlates = namePlates;
         this.selectedId = selectedId;
         this.listener = listener;
+        this.user = user;
     }
 
     @NonNull
@@ -62,13 +70,13 @@ public class NamePlateAdapter extends RecyclerView.Adapter<NamePlateAdapter.View
             holder.txtLabel.setText("Cửa hàng");
             if (plate.isNew()) holder.txtNewBadge.setVisibility(View.VISIBLE);
         } else {
-            // Regular plate item
             holder.imgPlate.setVisibility(View.VISIBLE);
             com.bumptech.glide.Glide.with(holder.itemView.getContext())
                 .load(plate.getDrawableResId())
                 .into(holder.imgPlate);
-            
-            if (plate.isLocked()) {
+
+            boolean unlocked = CosmeticsEntitlements.canEquipNamePlate(user, plate);
+            if (!unlocked) {
                 holder.overlay.setVisibility(View.VISIBLE);
                 holder.imgLock.setVisibility(View.VISIBLE);
             }

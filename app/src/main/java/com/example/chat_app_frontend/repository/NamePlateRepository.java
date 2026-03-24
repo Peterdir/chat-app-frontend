@@ -44,20 +44,25 @@ public class NamePlateRepository {
         return allNamePlates;
     }
 
-    public List<NamePlate> getYourNamePlates() {
+    /** Miễn phí — không cần gói Nitro đầy đủ. */
+    public List<NamePlate> getFreeNamePlates() {
         List<NamePlate> list = new ArrayList<>();
         for (NamePlate np : allNamePlates) {
-            if (!np.isLocked()) {
+            if (np.getType() == NamePlate.Type.NONE || np.getType() == NamePlate.Type.STORE) {
+                list.add(np);
+            } else if (!np.isLocked() && !np.isNitro()) {
                 list.add(np);
             }
         }
         return list;
     }
 
-    public List<NamePlate> getShopNamePlates() {
+    /** Bảng tên Nitro / cửa hàng — mở khóa khi có Nitro Basic hoặc Nitro (xem {@link com.example.chat_app_frontend.utils.CosmeticsEntitlements}). */
+    public List<NamePlate> getPremiumNamePlates() {
         List<NamePlate> list = new ArrayList<>();
         for (NamePlate np : allNamePlates) {
-            if (np.isLocked()) {
+            if (np.getType() == NamePlate.Type.NONE || np.getType() == NamePlate.Type.STORE) continue;
+            if (np.isLocked() || np.isNitro()) {
                 list.add(np);
             }
         }

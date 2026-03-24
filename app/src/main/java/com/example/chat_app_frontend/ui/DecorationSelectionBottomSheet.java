@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,13 +9,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.Decoration;
+import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.adapter.DecorationAdapter;
 import com.example.chat_app_frontend.repository.DecorationRepository;
+import com.example.chat_app_frontend.utils.CosmeticsEntitlements;
+
+import android.widget.Toast;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
@@ -23,9 +29,10 @@ public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
     private TextView decorationName;
     private RecyclerView rvYourDecorations, rvNitroDecorations;
     private DecorationAdapter yourAdapter, nitroAdapter;
-    private View btnSubscribe;
+    private AppCompatButton btnSubscribe;
     private Decoration selectedDecoration;
     private String initialDecorationId = "none";
+    private User user;
 
     public interface OnDecorationAppliedListener {
         void onDecorationApplied(Decoration decoration);
@@ -39,6 +46,10 @@ public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
 
     public void setInitialDecorationId(String id) {
         this.initialDecorationId = id;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override
@@ -68,10 +79,13 @@ public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
         btnSubscribe = view.findViewById(R.id.btn_subscribe);
 
         btnSubscribe.setOnClickListener(v -> {
-            if (onDecorationAppliedListener != null && selectedDecoration != null) {
-                onDecorationAppliedListener.onDecorationApplied(selectedDecoration);
-                dismiss();
+            if (selectedDecoration == null || onDecorationAppliedListener == null) return;
+            if (!CosmeticsEntitlements.canEquipDecoration(user, selectedDecoration)) {
+                startActivity(new Intent(requireContext(), NitroActivity.class));
+                return;
             }
+            onDecorationAppliedListener.onDecorationApplied(selectedDecoration);
+            dismiss();
         });
 
         setupRecyclerViews();
@@ -99,17 +113,19 @@ public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
         List<Decoration> yourDecorations = DecorationRepository.getInstance().getYourDecorations();
         List<Decoration> nitroDecorations = DecorationRepository.getInstance().getNitroDecorations();
 
-        yourAdapter = new DecorationAdapter(yourDecorations, this::onDecorationSelected);
-        nitroAdapter = new DecorationAdapter(nitroDecorations, this::onDecorationSelected);
-
-        yourAdapter = new DecorationAdapter(yourDecorations, this::onDecorationSelected);
-        nitroAdapter = new DecorationAdapter(nitroDecorations, this::onDecorationSelected);
+        yourAdapter = new DecorationAdapter(yourDecorations, this::onDecorationSelected, user);
+        nitroAdapter = new DecorationAdapter(nitroDecorations, this::onDecorationSelected, user);
 
         rvYourDecorations.setAdapter(yourAdapter);
         rvNitroDecorations.setAdapter(nitroAdapter);
     }
 
     private void onDecorationSelected(Decoration decoration) {
+        if (decoration.getType() == Decoration.Type.REGULAR
+                && !CosmeticsEntitlements.canEquipDecoration(user, decoration)) {
+            Toast.makeText(requireContext(), "Cần Nitro Basic hoặc Nitro để dùng khung này", Toast.LENGTH_SHORT).show();
+            return;
+        }
         this.selectedDecoration = decoration;
         if (decoration.getType() == Decoration.Type.NONE || decoration.getType() == Decoration.Type.STORE) {
             updatePreviewVisibility(View.GONE);
@@ -127,8 +143,15 @@ public class DecorationSelectionBottomSheet extends BottomSheetDialogFragment {
         handleSubscribeButtonVisibility(decoration);
     }
 
+    private void updateSubscribeButtonLabel(Decoration decoration) {
+        if (btnSubscribe == null || decoration == null) return;
+        boolean canApply = CosmeticsEntitlements.canEquipDecoration(user, decoration);
+        btnSubscribe.setText(canApply ? "Áp dụng" : "Đăng ký");
+    }
+
     private void handleSubscribeButtonVisibility(Decoration decoration) {
         boolean isChanged = !decoration.getId().equals(initialDecorationId);
+        updateSubscribeButtonLabel(decoration);
         if (isChanged && btnSubscribe.getVisibility() != View.VISIBLE) {
             btnSubscribe.setVisibility(View.VISIBLE);
             btnSubscribe.setAlpha(0f);

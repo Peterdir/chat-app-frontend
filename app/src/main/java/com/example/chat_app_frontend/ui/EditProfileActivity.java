@@ -20,6 +20,8 @@ import com.example.chat_app_frontend.repository.ProfileEffectRepository;
 import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.example.chat_app_frontend.model.NamePlate;
 import com.example.chat_app_frontend.repository.NamePlateRepository;
+import com.example.chat_app_frontend.utils.CosmeticsEntitlements;
+import com.example.chat_app_frontend.utils.NitroEligibility;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.android.material.badge.BadgeDrawable;
@@ -141,7 +143,8 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
         if (itemAvatarDecoration != null) {
             itemAvatarDecoration.setOnClickListener(v -> {
                 DecorationSelectionBottomSheet bottomSheet = new DecorationSelectionBottomSheet();
-                bottomSheet.setInitialDecorationId(currentDecorationId); 
+                bottomSheet.setInitialDecorationId(currentDecorationId);
+                bottomSheet.setUser(currentUser);
                 bottomSheet.setOnDecorationAppliedListener(decoration -> {
                     currentDecorationId = decoration.getId();
                     updateCurrentDecorationUI(decoration);
@@ -290,6 +293,7 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
                 
                 // Reset checkChanges because we just loaded new data
                 updateSaveButtonState(false);
+                updateNitroPromoVisibility();
             }
 
             @Override
@@ -383,8 +387,35 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
         }
     }
 
+    private void updateNitroPromoVisibility() {
+        View card = findViewById(R.id.card_nitro_preview);
+        if (card == null) return;
+        boolean hide = NitroEligibility.hasBasicOrFull(currentUser);
+        card.setVisibility(hide ? View.GONE : View.VISIBLE);
+        if (hide && shimmerNitroPreview != null) {
+            shimmerNitroPreview.animate().cancel();
+            shimmerNitroPreview.setVisibility(View.GONE);
+        }
+    }
+
     private void saveUserInfo() {
         if (currentUser == null) return;
+
+        Decoration decorPick = DecorationRepository.getInstance().findDecorationById(currentDecorationId);
+        if (!CosmeticsEntitlements.canEquipDecoration(currentUser, decorPick)) {
+            Toast.makeText(this, "Không thể lưu khung này — cần Nitro Basic hoặc Nitro", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ProfileEffect effectPick = ProfileEffectRepository.getInstance().findEffectById(currentProfileEffectId);
+        if (!CosmeticsEntitlements.canEquipProfileEffect(currentUser, effectPick)) {
+            Toast.makeText(this, "Không thể lưu hiệu ứng này — cần Nitro Basic hoặc Nitro", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        NamePlate platePick = NamePlateRepository.getInstance().findNamePlateById(currentNamePlateId);
+        if (!CosmeticsEntitlements.canEquipNamePlate(currentUser, platePick)) {
+            Toast.makeText(this, "Không thể lưu bảng tên này — cần Nitro Basic hoặc Nitro", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         currentUser.setDisplayName(etDisplayName.getText().toString());
         currentUser.setPronouns(etPronouns.getText().toString());
