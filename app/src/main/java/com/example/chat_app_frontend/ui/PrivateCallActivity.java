@@ -98,7 +98,7 @@ public class PrivateCallActivity extends AppCompatActivity {
 
         // 3. Set UI Texts
         tvCallTitle.setText(friendName + " >");
-        tvRemoteName.setText(friendName);
+        tvRemoteName.setText(friendName + " - Đang gọi...");
 
         // 4. Handle Button Clicks
         btnCollapse.setOnClickListener(v -> finish());
@@ -256,6 +256,7 @@ public class PrivateCallActivity extends AppCompatActivity {
             mRtcEngine = RtcEngine.create(config);
 
             mRtcEngine.enableVideo();
+            mRtcEngine.enableAudio();
             if (isCameraOn) {
                 mRtcEngine.enableLocalVideo(true);
                 setupLocalVideo();
@@ -271,6 +272,7 @@ public class PrivateCallActivity extends AppCompatActivity {
             options.publishCameraTrack = isCameraOn;
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER;
 
+            mRtcEngine.setDefaultAudioRoutetoSpeakerphone(true);
             mRtcEngine.joinChannel(null, channelName, 0, options);
             mRtcEngine.muteLocalAudioStream(isMicMuted);
             mRtcEngine.muteLocalVideoStream(!isCameraOn);
@@ -349,7 +351,13 @@ public class PrivateCallActivity extends AppCompatActivity {
         public void onUserJoined(int uid, int elapsed) {
             Log.d(TAG, "onUserJoined uid=" + uid + " localRtcUid=" + localRtcUid);
             if (localRtcUid != 0 && uid == localRtcUid) return;
-            runOnUiThread(() -> setupRemoteVideo(uid));
+            runOnUiThread(() -> {
+                String currentText = tvRemoteName.getText().toString();
+                if (currentText.endsWith(" - Đang gọi...")) {
+                    tvRemoteName.setText(currentText.replace(" - Đang gọi...", ""));
+                }
+                setupRemoteVideo(uid);
+            });
         }
 
         @Override
@@ -390,6 +398,9 @@ public class PrivateCallActivity extends AppCompatActivity {
             localRtcUid = uid;
             rtcInChannel = true;
             runOnUiThread(() -> {
+                if (mRtcEngine != null) {
+                    mRtcEngine.setEnableSpeakerphone(isSpeakerOn);
+                }
                 applyCameraPublishToChannel(isCameraOn);
             });
         }

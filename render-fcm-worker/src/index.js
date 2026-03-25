@@ -587,6 +587,11 @@ async function main() {
       console.error("Unexpected call worker error", error);
     });
   });
+  callSessionsRef.on("child_changed", (snapshot) => {
+    handleCallSessionEvent(snapshot).catch((error) => {
+      console.error("Unexpected call worker error", error);
+    });
+  });
 
   process.on("SIGTERM", () => {
     console.log("SIGTERM received. Stopping worker.");

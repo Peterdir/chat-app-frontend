@@ -46,6 +46,7 @@ public class CallRepository {
         payload.put("status", "ringing");
         payload.put("createdAt", now);
         payload.put("updatedAt", now);
+        payload.put("inviteSentAt", null);
         callSessionsRef.child(callId).updateChildren(payload);
     }
 
