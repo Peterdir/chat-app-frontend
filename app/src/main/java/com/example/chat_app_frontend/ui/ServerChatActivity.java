@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.adapter.MessageAdapter;
 import com.example.chat_app_frontend.adapter.ServerMemberAdapter;
+import com.example.chat_app_frontend.manager.VoiceStateManager;
 import com.example.chat_app_frontend.model.Message;
 import com.example.chat_app_frontend.model.RealtimeChatMessage;
 import com.example.chat_app_frontend.model.User;
@@ -41,6 +42,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,7 +58,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class ServerChatActivity extends AppCompatActivity
-        implements GiphyDialogFragment.GifSelectionListener, MessageAdapter.OnMessageInteractionListener {
+        implements GiphyDialogFragment.GifSelectionListener, MessageAdapter.OnMessageInteractionListener, VoiceStateManager.VoiceStateListener {
 
     public static final String EXTRA_CHANNEL_ID = "channel_id";
     public static final String EXTRA_CHANNEL_NAME = "channel_name";
@@ -87,6 +91,15 @@ public class ServerChatActivity extends AppCompatActivity
         private static final Locale VIETNAMESE_LOCALE = new Locale("vi", "VN");
         private static final long GROUP_BREAK_THRESHOLD_MS = TimeUnit.MINUTES.toMillis(10);
         private static final String[] QUICK_REACTION_EMOJIS = {"❤️", "😆", "😮", "😢", "😡", "👍", "👎"};
+
+        // Voice Bar UI
+        private View globalVoiceBar;
+        private TextView tvVoiceBarChannel;
+        private TextView tvVoiceBarTimer;
+        private ImageView btnVoiceBarMic;
+        private ImageView btnVoiceBarDisconnect;
+        private Handler voiceTimerHandler = new Handler(Looper.getMainLooper());
+        private Runnable voiceTimerRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,6 +173,9 @@ public class ServerChatActivity extends AppCompatActivity
 
         ImageView btnTheme = findViewById(R.id.btn_theme);
         btnTheme.setOnClickListener(v -> showThemePicker());
+
+        initGlobalVoiceBar();
+        VoiceStateManager.getInstance().addListener(this);
     }
 
     private void sendMessage() {
@@ -691,6 +707,95 @@ public class ServerChatActivity extends AppCompatActivity
                 if (chatListener != null) {
                         chatRepository.removeServerChannelObserver(serverId, channelId, chatListener);
                 }
+                VoiceStateManager.getInstance().removeListener(this);
+                if (voiceTimerRunnable != null) {
+                    voiceTimerHandler.removeCallbacks(voiceTimerRunnable);
+                }
+        }
+
+        private void initGlobalVoiceBar() {
+            globalVoiceBar = findViewById(R.id.global_voice_bar_stub);
+            if (globalVoiceBar == null) {
+                // Not inflated maybe? Try direct layout ID if it's not a stub
+                globalVoiceBar = findViewById(R.id.global_voice_bar);
+                if (globalVoiceBar == null) return;
+            }
+            tvVoiceBarChannel = globalVoiceBar.findViewById(R.id.tv_voice_bar_channel);
+            tvVoiceBarTimer = globalVoiceBar.findViewById(R.id.tv_voice_bar_timer);
+            btnVoiceBarMic = globalVoiceBar.findViewById(R.id.btn_voice_bar_mic);
+            btnVoiceBarDisconnect = globalVoiceBar.findViewById(R.id.btn_voice_bar_disconnect);
+
+            View infoClickArea = globalVoiceBar.findViewById(R.id.ll_voice_bar_info);
+            infoClickArea.setOnClickListener(v -> {
+                String cName = VoiceStateManager.getInstance().getConnectedChannelName();
+                if (cName != null) {
+                    android.content.Intent intent = new android.content.Intent(this, VoiceChannelActivity.class);
+                    // Open existing voice activity
+                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    startActivity(intent);
+                }
+            });
+
+            btnVoiceBarMic.setOnClickListener(v -> {
+                boolean isMuted = VoiceStateManager.getInstance().isMuted();
+                VoiceStateManager.getInstance().setMuted(!isMuted);
+                // Also notify Agora Engine ideally... Note: we only update the manager here.
+                // An ideal architecture uses an application level service for Agora so it catches this toggle.
+                btnVoiceBarMic.setImageResource(!isMuted ? R.drawable.ic_mic_off : R.drawable.ic_mic_on);
+                btnVoiceBarMic.setColorFilter(!isMuted ? android.graphics.Color.parseColor("#ED4245") : android.graphics.Color.parseColor("#DBDEE1"));
+            });
+
+            btnVoiceBarDisconnect.setOnClickListener(v -> {
+                VoiceStateManager.getInstance().leaveChannel();
+            });
+
+            voiceTimerRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    updateVoiceTimer();
+                    voiceTimerHandler.postDelayed(this, 1000);
+                }
+            };
+            onVoiceStateChanged(); // update initially
+        }
+
+        @Override
+        public void onVoiceStateChanged() {
+            if (globalVoiceBar == null) return;
+            String connectedChannel = VoiceStateManager.getInstance().getConnectedChannelName();
+            
+            if (connectedChannel == null || connectedChannel.trim().isEmpty()) {
+                globalVoiceBar.setVisibility(View.GONE);
+                voiceTimerHandler.removeCallbacks(voiceTimerRunnable);
+            } else {
+                globalVoiceBar.setVisibility(View.VISIBLE);
+                tvVoiceBarChannel.setText("Voice / " + connectedChannel);
+                
+                boolean isMuted = VoiceStateManager.getInstance().isMuted();
+                btnVoiceBarMic.setImageResource(isMuted ? R.drawable.ic_mic_off : R.drawable.ic_mic_on);
+                btnVoiceBarMic.setColorFilter(isMuted ? android.graphics.Color.parseColor("#ED4245") : android.graphics.Color.parseColor("#DBDEE1"));
+
+                voiceTimerHandler.removeCallbacks(voiceTimerRunnable);
+                voiceTimerHandler.post(voiceTimerRunnable);
+            }
+        }
+
+        private void updateVoiceTimer() {
+            if (tvVoiceBarTimer == null) return;
+            long joinTime = VoiceStateManager.getInstance().getJoinTimeMillis();
+            if (joinTime > 0) {
+                long diff = System.currentTimeMillis() - joinTime;
+                long seconds = (diff / 1000) % 60;
+                long minutes = (diff / (1000 * 60)) % 60;
+                long hours = (diff / (1000 * 60 * 60));
+                if (hours > 0) {
+                    tvVoiceBarTimer.setText(String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds));
+                } else {
+                    tvVoiceBarTimer.setText(String.format(Locale.US, "%02d:%02d", minutes, seconds));
+                }
+            } else {
+                tvVoiceBarTimer.setText("00:00");
+            }
         }
 
         private void attachRealtimeMessages() {
