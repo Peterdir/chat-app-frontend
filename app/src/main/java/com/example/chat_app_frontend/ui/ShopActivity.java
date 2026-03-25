@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -59,6 +60,12 @@ public class ShopActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        
+        // Bấm vào Shop All để chuyển màn hình
+        findViewById(R.id.btn_shop_all).setOnClickListener(v -> {
+            Intent intent = new Intent(this, ShopAllActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void loadSampleData() {
@@ -79,7 +86,7 @@ public class ShopActivity extends AppCompatActivity {
         popular.add(new ShopItem("5", "Fallen Angel (Black)", R.drawable.nevermore, "4100", "circular"));
         popular.add(new ShopItem("6", "Nevermore", R.drawable.nevermore, "4100", "banner"));
 
-        // Thêm 8 assets placeholder
+        // Thêm các assets khác
         popular.add(new ShopItem("7", "Moon", R.drawable.moon, "0", "circular"));
         popular.add(new ShopItem("8", "HunnyBunnies", R.drawable.hunnybunnies, "0", "circular"));
         popular.add(new ShopItem("9", "DarkRoses", R.drawable.darkroses, "0", "circular"));

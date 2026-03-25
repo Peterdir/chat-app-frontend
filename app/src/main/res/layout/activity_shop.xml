@@ -155,11 +155,15 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
                 <TextView
+                    android:id="@+id/btn_shop_all"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Shop All ›"
                     android:textColor="#5865F2"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
