@@ -1,12 +1,15 @@
 package com.example.chat_app_frontend.ui;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,8 +25,18 @@ import com.example.chat_app_frontend.model.NamePlate;
 import com.example.chat_app_frontend.repository.NamePlateRepository;
 import com.example.chat_app_frontend.utils.CosmeticsEntitlements;
 import com.example.chat_app_frontend.utils.NitroEligibility;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+import android.provider.MediaStore;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import com.google.android.material.badge.BadgeDrawable;
 import android.widget.Toast;
 import android.text.Editable;
@@ -47,10 +60,24 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
     private String currentProfileEffectId = "none";
     private String currentNamePlateId = "none";
 
+    // Avatar picker launcher (tham khảo từ ServerProfileActivity)
+    private ActivityResultLauncher<String> avatarPickerLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
+
+        // Khởi tạo launcher TRƯỚC initViews (bắt buộc trước onStart)
+        avatarPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        uploadUserAvatar(uri);
+                    } else {
+                        Toast.makeText(this, "Đã hủy chọn ảnh", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
         initViews();
         setupTabs();
@@ -133,6 +160,12 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
                 Intent intent = new Intent(this, NitroActivity.class);
                 startActivity(intent);
             });
+        }
+
+        // === ĐỔI AVATAR: bấm vào avatar mở BottomSheet ===
+        View btnEditAvatar = findViewById(R.id.btn_edit_avatar);
+        if (btnEditAvatar != null) {
+            btnEditAvatar.setOnClickListener(v -> showAvatarBottomSheet());
         }
 
         // Decoration item
@@ -516,5 +549,165 @@ public class EditProfileActivity extends AppCompatActivity implements NamePlateS
             };
             shimmerNitroPreview.postDelayed(shimmerRunnable, 1000);
         }
+    }
+
+    // =========================================================================
+    // Đổi Avatar cá nhân
+    // =========================================================================
+
+    private void showAvatarBottomSheet() {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.TransparentBottomSheetDialogTheme);
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_edit_avatar, null);
+        bottomSheetDialog.setContentView(sheetView);
+
+        // Nút "Tải Lên Hình Ảnh"
+        View btnUpload = sheetView.findViewById(R.id.btn_upload_image);
+        if (btnUpload != null) {
+            btnUpload.setOnClickListener(v -> {
+                bottomSheetDialog.dismiss();
+                avatarPickerLauncher.launch("image/*");
+            });
+        }
+
+        // Nút "Thay Đổi Trang Trí" → mở DecorationSelectionBottomSheet
+        View btnChangeDecoration = sheetView.findViewById(R.id.btn_change_decoration);
+        if (btnChangeDecoration != null) {
+            btnChangeDecoration.setOnClickListener(v -> {
+                bottomSheetDialog.dismiss();
+                View itemAvatarDecoration = findViewById(R.id.item_avatar_decoration);
+                if (itemAvatarDecoration != null) {
+                    itemAvatarDecoration.performClick();
+                }
+            });
+        }
+
+        bottomSheetDialog.show();
+    }
+
+    private void uploadUserAvatar(Uri imageUri) {
+        FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (fbUser == null) {
+            Toast.makeText(this, "Lỗi: Chưa đăng nhập!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = fbUser.getUid();
+        if (userId == null || userId.isEmpty()) {
+            Toast.makeText(this, "Lỗi: Không lấy được User ID!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this, "Đang xử lý ảnh...", Toast.LENGTH_SHORT).show();
+
+        // Hiển thị ảnh tạm trên giao diện ngay lập tức (preview)
+        if (imgMainAvatar != null) {
+            imgMainAvatar.setImageURI(imageUri);
+        }
+
+        try {
+            // 1. Lấy Bitmap từ Uri
+            InputStream inputStream = getContentResolver().openInputStream(imageUri);
+            if (inputStream == null) {
+                Toast.makeText(this, "Lỗi: Không đọc được ảnh!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
+            inputStream.close();
+
+            if (originalBitmap == null) {
+                Toast.makeText(this, "Lỗi: Ảnh không hợp lệ!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 2. Nén Bitmap xuống kích thước nhỏ (max 250px)
+            Bitmap resizedBitmap = resizeBitmap(originalBitmap, 250);
+
+            // 3. Chuyển Bitmap → byte[] với chất lượng 55%
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 55, baos);
+            byte[] imageBytes = baos.toByteArray();
+            baos.close();
+
+            // 4. Encode sang Base64
+            String base64String = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+            String avatarData = "data:image/jpeg;base64," + base64String;
+
+            // 5. Lưu vào Firebase Realtime Database
+            DatabaseReference avatarRef = FirebaseDatabase.getInstance()
+                    .getReference("users")
+                    .child(userId)
+                    .child("avatarUrl");
+
+            avatarRef.setValue(avatarData)
+                    .addOnSuccessListener(aVoid -> {
+                        // Cập nhật model local
+                        if (currentUser != null) {
+                            currentUser.setAvatarUrl(avatarData);
+                        }
+
+                        // Load lại ảnh bằng Glide (hỗ trợ Base64 data URI)
+                        if (!isFinishing() && !isDestroyed() && imgMainAvatar != null) {
+                            Glide.with(EditProfileActivity.this)
+                                    .load(avatarData)
+                                    .placeholder(R.drawable.img_discord)
+                                    .into(imgMainAvatar);
+                        }
+
+                        Toast.makeText(EditProfileActivity.this,
+                                "Đổi ảnh thành công!",
+                                Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(EditProfileActivity.this,
+                                "Lỗi lưu vào database: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+
+                        // Khôi phục ảnh cũ nếu thất bại
+                        if (!isFinishing() && !isDestroyed() && imgMainAvatar != null && currentUser != null
+                                && currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().isEmpty()) {
+                            Glide.with(EditProfileActivity.this)
+                                    .load(currentUser.getAvatarUrl())
+                                    .placeholder(R.drawable.img_discord)
+                                    .into(imgMainAvatar);
+                        }
+                    });
+
+            // Giải phóng Bitmap
+            if (resizedBitmap != originalBitmap) {
+                resizedBitmap.recycle();
+            }
+            originalBitmap.recycle();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi xử lý ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+            // Khôi phục ảnh cũ
+            if (!isFinishing() && !isDestroyed() && imgMainAvatar != null && currentUser != null
+                    && currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().isEmpty()) {
+                Glide.with(EditProfileActivity.this)
+                        .load(currentUser.getAvatarUrl())
+                        .placeholder(R.drawable.img_discord)
+                        .into(imgMainAvatar);
+            }
+        }
+    }
+
+    /**
+     * Nén Bitmap xuống kích thước tối đa (giữ tỷ lệ khung hình).
+     * Ví dụ: maxSize = 250 → ảnh 1000x800 sẽ thành 250x200.
+     */
+    private Bitmap resizeBitmap(Bitmap original, int maxSize) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        if (width <= maxSize && height <= maxSize) {
+            return original; // Không cần nén
+        }
+
+        float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
+        int newWidth = Math.round(width * ratio);
+        int newHeight = Math.round(height * ratio);
+
+        return Bitmap.createScaledBitmap(original, newWidth, newHeight, true);
     }
 }
