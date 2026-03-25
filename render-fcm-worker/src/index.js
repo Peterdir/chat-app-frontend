@@ -403,6 +403,20 @@ async function collectRecipientTokens(serverId, senderId) {
   return Array.from(uniqueTokens);
 }
 
+async function collectUserTokens(uid) {
+  if (!uid) return [];
+  const tokenSnapshot = await admin.database().ref(`user_fcm_tokens/${uid}`).once("value");
+  const tokenMap = tokenSnapshot.val() || {};
+  return Object.keys(tokenMap).filter((token) => token && token.trim());
+}
+
+async function resolveCallerName(uid) {
+  if (!uid) return "Friend";
+  const userSnapshot = await admin.database().ref(`users/${uid}`).once("value");
+  const user = userSnapshot.val() || {};
+  return user.displayName || user.username || user.email || "Friend";
+}
+
 async function handlePushEvent(snapshot) {
   const eventId = snapshot.key;
   const eventData = snapshot.val() || {};
@@ -475,11 +489,89 @@ async function handlePushEvent(snapshot) {
   }
 }
 
+async function handleCallSessionEvent(snapshot) {
+  const callId = snapshot.key;
+  const session = snapshot.val() || {};
+  const status = String(session.status || "").toLowerCase();
+
+  // Chỉ bắn thông báo khi có cuộc gọi mới.
+  if (status !== "ringing") return;
+  if (session.inviteSentAt) return;
+
+  const calleeUid = session.calleeUid;
+  const callerUid = session.callerUid;
+  const callType = String(session.callType || "audio").toLowerCase() === "video" ? "video" : "audio";
+  const channelName = session.channelName || `dm_call_${callId}`;
+
+  if (!calleeUid || !callerUid) {
+    console.warn(`[skip] invalid call session id=${callId}`);
+    return;
+  }
+
+  const [tokens, callerName] = await Promise.all([
+    collectUserTokens(calleeUid),
+    resolveCallerName(callerUid),
+  ]);
+
+  if (tokens.length === 0) {
+    console.log(`[skip] call=${callId} callee has no token`);
+    return;
+  }
+
+  const notification = {
+    title: callerName,
+    body: callType === "video" ? "Cuộc gọi video đến" : "Cuộc gọi thoại đến",
+  };
+
+  const messageTemplate = {
+    notification,
+    android: {
+      priority: "high",
+      notification: {
+        channelId: "incoming_calls",
+      },
+    },
+    data: {
+      eventType: "call_invite",
+      callId: String(callId),
+      callerUid: String(callerUid),
+      callerName: String(callerName),
+      calleeUid: String(calleeUid),
+      callType,
+      channelName: String(channelName),
+      title: notification.title,
+      body: notification.body,
+    },
+  };
+
+  try {
+    const tokenBatches = chunkArray(tokens, 500);
+    let successCount = 0;
+    for (const batch of tokenBatches) {
+      const response = await admin.messaging().sendEachForMulticast({
+        ...messageTemplate,
+        tokens: batch,
+      });
+      successCount += response.successCount;
+    }
+
+    if (successCount > 0) {
+      await snapshot.ref.update({
+        inviteSentAt: Date.now(),
+      });
+    }
+    console.log(`[sent-call] call=${callId} delivered=${successCount}/${tokens.length}`);
+  } catch (error) {
+    console.error(`[failed-call] call=${callId}`, error);
+  }
+}
+
 async function main() {
   initFirebaseAdmin();
 
   const db = admin.database();
   const queueRef = db.ref("chat_push_events");
+  const callSessionsRef = db.ref("call_sessions");
 
   console.log("Render FCM worker is running and listening chat_push_events...");
 
@@ -489,9 +581,17 @@ async function main() {
     });
   });
 
+  // Lắng nghe cuộc gọi 1-1 từ Firebase signaling layer.
+  callSessionsRef.on("child_added", (snapshot) => {
+    handleCallSessionEvent(snapshot).catch((error) => {
+      console.error("Unexpected call worker error", error);
+    });
+  });
+
   process.on("SIGTERM", () => {
     console.log("SIGTERM received. Stopping worker.");
     queueRef.off();
+    callSessionsRef.off();
     process.exit(0);
   });
 }

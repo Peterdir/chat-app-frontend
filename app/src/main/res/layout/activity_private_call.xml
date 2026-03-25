@@ -72,6 +72,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+                <FrameLayout
+                    android:id="@+id/fl_remote_video"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+                <FrameLayout
+                    android:id="@+id/fl_local_video_overlay"
+                    android:layout_width="120dp"
+                    android:layout_height="180dp"
+                    android:layout_gravity="end|bottom"
+                    android:layout_margin="12dp"
+                    android:visibility="gone" />
+
                 <LinearLayout
                     android:id="@+id/ll_remote_info"
                     android:layout_width="match_parent"

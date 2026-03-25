@@ -160,6 +160,158 @@ public class ChatRepository {
                 .child("messages");
     }
 
+    private DatabaseReference getDirectMessagesRef(String dmId) {
+        return FirebaseManager.getDatabaseReference("chat_messages/direct_messages")
+                .child(dmId)
+                .child("messages");
+    }
+
+    public ValueEventListener observeDirectMessages(String dmId, OnMessagesChangedListener callback) {
+        DatabaseReference ref = getDirectMessagesRef(dmId);
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<RealtimeChatMessage> messages = new ArrayList<>();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    RealtimeChatMessage msg = child.getValue(RealtimeChatMessage.class);
+                    if (msg == null) {
+                        continue;
+                    }
+                    if (msg.getId() == null || msg.getId().trim().isEmpty()) {
+                        msg.setId(child.getKey());
+                    }
+                    messages.add(msg);
+                }
+                callback.onSuccess(messages);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.getMessage());
+            }
+        };
+        ref.orderByChild("createdAt").limitToLast(200).addValueEventListener(listener);
+        return listener;
+    }
+
+    public void removeDirectMessagesObserver(String dmId, ValueEventListener listener) {
+        if (listener == null) {
+            return;
+        }
+        getDirectMessagesRef(dmId).removeEventListener(listener);
+    }
+
+    public void sendDirectMessage(String dmId,
+                                  String senderId,
+                                  String senderName,
+                                  String content,
+                                  OnCompleteListener callback) {
+        DatabaseReference messagesRef = getDirectMessagesRef(dmId);
+        String msgId = messagesRef.push().getKey();
+        if (msgId == null) {
+            callback.onFailure("Không thể tạo ID tin nhắn");
+            return;
+        }
+
+        long createdAt = System.currentTimeMillis();
+        RealtimeChatMessage message = new RealtimeChatMessage(
+                msgId,
+                senderId,
+                senderName,
+                content,
+                null,
+                dmId,
+                createdAt
+        );
+
+        messagesRef.child(msgId)
+                .setValue(message)
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public void toggleDirectMessageReaction(String dmId,
+                                            String messageId,
+                                            String emoji,
+                                            String uid,
+                                            OnCompleteListener callback) {
+        if (messageId == null || messageId.trim().isEmpty()) {
+            callback.onFailure("Thiếu messageId");
+            return;
+        }
+        if (emoji == null || emoji.trim().isEmpty()) {
+            callback.onFailure("Thiếu emoji");
+            return;
+        }
+        if (uid == null || uid.trim().isEmpty()) {
+            callback.onFailure("Thiếu uid");
+            return;
+        }
+
+        DatabaseReference reactionRef = getDirectMessagesRef(dmId)
+                .child(messageId)
+                .child("reactions")
+                .child(emoji)
+                .child(uid);
+
+        reactionRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    reactionRef.removeValue()
+                            .addOnSuccessListener(unused -> callback.onSuccess())
+                            .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+                    return;
+                }
+
+                reactionRef.setValue(true)
+                        .addOnSuccessListener(unused -> callback.onSuccess())
+                        .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailure(error.getMessage());
+            }
+        });
+    }
+
+    public void updateDirectMessageContent(String dmId,
+                                           String messageId,
+                                           String newContent,
+                                           OnCompleteListener callback) {
+        if (messageId == null || messageId.trim().isEmpty()) {
+            callback.onFailure("Thiếu messageId");
+            return;
+        }
+        if (newContent == null || newContent.trim().isEmpty()) {
+            callback.onFailure("Nội dung tin nhắn không hợp lệ");
+            return;
+        }
+
+        getDirectMessagesRef(dmId)
+                .child(messageId)
+                .child("content")
+                .setValue(newContent.trim())
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public void deleteDirectMessage(String dmId,
+                                    String messageId,
+                                    OnCompleteListener callback) {
+        if (messageId == null || messageId.trim().isEmpty()) {
+            callback.onFailure("Thiếu messageId");
+            return;
+        }
+
+        getDirectMessagesRef(dmId)
+                .child(messageId)
+                .removeValue()
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
     public void toggleMessageReaction(String serverId,
                                       String channelId,
                                       String messageId,

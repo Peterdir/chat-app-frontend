@@ -2,6 +2,8 @@ package com.example.chat_app_frontend.ui;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.app.PictureInPictureParams;
 import android.content.res.Configuration;
@@ -9,14 +11,15 @@ import android.os.Build;
 import android.util.Rational;
 import android.view.View;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.FrameLayout;
-import android.view.SurfaceView;
 import android.view.TextureView;
+import android.widget.GridLayout;
+import android.widget.ImageView;
 
-import androidx.cardview.widget.CardView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -28,8 +31,11 @@ import com.example.chat_app_frontend.manager.VoiceStateManager;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.UserRepository;
 import com.example.chat_app_frontend.utils.ProfileUIUtils;
+import com.example.chat_app_frontend.utils.FirebaseManager;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
-import android.widget.ImageView;
 
 import io.agora.rtc2.ChannelMediaOptions;
 import io.agora.rtc2.Constants;
@@ -38,45 +44,56 @@ import io.agora.rtc2.RtcEngine;
 import io.agora.rtc2.RtcEngineConfig;
 import io.agora.rtc2.video.VideoCanvas;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 public class VoiceChannelActivity extends AppCompatActivity {
     private static final String TAG = "VoiceChannelActivity";
     private static final int PERMISSION_REQ_ID = 22;
 
-    // Các biến giao diện MỚI
-    private TextView tvTopChannelName;
-    private ImageButton btnCollapse;
-    private ImageButton btnAddUserTop;
-    private ImageButton btnSpeakerTop;
+    // View declarations
+    private TextView tvTopChannelName, tvParticipantCount, tvUserNameStatus;
+    private ImageButton btnCollapse, btnAddUserTop, btnSpeakerTop;
+    private ImageButton btnVideo, btnSwitchCamera, btnMuteMain, btnChatMain, btnEventMain, btnLeaveMain;
 
-    // Nút ở dưới cùng
-    private ImageButton btnVideo;
-    private ImageButton btnMuteMain;
-    private ImageButton btnChatMain;
-    private ImageButton btnEventMain;
-    private ImageButton btnLeaveMain;
-
-    // Pill trong Avatar
-    private TextView tvUserNameStatus;
-
-    // Trạng thái nút bấm
-    private boolean isMuted = true; // Mặc định vào kênh là TẮT mic theo chuẩn Discord
-    private boolean isSpeakerOn = true;
-    private boolean isVideoOn = false; // Mặc định tắt camera lúc vào phòng
-
-    private FrameLayout flLocalVideo;
+    private FrameLayout flCenterAvatarContainer;
+    private GridLayout glVideoGrid;
     private View vMainSpeakingBorder;
-    private ImageView imgCardNamePlate;
     private ImageView ivCenterAvatar;
-    private ImageView ivCenterAvatarDecoration;
 
     private ValueEventListener userProfileListener;
 
-    // Biến cấu hình phòng gọi
+    // Call Config
     private String channelName = "test_channel";
     private RtcEngine mRtcEngine;
     private String appId;
+    private boolean hasJoinedChannel = false;
 
-    // Danh sách quyền cần xin
+    // Status
+    private boolean isMuted = true;
+    private boolean isSpeakerOn = true;
+    private boolean isVideoOn = false;
+    private boolean isLocalSpeaking = false;
+
+    // User tracking
+    private int localUid = 0; 
+    private final Set<Integer> remoteUids = new HashSet<>();
+    private final Set<Integer> remoteVideoUids = new HashSet<>();
+    private final Set<Integer> speakingUids = new HashSet<>();
+    private final Set<Integer> remoteAudioMutedUids = new HashSet<>();
+    private final Map<Integer, String> agoraUidToFirebaseUid = new HashMap<>();
+    private final Map<Integer, String> agoraUidToDisplayLabel = new HashMap<>();
+
+    private DatabaseReference voiceAgoraMapRef;
+    private ValueEventListener voiceAgoraMapListener;
+
+    // UI mapping for speaking borders in grid
+    private final Map<String, View> tileSpeakingBorders = new HashMap<>();
+
     private static final String[] REQUESTED_PERMISSIONS = {
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.CAMERA
@@ -85,108 +102,102 @@ public class VoiceChannelActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
         setContentView(R.layout.activity_voice_channel);
 
-        // Lấy tên kênh được truyền từ BottomSheet/Adapter
+        // Get Intent Data
         if (getIntent() != null) {
-            if (getIntent().hasExtra("CHANNEL_NAME")) {
-                channelName = getIntent().getStringExtra("CHANNEL_NAME");
-            }
-            if (getIntent().hasExtra("IS_MUTED")) {
-                isMuted = getIntent().getBooleanExtra("IS_MUTED", true);
-            }
+            channelName = getIntent().getStringExtra("CHANNEL_NAME") != null ? getIntent().getStringExtra("CHANNEL_NAME") : channelName;
+            isMuted = getIntent().getBooleanExtra("IS_MUTED", true);
         }
-
-        // Tìm view theo ID mới
-        tvTopChannelName = findViewById(R.id.tv_top_channel_name);
-        btnCollapse = findViewById(R.id.btn_collapse);
-        vMainSpeakingBorder = findViewById(R.id.v_main_speaking_border);
-        btnAddUserTop = findViewById(R.id.btn_add_user_top);
-        btnSpeakerTop = findViewById(R.id.btn_speaker_top);
-
-        imgCardNamePlate = findViewById(R.id.img_card_name_plate);
-        ivCenterAvatar = findViewById(R.id.iv_center_avatar);
-        ivCenterAvatarDecoration = findViewById(R.id.iv_center_avatar_decoration);
-
-        btnVideo = findViewById(R.id.btn_video);
-        btnMuteMain = findViewById(R.id.btn_mute_main);
-        btnChatMain = findViewById(R.id.btn_chat_main);
-        btnEventMain = findViewById(R.id.btn_event_main);
-        btnLeaveMain = findViewById(R.id.btn_leave_main);
-
-        tvUserNameStatus = findViewById(R.id.tv_user_name_status);
-
-        tvTopChannelName.setText(channelName);
-
-        flLocalVideo = findViewById(R.id.fl_local_video);
-
-        // Lấy App ID từ file strings.xml
         appId = getString(R.string.agora_app_id);
 
-        // Khởi tạo trạng thái nút Mic UI ban đầu
+        initViews();
+
+        tvTopChannelName.setText(channelName);
+        updateParticipantCountUi();
         updateMicUiState();
         updateVideoUiState();
 
-        // Đồng bộ trạng thái Lên VoiceStateManager ngay khi vào app
+        // Sync initial state to Manager
         VoiceStateManager stateManager = VoiceStateManager.getInstance();
         stateManager.setConnectedChannel(channelName);
         stateManager.setMuted(isMuted);
         stateManager.setVideoOn(isVideoOn);
-        // Thiết lập trạng thái mặc định để hiện icon Sofa (như trong hình yêu cầu)
         stateManager.setCurrentActivityStatus("đang chill");
 
         setupClickListeners();
 
-        // Xin quyền thu âm rôi mới khởi tạo SDK
+        startVoiceAgoraUidMapListener();
+
         if (checkPermissions()) {
             initializeAndJoinChannel();
         }
     }
 
-    private void animateClick(android.view.View view) {
+    private void initViews() {
+        tvTopChannelName = findViewById(R.id.tv_top_channel_name);
+        tvParticipantCount = findViewById(R.id.tv_participant_count);
+        tvUserNameStatus = findViewById(R.id.tv_user_name_status);
+
+        btnCollapse = findViewById(R.id.btn_collapse);
+        btnAddUserTop = findViewById(R.id.btn_add_user_top);
+        btnSpeakerTop = findViewById(R.id.btn_speaker_top);
+
+        btnVideo = findViewById(R.id.btn_video);
+        btnSwitchCamera = findViewById(R.id.btn_switch_camera);
+        btnMuteMain = findViewById(R.id.btn_mute_main);
+        btnChatMain = findViewById(R.id.btn_chat_main);
+        btnEventMain = findViewById(R.id.btn_event_main);
+        btnLeaveMain = findViewById(R.id.btn_leave_main);
+
+        flCenterAvatarContainer = findViewById(R.id.fl_center_avatar_container);
+        glVideoGrid = findViewById(R.id.gl_video_grid);
+        vMainSpeakingBorder = findViewById(R.id.v_main_speaking_border);
+
+        ivCenterAvatar = findViewById(R.id.iv_center_avatar);
+    }
+
+    private void animateClick(View view) {
         view.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(() -> {
             view.animate().scaleX(1f).scaleY(1f).setDuration(100);
         }).start();
     }
 
     private void updateVideoUiState() {
-        if (!isVideoOn) {
-            btnVideo.setImageResource(R.drawable.ic_videocam_off);
-            btnVideo.setBackgroundResource(R.drawable.bg_circle_dark);
-            btnVideo.setColorFilter(ContextCompat.getColor(this, R.color.white));
+        if (isVideoOn) {
+            btnVideo.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+            btnVideo.setImageTintList(ColorStateList.valueOf(Color.BLACK));
         } else {
-            btnVideo.setImageResource(R.drawable.ic_videocam);
-            btnVideo.setBackgroundResource(R.drawable.bg_circle_white);
-            btnVideo.setColorFilter(ContextCompat.getColor(this, android.R.color.black));
+            btnVideo.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2B2D31")));
+            btnVideo.setImageTintList(ColorStateList.valueOf(Color.WHITE));
         }
     }
 
     private void updateMicUiState() {
-        android.widget.ImageView ivUserMicStatus = findViewById(R.id.iv_user_mic_status);
         if (isMuted) {
-            // TẮT MIC: Nền Trắng, Icon Đỏ
+            btnMuteMain.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
+            btnMuteMain.setImageTintList(ColorStateList.valueOf(Color.parseColor("#ED4245")));
             btnMuteMain.setImageResource(R.drawable.ic_mic_off);
-            btnMuteMain.setColorFilter(ContextCompat.getColor(this, android.R.color.holo_red_dark));
-            btnMuteMain.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white));
 
+            ImageView ivUserMicStatus = findViewById(R.id.iv_user_mic_status);
             if (ivUserMicStatus != null) {
-                ivUserMicStatus.setVisibility(View.VISIBLE);
                 ivUserMicStatus.setImageResource(R.drawable.ic_mic_off);
-                ivUserMicStatus.setColorFilter(ContextCompat.getColor(this, android.R.color.holo_red_dark));
+                ivUserMicStatus.setColorFilter(Color.parseColor("#ED4245"));
             }
         } else {
-            // BẬT MIC: Nền Xám, Icon Trắng
-            btnMuteMain.setImageResource(R.drawable.ic_mic); // Hãy chắc chắn file ic_mic bạn làm rồi nha
-            btnMuteMain.setColorFilter(ContextCompat.getColor(this, R.color.white));
-            btnMuteMain.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.darker_gray));
+            btnMuteMain.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2B2D31")));
+            btnMuteMain.setImageTintList(ColorStateList.valueOf(Color.WHITE));
+            btnMuteMain.setImageResource(R.drawable.ic_mic_on); // Assuming you have ic_mic_on
 
+            ImageView ivUserMicStatus = findViewById(R.id.iv_user_mic_status);
             if (ivUserMicStatus != null) {
-                ivUserMicStatus.setVisibility(View.VISIBLE);
-                ivUserMicStatus.setImageResource(R.drawable.ic_mic);
-                ivUserMicStatus.setColorFilter(android.graphics.Color.parseColor("#43B581")); // Màu Xanh Lá
+                ivUserMicStatus.setImageResource(R.drawable.ic_mic_on);
+                ivUserMicStatus.setColorFilter(Color.parseColor("#43B581"));
             }
         }
-        // Bắt đầu lắng nghe thay đổi hồ sơ user để đồng bộ
         startObservingUserProfile();
     }
 
@@ -198,182 +209,311 @@ public class VoiceChannelActivity extends AppCompatActivity {
             @Override
             public void onUserLoaded(User user) {
                 if (isFinishing() || isDestroyed()) return;
-                
-                // Đồng bộ Avatar, Trang trí và Bảng tên bằng Utility
-                ProfileUIUtils.loadUserProfile(VoiceChannelActivity.this, user, 
-                        ivCenterAvatar, ivCenterAvatarDecoration, imgCardNamePlate, null);
-                
-                // Cập nhật tên hiển thị trong Pill
+                ProfileUIUtils.loadUserProfile(VoiceChannelActivity.this, user,
+                        ivCenterAvatar, null, null, null);
                 if (user.getDisplayName() != null) {
-                    tvUserNameStatus.setText("🎤 " + user.getDisplayName());
+                    tvUserNameStatus.setText(user.getDisplayName());
                 }
             }
-
             @Override
             public void onUserNotFound() {}
-
             @Override
             public void onFailure(String error) {
-                Log.e(TAG, "Lỗi đồng bộ hồ sơ: " + error);
+                Log.e(TAG, "Profile load error: " + error);
             }
         });
     }
 
     private void setupClickListeners() {
-        // Nút Gập xuống
         btnCollapse.setOnClickListener(v -> {
             animateClick(v);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                PictureInPictureParams.Builder pipBuilder = new PictureInPictureParams.Builder();
-                pipBuilder.setAspectRatio(new Rational(1, 1)); // Hình vuông giống Discord
-                enterPictureInPictureMode(pipBuilder.build());
+                try {
+                    enterPictureInPictureMode(new PictureInPictureParams.Builder().setAspectRatio(new Rational(1, 1)).build());
+                } catch (Exception e) {
+                    finish();
+                }
             } else {
-                finish(); // Android cũ thì đành đóng luôn
+                finish();
             }
         });
 
-        // Nút Tắt/Bật Micro (Màu thay đổi ảo diệu)
         btnMuteMain.setOnClickListener(v -> {
             animateClick(v);
             isMuted = !isMuted;
-            if (mRtcEngine != null) {
-                mRtcEngine.muteLocalAudioStream(isMuted);
-            }
-
-            // Đồng bộ hoá trạng thái Mute lên toàn app (cho danh sách kênh cập nhật theo)
+            if (mRtcEngine != null) mRtcEngine.muteLocalAudioStream(isMuted);
             VoiceStateManager.getInstance().setMuted(isMuted);
-
             updateMicUiState();
+            refreshMuteBadgesOnGrid();
         });
 
-        // Nút Loa
-        btnSpeakerTop.setOnClickListener(v -> {
-            animateClick(v);
-            isSpeakerOn = !isSpeakerOn;
-            if (mRtcEngine != null) {
-                mRtcEngine.setEnableSpeakerphone(isSpeakerOn);
-            }
-            btnSpeakerTop.setAlpha(isSpeakerOn ? 1.0f : 0.5f);
-        });
+        if (btnSpeakerTop != null) {
+            btnSpeakerTop.setOnClickListener(v -> {
+                animateClick(v);
+                isSpeakerOn = !isSpeakerOn;
+                if (mRtcEngine != null) mRtcEngine.setEnableSpeakerphone(isSpeakerOn);
+                btnSpeakerTop.setAlpha(isSpeakerOn ? 1.0f : 0.5f);
+            });
+        }
 
-        // Cập nhật logic Tắt/Bật Video
         btnVideo.setOnClickListener(v -> {
             animateClick(v);
             isVideoOn = !isVideoOn;
             if (mRtcEngine != null) {
                 if (isVideoOn) {
-                    mRtcEngine.enableLocalVideo(true); // Bật hardware camera
-
-                    // Sử dụng CreateTextureView thay vì SurfaceView để hỗ trợ CardView và tránh lỗi
-                    // màn hình đen
-                    TextureView textureView = RtcEngine.CreateTextureView(getBaseContext());
-                    flLocalVideo.removeAllViews();
-                    flLocalVideo.addView(textureView, new FrameLayout.LayoutParams(
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT));
-                    mRtcEngine.setupLocalVideo(new VideoCanvas(textureView, VideoCanvas.RENDER_MODE_HIDDEN, 0));
+                    mRtcEngine.enableLocalVideo(true);
+                    setupLocalVideo();
                     mRtcEngine.startPreview();
                     mRtcEngine.muteLocalVideoStream(false);
-                    flLocalVideo.setVisibility(View.VISIBLE);
-                    findViewById(R.id.iv_center_avatar).setVisibility(View.GONE);
+                    applyCameraPublishToChannel(true);
                 } else {
+                    applyCameraPublishToChannel(false);
                     mRtcEngine.stopPreview();
                     mRtcEngine.muteLocalVideoStream(true);
-                    mRtcEngine.enableLocalVideo(false); // Tắt hardware camera
-                    flLocalVideo.removeAllViews();
-                    flLocalVideo.setVisibility(View.GONE);
-                    findViewById(R.id.iv_center_avatar).setVisibility(View.VISIBLE);
+                    mRtcEngine.enableLocalVideo(false);
+                    FrameLayout flLocalPreview = findViewById(R.id.fl_local_preview);
+                    if (flLocalPreview != null) flLocalPreview.removeAllViews();
+                    androidx.cardview.widget.CardView cvLocalPreview = findViewById(R.id.cv_local_preview);
+                    if (cvLocalPreview != null) cvLocalPreview.setVisibility(View.GONE);
                 }
+                renderVideoGrid();
             }
-
-            // Đồng bộ hoá trạng thái Video lên toàn app (cho danh sách kênh cập nhật theo)
             VoiceStateManager.getInstance().setVideoOn(isVideoOn);
-
             updateVideoUiState();
         });
-        btnChatMain.setOnClickListener(v -> {
-            animateClick(v);
-            ChatBottomSheet chatSheet = new ChatBottomSheet(channelName);
-            chatSheet.show(getSupportFragmentManager(), "ChatSheet");
-        });
 
-        // Bắt sự kiện khi click vào tên kênh trên cùng (hoặc cái khung pill chứa nó)
-        View pillChannelName = findViewById(R.id.pill_channel_name);
-        if (pillChannelName != null) {
-            pillChannelName.setOnClickListener(v -> {
-                animateClick(v);
-                String uid = AuthManager.getInstance(this).getUid();
-                VoiceChannelSettingsBottomSheet settingsSheet = new VoiceChannelSettingsBottomSheet(channelName, uid != null ? uid : "User");
-                settingsSheet.show(getSupportFragmentManager(), "VoiceChannelSettings");
-            });
-        }
-        btnEventMain.setOnClickListener(v -> {
+        btnSwitchCamera.setOnClickListener(v -> {
             animateClick(v);
-            SoundboardBottomSheet soundboardSheet = new SoundboardBottomSheet(channelName);
-            soundboardSheet.show(getSupportFragmentManager(), "SoundboardSheet");
+            if (mRtcEngine != null && isVideoOn) mRtcEngine.switchCamera();
         });
-        btnAddUserTop.setOnClickListener(v -> {
-            animateClick(v);
-            InviteFriendsBottomSheet inviteSheet = InviteFriendsBottomSheet.newInstanceForChannel(channelName);
-            inviteSheet.show(getSupportFragmentManager(), "InviteSheet");
-        });
-
-        View bannerAddPeople = findViewById(R.id.banner_add_people);
-        if (bannerAddPeople != null) {
-            bannerAddPeople.setOnClickListener(v -> {
-                animateClick(v);
-                InviteFriendsBottomSheet inviteSheet = InviteFriendsBottomSheet
-                        .newInstanceForChannel(channelName);
-                inviteSheet.show(getSupportFragmentManager(), "InviteSheet");
-            });
-        }
 
         btnLeaveMain.setOnClickListener(v -> {
             animateClick(v);
             leaveChannel();
         });
+
+        btnChatMain.setOnClickListener(v -> {
+            animateClick(v);
+            new ChatBottomSheet(channelName).show(getSupportFragmentManager(), "ChatSheet");
+        });
+        btnEventMain.setOnClickListener(v -> {
+            animateClick(v);
+            new SoundboardBottomSheet(channelName).show(getSupportFragmentManager(), "SoundboardSheet");
+        });
+        btnAddUserTop.setOnClickListener(v -> {
+            animateClick(v);
+            InviteFriendsBottomSheet.newInstanceForChannel(channelName).show(getSupportFragmentManager(), "InviteSheet");
+        });
+    }
+
+    private static String safeVoiceChannelKey(String name) {
+        if (name == null || name.isEmpty()) return "default";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (Character.isLetterOrDigit(c) || c == '_' || c == '-') {
+                sb.append(c);
+            } else {
+                sb.append('_');
+            }
+        }
+        return sb.length() > 0 ? sb.toString() : "default";
+    }
+
+    private void startVoiceAgoraUidMapListener() {
+        String safeKey = safeVoiceChannelKey(channelName);
+        if (voiceAgoraMapRef != null && voiceAgoraMapListener != null) {
+            voiceAgoraMapRef.removeEventListener(voiceAgoraMapListener);
+        }
+        voiceAgoraMapRef = FirebaseManager.getDatabaseReference("voice_agora_uid_map").child(safeKey);
+        voiceAgoraMapListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Map<Integer, String> next = new HashMap<>();
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    try {
+                        int agoraUid = Integer.parseInt(child.getKey());
+                        String fbUid = child.getValue(String.class);
+                        if (fbUid != null && !fbUid.isEmpty()) {
+                            next.put(agoraUid, fbUid);
+                        }
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+                runOnUiThread(() -> {
+                    agoraUidToFirebaseUid.clear();
+                    agoraUidToFirebaseUid.putAll(next);
+                    fetchDisplayLabelsForMappedUids();
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w(TAG, "voice_agora_uid_map: " + error.getMessage());
+            }
+        };
+        voiceAgoraMapRef.addValueEventListener(voiceAgoraMapListener);
+    }
+
+    private void publishLocalAgoraUidMapping() {
+        String fbUid = AuthManager.getInstance(this).getUid();
+        if (fbUid == null || fbUid.isEmpty() || voiceAgoraMapRef == null || localUid == 0) {
+            return;
+        }
+        voiceAgoraMapRef.child(String.valueOf(localUid)).setValue(fbUid);
+    }
+
+    private void removeLocalAgoraUidMapping() {
+        String fbUid = AuthManager.getInstance(this).getUid();
+        if (fbUid == null || localUid == 0) {
+            return;
+        }
+        String safeKey = safeVoiceChannelKey(channelName);
+        FirebaseManager.getDatabaseReference("voice_agora_uid_map")
+                .child(safeKey)
+                .child(String.valueOf(localUid))
+                .removeValue();
+    }
+
+    private void fetchDisplayLabelsForMappedUids() {
+        for (Map.Entry<Integer, String> e : new ArrayList<>(agoraUidToFirebaseUid.entrySet())) {
+            final int agoraUid = e.getKey();
+            String fbUid = e.getValue();
+            if (fbUid == null) {
+                continue;
+            }
+            UserRepository.getInstance().getUserByUid(fbUid, new UserRepository.OnUserLoadedListener() {
+                @Override
+                public void onUserLoaded(User user) {
+                    String label = user.getDisplayName();
+                    if (label == null || label.isEmpty()) {
+                        label = user.getUserName();
+                    }
+                    if (label == null || label.isEmpty()) {
+                        label = fallbackRemoteLabel(agoraUid);
+                    }
+                    String finalLabel = label;
+                    runOnUiThread(() -> {
+                        agoraUidToDisplayLabel.put(agoraUid, finalLabel);
+                        updateTileLabelsOnly();
+                    });
+                }
+
+                @Override
+                public void onUserNotFound() {
+                    runOnUiThread(() -> {
+                        agoraUidToDisplayLabel.put(agoraUid, fallbackRemoteLabel(agoraUid));
+                        updateTileLabelsOnly();
+                    });
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    onUserNotFound();
+                }
+            });
+        }
+    }
+
+    private void updateTileLabelsOnly() {
+        if (glVideoGrid == null) {
+            return;
+        }
+        for (int i = 0; i < glVideoGrid.getChildCount(); i++) {
+            View tile = glVideoGrid.getChildAt(i);
+            Object tag = tile.getTag(R.id.tag_voice_tile_uid);
+            if (!(tag instanceof Integer)) {
+                continue;
+            }
+            int uid = (Integer) tag;
+            if (uid == 0) {
+                continue;
+            }
+            TextView name = tile.findViewById(R.id.tv_user_name);
+            if (name == null) {
+                continue;
+            }
+            String label = agoraUidToDisplayLabel.get(uid);
+            name.setText(label != null ? label : fallbackRemoteLabel(uid));
+        }
+    }
+
+    private void refreshMuteBadgesOnGrid() {
+        if (glVideoGrid == null) {
+            return;
+        }
+        for (int i = 0; i < glVideoGrid.getChildCount(); i++) {
+            View tile = glVideoGrid.getChildAt(i);
+            Object tag = tile.getTag(R.id.tag_voice_tile_uid);
+            if (!(tag instanceof Integer)) {
+                continue;
+            }
+            int uid = (Integer) tag;
+            ImageView mic = tile.findViewById(R.id.iv_tile_mic_muted);
+            if (mic == null) {
+                continue;
+            }
+            if (uid == 0) {
+                mic.setVisibility(isMuted ? View.VISIBLE : View.GONE);
+            } else {
+                mic.setVisibility(remoteAudioMutedUids.contains(uid) ? View.VISIBLE : View.GONE);
+            }
+        }
+    }
+
+    private String fallbackRemoteLabel(int agoraUid) {
+        return "UID " + agoraUid;
+    }
+
+    private void applyCameraPublishToChannel(boolean publishing) {
+        if (mRtcEngine == null || !hasJoinedChannel) {
+            return;
+        }
+        ChannelMediaOptions opts = new ChannelMediaOptions();
+        opts.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER;
+        opts.publishMicrophoneTrack = true;
+        opts.publishCameraTrack = publishing;
+        opts.autoSubscribeAudio = true;
+        opts.autoSubscribeVideo = true;
+        int code = mRtcEngine.updateChannelMediaOptions(opts);
+        if (code != 0) {
+            Log.w(TAG, "updateChannelMediaOptions publishCameraTrack=" + publishing + " code=" + code);
+        }
+    }
+
+    private void setupLocalVideo() {
+        FrameLayout flLocalPreview = findViewById(R.id.fl_local_preview);
+        androidx.cardview.widget.CardView cvLocalPreview = findViewById(R.id.cv_local_preview);
+        if (flLocalPreview == null) return;
+
+        TextureView textureView = RtcEngine.CreateTextureView(getBaseContext());
+        flLocalPreview.removeAllViews();
+        flLocalPreview.addView(textureView, new FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT));
+        mRtcEngine.setupLocalVideo(new VideoCanvas(textureView, VideoCanvas.RENDER_MODE_HIDDEN, 0));
+        if (cvLocalPreview != null) {
+            cvLocalPreview.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
-
-        View pillChannelName = findViewById(R.id.pill_channel_name);
-        View bannerAddPeople = findViewById(R.id.banner_add_people);
         View bottomActionBar = findViewById(R.id.bottom_action_bar);
+        View bannerAddPeople = findViewById(R.id.banner_add_people);
+        View pillChannelName = findViewById(R.id.pill_channel_name);
 
-        if (isInPictureInPictureMode) {
-            // Ẩn các thành phần không cần thiết
-            btnCollapse.setVisibility(View.GONE);
-            pillChannelName.setVisibility(View.GONE);
-            btnAddUserTop.setVisibility(View.GONE);
-            btnSpeakerTop.setVisibility(View.GONE);
-            bannerAddPeople.setVisibility(View.GONE);
-            bottomActionBar.setVisibility(View.GONE);
-        } else {
-            // Hiện lại khi phóng to
-            btnCollapse.setVisibility(View.VISIBLE);
-            pillChannelName.setVisibility(View.VISIBLE);
-            btnAddUserTop.setVisibility(View.VISIBLE);
-            btnSpeakerTop.setVisibility(View.VISIBLE);
-            bannerAddPeople.setVisibility(View.VISIBLE);
-            bottomActionBar.setVisibility(View.VISIBLE);
-        }
+        int visibility = isInPictureInPictureMode ? View.GONE : View.VISIBLE;
+
+        btnCollapse.setVisibility(visibility);
+        if (pillChannelName != null) pillChannelName.setVisibility(visibility);
+        btnAddUserTop.setVisibility(visibility);
+        if (btnSpeakerTop != null) btnSpeakerTop.setVisibility(visibility);
+        if(bannerAddPeople != null) bannerAddPeople.setVisibility(visibility);
+        if(bottomActionBar != null) bottomActionBar.setVisibility(visibility);
     }
 
-    @Override
-    protected void onUserLeaveHint() {
-        super.onUserLeaveHint();
-        // Tự động thu nhỏ khi người dùng bấm phím Home ngoài hệ thống nếu muốn trải
-        // nghiệm liền mạch
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            PictureInPictureParams.Builder pipBuilder = new PictureInPictureParams.Builder();
-            pipBuilder.setAspectRatio(new Rational(1, 1));
-            enterPictureInPictureMode(pipBuilder.build());
-        }
-    }
-
-    // --- Các hàm xử lý SDK Agora ---
     private boolean checkPermissions() {
         for (String permission : REQUESTED_PERMISSIONS) {
             if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -384,28 +524,8 @@ public class VoiceChannelActivity extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-            @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQ_ID) {
-            boolean allGranted = true;
-            for (int result : grantResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    allGranted = false;
-                    break;
-                }
-            }
-            if (grantResults.length > 0 && allGranted) {
-                initializeAndJoinChannel();
-            } else {
-                Toast.makeText(this, "Bạn cần cấp quyền để tham gia Voice!", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        }
-    }
-
     private void initializeAndJoinChannel() {
+        if (hasJoinedChannel) return;
         try {
             RtcEngineConfig config = new RtcEngineConfig();
             config.mContext = getBaseContext();
@@ -413,91 +533,196 @@ public class VoiceChannelActivity extends AppCompatActivity {
             config.mEventHandler = mRtcEventHandler;
             mRtcEngine = RtcEngine.create(config);
 
-            // Kích hoạt module Video
             mRtcEngine.enableVideo();
-            mRtcEngine.enableLocalVideo(isVideoOn); // Khởi tạo hardware tuỳ trạng thái
-
-            // Setup camera ban đầu nếu isVideoOn = true
             if (isVideoOn) {
-                TextureView textureView = RtcEngine.CreateTextureView(getBaseContext());
-                flLocalVideo.removeAllViews();
-                flLocalVideo.addView(textureView, new FrameLayout.LayoutParams(
-                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                        android.view.ViewGroup.LayoutParams.MATCH_PARENT));
-                mRtcEngine.setupLocalVideo(new VideoCanvas(textureView, VideoCanvas.RENDER_MODE_HIDDEN, 0));
+                mRtcEngine.enableLocalVideo(true);
+                setupLocalVideo();
                 mRtcEngine.startPreview();
             }
 
-            // Bật theo dõi âm lượng (Kiểm tra mỗi 200ms) báo cáo mic
-            mRtcEngine.enableAudioVolumeIndication(200, 3, true);
-
             ChannelMediaOptions options = new ChannelMediaOptions();
             options.autoSubscribeAudio = true;
+            options.autoSubscribeVideo = true;
             options.publishMicrophoneTrack = true;
-            options.publishCameraTrack = true; // Quan trọng để gửi video
+            options.publishCameraTrack = isVideoOn;
             options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER;
 
-            // Tham gia
             mRtcEngine.joinChannel(null, channelName, 0, options);
             mRtcEngine.muteLocalAudioStream(isMuted);
-            mRtcEngine.muteLocalVideoStream(!isVideoOn);
-            if (isVideoOn) {
-                flLocalVideo.setVisibility(View.VISIBLE);
-                findViewById(R.id.iv_center_avatar).setVisibility(View.GONE);
-            }
+            hasJoinedChannel = true;
 
+            mRtcEngine.enableAudioVolumeIndication(200, 3, true);
         } catch (Exception e) {
-            Log.e(TAG, "Lỗi khi khởi tạo Agora: " + e.getMessage());
+            Log.e(TAG, "Agora init error: " + e.getMessage());
         }
     }
 
     private final IRtcEngineEventHandler mRtcEventHandler = new IRtcEngineEventHandler() {
         @Override
         public void onJoinChannelSuccess(String channel, int uid, int elapsed) {
+            localUid = uid;
             runOnUiThread(() -> {
-                tvUserNameStatus.setText("Đã Kết Nối");
-                tvUserNameStatus.setTextColor(0xFF43B581); // Xanh
-                                                           // lá
+                publishLocalAgoraUidMapping();
+                updateParticipantCountUi();
             });
         }
 
         @Override
         public void onUserJoined(int uid, int elapsed) {
+            remoteUids.add(uid);
             runOnUiThread(() -> {
-                Toast.makeText(VoiceChannelActivity.this, "Có người tham gia", Toast.LENGTH_SHORT).show();
+                updateParticipantCountUi();
+                renderVideoGrid();
             });
         }
 
         @Override
-        public void onAudioVolumeIndication(IRtcEngineEventHandler.AudioVolumeInfo[] speakers, int totalVolume) {
-            boolean localSpeaking = false;
-            if (speakers != null) {
-                for (IRtcEngineEventHandler.AudioVolumeInfo info : speakers) {
-                    if (info.uid == 0 && info.volume > 5) {
-                        localSpeaking = true;
-                        break;
+        public void onUserOffline(int uid, int reason) {
+            remoteUids.remove(uid);
+            remoteVideoUids.remove(uid);
+            remoteAudioMutedUids.remove(uid);
+            agoraUidToDisplayLabel.remove(uid);
+            runOnUiThread(() -> {
+                updateParticipantCountUi();
+                renderVideoGrid();
+            });
+        }
+
+        @Override
+        public void onUserMuteAudio(int uid, boolean muted) {
+            if (uid == 0) return;
+            runOnUiThread(() -> {
+                if (muted) {
+                    remoteAudioMutedUids.add(uid);
+                } else {
+                    remoteAudioMutedUids.remove(uid);
+                }
+                refreshMuteBadgesOnGrid();
+            });
+        }
+
+        @Override
+        public void onUserMuteVideo(int uid, boolean muted) {
+            if (muted) remoteVideoUids.remove(uid);
+            else remoteVideoUids.add(uid);
+            runOnUiThread(() -> renderVideoGrid());
+        }
+
+        @Override
+        public void onAudioVolumeIndication(AudioVolumeInfo[] speakers, int totalVolume) {
+            runOnUiThread(() -> {
+                speakingUids.clear();
+                boolean localTalking = false;
+                if (speakers != null) {
+                    for (AudioVolumeInfo info : speakers) {
+                        if (info.volume <= 5) continue;
+                        if (info.uid != 0) {
+                            speakingUids.add(info.uid);
+                        }
+                        if (info.uid == 0 || info.uid == localUid) {
+                            localTalking = true;
+                        }
                     }
                 }
-            }
-            final boolean finalSpeaking = localSpeaking && !isMuted;
-            VoiceStateManager.getInstance().setSpeaking(finalSpeaking);
 
-            runOnUiThread(() -> {
+                isLocalSpeaking = localTalking && !isMuted;
+                VoiceStateManager.getInstance().setSpeaking(isLocalSpeaking);
+
                 if (vMainSpeakingBorder != null) {
-                    if (finalSpeaking) {
-                        vMainSpeakingBorder.setVisibility(View.VISIBLE);
+                    vMainSpeakingBorder.setVisibility(isLocalSpeaking ? View.VISIBLE : View.GONE);
+                }
+
+                for (Map.Entry<String, View> entry : tileSpeakingBorders.entrySet()) {
+                    String key = entry.getKey();
+                    View border = entry.getValue();
+                    if (border == null) continue;
+                    boolean show;
+                    if ("local".equals(key)) {
+                        show = isLocalSpeaking;
                     } else {
-                        vMainSpeakingBorder.setVisibility(View.GONE);
+                        try {
+                            int uid = Integer.parseInt(key);
+                            show = speakingUids.contains(uid);
+                        } catch (NumberFormatException e) {
+                            show = false;
+                        }
                     }
+                    border.setVisibility(show ? View.VISIBLE : View.GONE);
                 }
             });
         }
     };
 
+    private void renderVideoGrid() {
+        if (glVideoGrid == null || mRtcEngine == null) return;
+        
+        List<Integer> activeVideoUids = new ArrayList<>(remoteVideoUids);
+        if (isVideoOn) activeVideoUids.add(0); // 0 is local
+
+        if (activeVideoUids.isEmpty()) {
+            glVideoGrid.setVisibility(View.GONE);
+            if (flCenterAvatarContainer != null) flCenterAvatarContainer.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        glVideoGrid.setVisibility(View.VISIBLE);
+        if (flCenterAvatarContainer != null) flCenterAvatarContainer.setVisibility(View.GONE);
+        
+        glVideoGrid.removeAllViews();
+        tileSpeakingBorders.clear();
+
+        int total = activeVideoUids.size();
+        glVideoGrid.setColumnCount(total > 1 ? 2 : 1);
+        glVideoGrid.setRowCount((int) Math.ceil(total / 2.0));
+
+        for (int uid : activeVideoUids) {
+            View tile = LayoutInflater.from(this).inflate(R.layout.item_voice_video_tile, glVideoGrid, false);
+            FrameLayout slot = tile.findViewById(R.id.fl_video_slot);
+            View border = tile.findViewById(R.id.v_speaking_border);
+            TextView name = tile.findViewById(R.id.tv_user_name);
+            
+            String borderKey = uid == 0 ? "local" : String.valueOf(uid);
+            tileSpeakingBorders.put(borderKey, border);
+            tile.setTag(R.id.tag_voice_tile_uid, uid);
+            if (uid == 0) {
+                name.setText("Bạn");
+            } else {
+                String label = agoraUidToDisplayLabel.get(uid);
+                name.setText(label != null ? label : fallbackRemoteLabel(uid));
+            }
+
+            TextureView tv = RtcEngine.CreateTextureView(getBaseContext());
+            slot.addView(tv);
+
+            if (uid == 0) {
+                mRtcEngine.setupLocalVideo(new VideoCanvas(tv, VideoCanvas.RENDER_MODE_HIDDEN, 0));
+            } else {
+                mRtcEngine.setupRemoteVideo(new VideoCanvas(tv, VideoCanvas.RENDER_MODE_HIDDEN, uid));
+            }
+
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = 0;
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            tile.setLayoutParams(params);
+            
+            glVideoGrid.addView(tile);
+        }
+        refreshMuteBadgesOnGrid();
+    }
+
+    private void updateParticipantCountUi() {
+        int count = remoteUids.size() + 1;
+        tvParticipantCount.setText(count + " người trong phòng");
+    }
+
     private void leaveChannel() {
         VoiceStateManager.getInstance().leaveChannel();
         if (mRtcEngine != null) {
             mRtcEngine.leaveChannel();
+            RtcEngine.destroy();
+            mRtcEngine = null;
         }
         finish();
     }
@@ -505,13 +730,16 @@ public class VoiceChannelActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        
-        // Hủy lắng nghe hồ sơ
         String uid = AuthManager.getInstance(this).getUid();
         if (uid != null && userProfileListener != null) {
             UserRepository.getInstance().removeListener(uid, userProfileListener);
         }
-
+        if (voiceAgoraMapRef != null && voiceAgoraMapListener != null) {
+            voiceAgoraMapRef.removeEventListener(voiceAgoraMapListener);
+            voiceAgoraMapListener = null;
+            voiceAgoraMapRef = null;
+        }
+        removeLocalAgoraUidMapping();
         if (mRtcEngine != null) {
             mRtcEngine.leaveChannel();
             RtcEngine.destroy();

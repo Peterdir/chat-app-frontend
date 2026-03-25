@@ -14,7 +14,9 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.chat_app_frontend.R;
+import com.example.chat_app_frontend.ui.DMChatActivity;
 import com.example.chat_app_frontend.ui.MainActivity;
+import com.example.chat_app_frontend.ui.PrivateCallActivity;
 import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class AppFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String CHANNEL_ID = "chat_messages";
+    private static final String CALL_CHANNEL_ID = "incoming_calls";
 
     @Override
     public void onNewToken(String token) {
@@ -45,6 +48,13 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
+        Map<String, String> data = remoteMessage.getData();
+        String eventType = data != null ? data.get("eventType") : null;
+        if ("call_invite".equals(eventType)) {
+            handleIncomingCall(data);
+            return;
+        }
+
         createNotificationChannel();
 
         String title = null;
@@ -55,7 +65,6 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
             body = remoteMessage.getNotification().getBody();
         }
 
-        Map<String, String> data = remoteMessage.getData();
         if ((title == null || title.trim().isEmpty()) && data != null) {
             title = data.get("title");
         }
@@ -123,6 +132,62 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
         if (manager != null) {
             manager.createNotificationChannel(channel);
         }
+    }
+
+    private void createCallNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+        NotificationChannel channel = new NotificationChannel(
+                CALL_CHANNEL_ID,
+                "Incoming calls",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        channel.setDescription("Thông báo cuộc gọi đến");
+        channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        if (manager != null) {
+            manager.createNotificationChannel(channel);
+        }
+    }
+
+    private void handleIncomingCall(Map<String, String> data) {
+        createCallNotificationChannel();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        String friendName = data != null ? data.get("callerName") : "Friend";
+        String friendUid = data != null ? data.get("callerUid") : null;
+        boolean isVideo = data != null && "video".equalsIgnoreCase(data.get("callType"));
+
+        Intent intent = new Intent(this, PrivateCallActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(DMChatActivity.EXTRA_FRIEND_NAME, friendName);
+        intent.putExtra(DMChatActivity.EXTRA_FRIEND_UID, friendUid);
+        intent.putExtra("is_video", isVideo);
+        intent.putExtra("is_caller", false);
+
+        int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            pendingFlags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, pendingFlags);
+
+        int id = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+        String callText = isVideo ? "Cuộc gọi video đến" : "Cuộc gọi thoại đến";
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CALL_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(friendName != null ? friendName : "Friend")
+                .setContentText(callText)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        NotificationManagerCompat.from(this).notify(id, builder.build());
     }
 
     private String safe(String value) {

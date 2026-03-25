@@ -59,6 +59,7 @@ public class DMAdapter extends RecyclerView.Adapter<DMAdapter.DMViewHolder> {
             intent.putExtra(DMChatActivity.EXTRA_FRIEND_NAME, friend.getName());
             intent.putExtra(DMChatActivity.EXTRA_FRIEND_STATUS, friend.getStatus());
             intent.putExtra(DMChatActivity.EXTRA_FRIEND_AVATAR, friend.getAvatarResId());
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_UID, friend.getUid());
             v.getContext().startActivity(intent);
         });
     }

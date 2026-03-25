@@ -2,38 +2,55 @@ package com.example.chat_app_frontend.ui;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.adapter.MessageAdapter;
+import com.example.chat_app_frontend.manager.AuthManager;
 import com.example.chat_app_frontend.model.Message;
+import com.example.chat_app_frontend.model.RealtimeChatMessage;
+import com.example.chat_app_frontend.repository.CallRepository;
+import com.example.chat_app_frontend.repository.ChatRepository;
 import com.example.chat_app_frontend.utils.ChatThemeHelper;
+import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class DMChatActivity extends AppCompatActivity {
+public class DMChatActivity extends AppCompatActivity implements MessageAdapter.OnMessageInteractionListener {
 
     public static final String EXTRA_FRIEND_NAME = "friend_name";
     public static final String EXTRA_FRIEND_STATUS = "friend_status";
     public static final String EXTRA_FRIEND_AVATAR = "friend_avatar";
+    public static final String EXTRA_FRIEND_UID = "friend_uid";
 
     private RecyclerView rvMessages;
     private MessageAdapter messageAdapter;
@@ -42,6 +59,13 @@ public class DMChatActivity extends AppCompatActivity {
     private String friendName;
     private ConstraintLayout rootLayout;
     private String chatId;
+    private String friendUid;
+    private String currentUserId = "";
+    private String currentUserName = "You";
+    private ChatRepository chatRepository;
+    private ValueEventListener chatListener;
+
+    private static final String[] QUICK_REACTION_EMOJIS = {"❤️", "😆", "😮", "😢", "😡", "👍", "👎"};
 
     private static final String SELF_ID = "self";
     private static final String SELF_NAME = "You";
@@ -62,6 +86,7 @@ public class DMChatActivity extends AppCompatActivity {
         int friendAvatarRes = getIntent().getIntExtra(EXTRA_FRIEND_AVATAR, 0);
         if (friendName == null) friendName = "Friend";
         if (friendStatus == null) friendStatus = "Online";
+        friendUid = getIntent().getStringExtra(EXTRA_FRIEND_UID);
 
         // Toolbar
         setupToolbar(friendName, friendStatus, friendAvatarRes);
@@ -73,14 +98,21 @@ public class DMChatActivity extends AppCompatActivity {
         ImageView btnSend = findViewById(R.id.btn_send);
         btnSend.setOnClickListener(v -> sendMessage());
 
-        // RecyclerView
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            currentUserId = firebaseUser.getUid();
+            resolveCurrentUserName(currentUserId);
+        }
+
+        chatRepository = ChatRepository.getInstance();
+
         rvMessages = findViewById(R.id.rv_messages);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         rvMessages.setLayoutManager(layoutManager);
 
         messageList = new ArrayList<>();
-        messageAdapter = new MessageAdapter(messageList);
+        messageAdapter = new MessageAdapter(messageList, this, currentUserId);
         rvMessages.setAdapter(messageAdapter);
 
         // Call buttons
@@ -92,18 +124,31 @@ public class DMChatActivity extends AppCompatActivity {
 
         // Theme
         rootLayout = findViewById(R.id.root_layout);
-        chatId = "dm_" + friendName;
+        if (!currentUserId.trim().isEmpty() && friendUid != null && !friendUid.trim().isEmpty()) {
+            chatId = "dm_" + CallRepository.buildCallId(currentUserId, friendUid);
+        } else {
+            chatId = "dm_" + friendName;
+        }
         int savedTheme = ChatThemeHelper.getTheme(this, chatId);
         ChatThemeHelper.applyTheme(rootLayout, savedTheme);
 
         ImageView btnTheme = findViewById(R.id.btn_theme);
         btnTheme.setOnClickListener(v -> showThemePicker());
+
+        attachRealtimeMessages();
     }
 
     private void startPrivateCall(boolean isVideo) {
+        String myUid = AuthManager.getInstance(this).getUid();
+        if (myUid != null && friendUid != null && !friendUid.trim().isEmpty()) {
+            String callId = CallRepository.buildCallId(myUid, friendUid);
+            CallRepository.getInstance().createRingingSession(callId, myUid, friendUid, isVideo);
+        }
         android.content.Intent intent = new android.content.Intent(this, PrivateCallActivity.class);
         intent.putExtra(EXTRA_FRIEND_NAME, friendName);
         intent.putExtra("is_video", isVideo);
+        intent.putExtra(EXTRA_FRIEND_UID, friendUid);
+        intent.putExtra("is_caller", true);
         startActivity(intent);
     }
 
@@ -147,36 +192,275 @@ public class DMChatActivity extends AppCompatActivity {
     private void sendMessage() {
         String text = etMessageInput.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
-
-        long now = System.currentTimeMillis();
-        String currentDayKey = buildDayKey(now);
-        if (!currentDayKey.equals(lastMessageDayKey)) {
-            messageList.add(new Message(formatDateDividerLabel(now)));
-            messageAdapter.notifyItemInserted(messageList.size() - 1);
-            lastMessageDayKey = currentDayKey;
+        if (currentUserId == null || currentUserId.trim().isEmpty()) {
+            Toast.makeText(this, "Bạn cần đăng nhập để gửi tin nhắn", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        boolean isFirst = !SELF_ID.equals(lastMessageSenderId)
-                || isGroupBreak(lastMessageAtMillis, now);
-
-        Message msg = new Message(
-                String.valueOf(now),
-                SELF_ID,
-                SELF_NAME,
-                0,
+        chatRepository.sendDirectMessage(
+                chatId,
+                currentUserId,
+                currentUserName,
                 text,
-                formatMessageTimestamp(now),
-                true,
-                isFirst
+                new ChatRepository.OnCompleteListener() {
+                    @Override
+                    public void onSuccess() {
+                        etMessageInput.setText("");
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        Toast.makeText(DMChatActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                }
         );
+    }
 
-        messageList.add(msg);
-        messageAdapter.notifyItemInserted(messageList.size() - 1);
-        rvMessages.scrollToPosition(messageList.size() - 1);
-        etMessageInput.setText("");
+    private void attachRealtimeMessages() {
+        chatListener = chatRepository.observeDirectMessages(chatId, new ChatRepository.OnMessagesChangedListener() {
+            @Override
+            public void onSuccess(List<RealtimeChatMessage> messages) {
+                List<Message> uiMessages = toUiMessages(messages);
+                messageList.clear();
+                messageList.addAll(uiMessages);
+                messageAdapter.notifyDataSetChanged();
+                if (!messageList.isEmpty()) {
+                    rvMessages.scrollToPosition(messageList.size() - 1);
+                }
+            }
 
-        lastMessageSenderId = SELF_ID;
-        lastMessageAtMillis = now;
+            @Override
+            public void onFailure(String error) {
+                Toast.makeText(DMChatActivity.this, error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private List<Message> toUiMessages(List<RealtimeChatMessage> rawMessages) {
+        List<Message> uiMessages = new ArrayList<>();
+        List<RealtimeChatMessage> sortedMessages = new ArrayList<>(rawMessages);
+        Collections.sort(sortedMessages, Comparator.comparingLong(RealtimeChatMessage::getCreatedAt));
+
+        String previousSenderId = null;
+        String previousDayKey = null;
+        long previousMessageAt = -1L;
+
+        for (RealtimeChatMessage raw : sortedMessages) {
+            long createdAt = raw.getCreatedAt() > 0 ? raw.getCreatedAt() : System.currentTimeMillis();
+            String currentDayKey = buildDayKey(createdAt);
+
+            if (!currentDayKey.equals(previousDayKey)) {
+                uiMessages.add(new Message(formatDateDividerLabel(createdAt)));
+                previousDayKey = currentDayKey;
+                previousSenderId = null;
+                previousMessageAt = -1L;
+            }
+
+            String senderId = raw.getSenderId() != null ? raw.getSenderId() : "unknown";
+            String senderName = raw.getSenderName() != null && !raw.getSenderName().trim().isEmpty()
+                    ? raw.getSenderName() : SELF_NAME;
+            boolean isSelf = senderId.equals(currentUserId);
+            boolean isFirstInGroup = !senderId.equals(previousSenderId)
+                    || isGroupBreak(previousMessageAt, createdAt);
+            previousSenderId = senderId;
+            previousMessageAt = createdAt;
+
+            Message ui = new Message(
+                    raw.getId() != null ? raw.getId() : String.valueOf(createdAt),
+                    senderId,
+                    senderName,
+                    0,
+                    raw.getContent() != null ? raw.getContent() : "",
+                    formatMessageTimestamp(createdAt),
+                    isSelf,
+                    isFirstInGroup
+            );
+            ui.setReactions(raw.getReactions());
+            uiMessages.add(ui);
+        }
+        return uiMessages;
+    }
+
+    @Override
+    public void onMessageLongPressed(Message message) {
+        if (message == null || Message.TYPE_DATE_DIVIDER.equals(message.getMessageType())) {
+            return;
+        }
+        showMessageActionSheet(message);
+    }
+
+    @Override
+    public void onReactionChipClicked(Message message, String emoji) {
+        toggleReaction(message, emoji);
+    }
+
+    private void showMessageActionSheet(Message message) {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        int pad = dp(16);
+        root.setPadding(pad, pad, pad, pad);
+
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("Thả cảm xúc");
+        tvTitle.setTextSize(17f);
+        tvTitle.setTextColor(getColor(R.color.discord_text_primary));
+        tvTitle.setPadding(0, 0, 0, dp(12));
+        root.addView(tvTitle);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        for (String emoji : QUICK_REACTION_EMOJIS) {
+            TextView chip = new TextView(this);
+            chip.setText(emoji);
+            chip.setTextSize(24f);
+            chip.setGravity(Gravity.CENTER);
+            chip.setBackgroundResource(R.drawable.bg_reaction_option);
+            chip.setPadding(dp(14), dp(8), dp(14), dp(8));
+            LinearLayout.LayoutParams chipLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            chipLp.setMarginEnd(dp(8));
+            chip.setLayoutParams(chipLp);
+            chip.setOnClickListener(v -> {
+                toggleReaction(message, emoji);
+                dialog.dismiss();
+            });
+            row.addView(chip);
+        }
+        root.addView(row);
+
+        if (isMessageOwnedByCurrentUser(message)) {
+            addActionRow(root, "Sửa tin nhắn", () -> {
+                dialog.dismiss();
+                showEditMessageDialog(message);
+            });
+            addActionRow(root, "Xóa tin nhắn", () -> {
+                dialog.dismiss();
+                confirmDeleteMessage(message);
+            });
+        }
+
+        dialog.setContentView(root);
+        dialog.show();
+    }
+
+    private boolean isMessageOwnedByCurrentUser(Message message) {
+        if (message == null) return false;
+        String myUid = currentUserId != null ? currentUserId.trim() : "";
+        String senderUid = message.getSenderId() != null ? message.getSenderId().trim() : "";
+        return !myUid.isEmpty() && myUid.equals(senderUid);
+    }
+
+    private void toggleReaction(Message message, String emoji) {
+        if (message == null || message.getId() == null || message.getId().trim().isEmpty()) {
+            return;
+        }
+        if (currentUserId == null || currentUserId.trim().isEmpty()) {
+            Toast.makeText(this, "Bạn cần đăng nhập để thả cảm xúc", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        chatRepository.toggleDirectMessageReaction(
+                chatId,
+                message.getId(),
+                emoji,
+                currentUserId,
+                new ChatRepository.OnCompleteListener() {
+                    @Override
+                    public void onSuccess() {
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        Toast.makeText(DMChatActivity.this, error, Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    private void showEditMessageDialog(Message message) {
+        if (message == null || message.getId() == null || message.getId().trim().isEmpty()) {
+            return;
+        }
+        EditText input = new EditText(this);
+        input.setText(message.getContent() != null ? message.getContent() : "");
+        new AlertDialog.Builder(this)
+                .setTitle("Sửa tin nhắn")
+                .setView(input)
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Lưu", (dialog, which) -> {
+                    String newContent = input.getText().toString().trim();
+                    if (newContent.isEmpty()) {
+                        Toast.makeText(this, "Nội dung không được để trống", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    chatRepository.updateDirectMessageContent(
+                            chatId,
+                            message.getId(),
+                            newContent,
+                            new ChatRepository.OnCompleteListener() {
+                                @Override
+                                public void onSuccess() {
+                                    Toast.makeText(DMChatActivity.this, "Đã sửa tin nhắn", Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onFailure(String error) {
+                                    Toast.makeText(DMChatActivity.this, error, Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                })
+                .show();
+    }
+
+    private void confirmDeleteMessage(Message message) {
+        if (message == null || message.getId() == null || message.getId().trim().isEmpty()) {
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Xóa tin nhắn")
+                .setMessage("Bạn có chắc muốn xóa tin nhắn này không?")
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Xóa", (dialog, which) -> chatRepository.deleteDirectMessage(
+                        chatId,
+                        message.getId(),
+                        new ChatRepository.OnCompleteListener() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(DMChatActivity.this, "Đã xóa tin nhắn", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onFailure(String error) {
+                                Toast.makeText(DMChatActivity.this, error, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                ))
+                .show();
+    }
+
+    private void addActionRow(LinearLayout parent, String title, Runnable action) {
+        TextView row = new TextView(this);
+        row.setText(title);
+        row.setTextSize(16f);
+        row.setTextColor(getColor(R.color.discord_text_primary));
+        row.setBackgroundResource(R.drawable.bg_search_input);
+        row.setPadding(dp(12), dp(12), dp(12), dp(12));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        lp.topMargin = dp(8);
+        row.setLayoutParams(lp);
+        row.setOnClickListener(v -> action.run());
+        parent.addView(row);
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density);
     }
 
     private String formatMessageTimestamp(long millis) {
@@ -239,6 +523,27 @@ public class DMChatActivity extends AppCompatActivity {
                 && yesterday.get(Calendar.DAY_OF_YEAR) == target.get(Calendar.DAY_OF_YEAR);
     }
 
+    private void resolveCurrentUserName(String uid) {
+        FirebaseManager.getUsersRef().child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                String displayName = snapshot.child("displayName").getValue(String.class);
+                String userName = snapshot.child("userName").getValue(String.class);
+                if (displayName != null && !displayName.trim().isEmpty()) {
+                    currentUserName = displayName;
+                    return;
+                }
+                if (userName != null && !userName.trim().isEmpty()) {
+                    currentUserName = userName;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+            }
+        });
+    }
+
     private void showThemePicker() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View content = getLayoutInflater().inflate(R.layout.bottom_sheet_chat_theme, null, false);
@@ -288,5 +593,14 @@ public class DMChatActivity extends AppCompatActivity {
         }
 
         dialog.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (chatRepository != null && chatListener != null) {
+            chatRepository.removeDirectMessagesObserver(chatId, chatListener);
+            chatListener = null;
+        }
     }
 }
