@@ -524,12 +524,8 @@ async function handleCallSessionEvent(snapshot) {
   };
 
   const messageTemplate = {
-    notification,
     android: {
       priority: "high",
-      notification: {
-        channelId: "incoming_calls",
-      },
     },
     data: {
       eventType: "call_invite",

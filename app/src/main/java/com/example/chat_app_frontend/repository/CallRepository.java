@@ -32,7 +32,8 @@ public class CallRepository {
     }
 
     public static String buildChannelName(String callId) {
-        return "dm_call_" + callId;
+        String base = "c_" + callId;
+        return base.length() > 64 ? base.substring(0, 64) : base;
     }
 
     public void createRingingSession(String callId, String callerUid, String calleeUid, boolean isVideo) {

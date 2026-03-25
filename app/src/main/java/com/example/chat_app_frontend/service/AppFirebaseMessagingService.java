@@ -185,6 +185,7 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setAutoCancel(true)
+                .setFullScreenIntent(pendingIntent, true)
                 .setContentIntent(pendingIntent);
 
         NotificationManagerCompat.from(this).notify(id, builder.build());

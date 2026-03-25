@@ -264,7 +264,7 @@ public class PrivateCallActivity extends AppCompatActivity {
             }
 
             ChannelMediaOptions options = new ChannelMediaOptions();
-            options.channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION;
+            options.channelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING;
             options.enableAudioRecordingOrPlayout = true;
             options.autoSubscribeAudio = true;
             options.autoSubscribeVideo = true;
@@ -293,7 +293,7 @@ public class PrivateCallActivity extends AppCompatActivity {
             return;
         }
         ChannelMediaOptions opts = new ChannelMediaOptions();
-        opts.channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION;
+        opts.channelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING;
         opts.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER;
         opts.enableAudioRecordingOrPlayout = true;
         opts.publishMicrophoneTrack = true;
@@ -330,6 +330,8 @@ public class PrivateCallActivity extends AppCompatActivity {
         remoteRtcUid = uid;
         View llRemoteInfo = findViewById(R.id.ll_remote_info);
         if (llRemoteInfo != null) llRemoteInfo.setVisibility(View.GONE);
+        View llCallInfo = findViewById(R.id.ll_call_info);
+        if (llCallInfo != null) llCallInfo.setVisibility(View.GONE);
 
         flRemoteVideo.removeAllViews();
         flRemoteVideo.setVisibility(View.VISIBLE);
@@ -381,6 +383,8 @@ public class PrivateCallActivity extends AppCompatActivity {
                     }
                     View llRemoteInfo = findViewById(R.id.ll_remote_info);
                     if (llRemoteInfo != null) llRemoteInfo.setVisibility(View.VISIBLE);
+                    View llCallInfo = findViewById(R.id.ll_call_info);
+                    if (llCallInfo != null) llCallInfo.setVisibility(View.VISIBLE);
                     if (isCameraOn) {
                         if (flLocalVideoOverlay != null) {
                             flLocalVideoOverlay.removeAllViews();
