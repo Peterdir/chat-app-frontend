@@ -82,7 +82,7 @@ public class VoiceChannelSettingsBottomSheet extends BottomSheetDialogFragment {
         }
 
         // Open Voice Settings Detail
-        View btnVoiceSettings = view.findViewById(R.id.btn_voice_settings);
+        View btnVoiceSettings = view.findViewById(R.id.btn_audio_output);
         if (btnVoiceSettings != null) {
             btnVoiceSettings.setOnClickListener(v -> {
                 VoiceSettingsBottomSheet voiceSettingsSheet = new VoiceSettingsBottomSheet();
@@ -91,7 +91,7 @@ public class VoiceChannelSettingsBottomSheet extends BottomSheetDialogFragment {
         }
 
         // Open Voice Status Detail
-        View btnVoiceStatus = view.findViewById(R.id.btn_voice_status);
+        View btnVoiceStatus = view.findViewById(R.id.btn_voice_activity);
         if (btnVoiceStatus != null) {
             btnVoiceStatus.setOnClickListener(v -> {
                 VoiceStatusBottomSheet voiceStatusSheet = new VoiceStatusBottomSheet();
@@ -137,6 +137,16 @@ public class VoiceChannelSettingsBottomSheet extends BottomSheetDialogFragment {
         // Logic for switches could go here
         SwitchCompat switchMute = view.findViewById(R.id.switch_mute);
         SwitchCompat switchVideoOnly = view.findViewById(R.id.switch_video_only);
+
+        View btnScreenShare = view.findViewById(R.id.btn_screen_share);
+        if (btnScreenShare != null) {
+            btnScreenShare.setOnClickListener(v -> {
+                dismiss();
+                if (getActivity() instanceof VoiceChannelActivity) {
+                    ((VoiceChannelActivity) getActivity()).triggerScreenShareToggle();
+                }
+            });
+        }
 
         if (switchMute != null) {
             switchMute.setOnCheckedChangeListener((buttonView, isChecked) -> {

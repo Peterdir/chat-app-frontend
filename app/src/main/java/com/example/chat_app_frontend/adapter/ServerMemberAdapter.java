@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.UserRepository;
