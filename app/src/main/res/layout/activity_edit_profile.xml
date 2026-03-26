@@ -179,7 +179,9 @@
                                 <FrameLayout
                                     android:id="@+id/btn_edit_avatar"
                                     android:layout_width="90dp"
-                                    android:layout_height="90dp">
+                                    android:layout_height="90dp"
+                                    android:clickable="true"
+                                    android:focusable="true">
 
                                     <com.google.android.material.imageview.ShapeableImageView
                                         android:id="@+id/img_main_avatar"

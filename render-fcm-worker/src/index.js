@@ -524,12 +524,8 @@ async function handleCallSessionEvent(snapshot) {
   };
 
   const messageTemplate = {
-    notification,
     android: {
       priority: "high",
-      notification: {
-        channelId: "incoming_calls",
-      },
     },
     data: {
       eventType: "call_invite",
@@ -583,6 +579,11 @@ async function main() {
 
   // Lắng nghe cuộc gọi 1-1 từ Firebase signaling layer.
   callSessionsRef.on("child_added", (snapshot) => {
+    handleCallSessionEvent(snapshot).catch((error) => {
+      console.error("Unexpected call worker error", error);
+    });
+  });
+  callSessionsRef.on("child_changed", (snapshot) => {
     handleCallSessionEvent(snapshot).catch((error) => {
       console.error("Unexpected call worker error", error);
     });
