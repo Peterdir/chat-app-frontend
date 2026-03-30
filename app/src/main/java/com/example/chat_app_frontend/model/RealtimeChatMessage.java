@@ -3,6 +3,10 @@ package com.example.chat_app_frontend.model;
 import java.util.Map;
 
 public class RealtimeChatMessage {
+    public static final String TYPE_TEXT = "text";
+    public static final String TYPE_IMAGE = "image";
+    public static final String TYPE_FILE = "file";
+
     private String id;
     private String senderId;
     private String senderName;
@@ -14,6 +18,12 @@ public class RealtimeChatMessage {
     private String replyToMessageId;
     private String replyToSenderName;
     private String replyToContent;
+    
+    private String messageType = TYPE_TEXT;
+    private String imageUrl;
+    private String fileUrl;
+    private String fileName;
+    private long fileSize;
 
     public RealtimeChatMessage() {
         // Required empty constructor for Firebase
@@ -126,5 +136,45 @@ public class RealtimeChatMessage {
 
     public void setReplyToContent(String replyToContent) {
         this.replyToContent = replyToContent;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
     }
 }

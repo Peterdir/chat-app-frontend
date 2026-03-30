@@ -84,29 +84,29 @@ public class ChatRepository {
                                          String content,
                                          OnCompleteListener callback) {
         sendServerChannelMessage(
-            serverId,
-            channelId,
-            channelName,
-            senderId,
-            senderName,
-            content,
-            null,
-            null,
-            null,
-            callback
+                serverId,
+                channelId,
+                channelName,
+                senderId,
+                senderName,
+                content,
+                null,
+                null,
+                null,
+                callback
         );
-        }
+    }
 
-        public void sendServerChannelMessage(String serverId,
-                         String channelId,
-                         String channelName,
-                         String senderId,
-                         String senderName,
-                         String content,
-                         String replyToMessageId,
-                         String replyToSenderName,
-                         String replyToContent,
-                         OnCompleteListener callback) {
+    public void sendServerChannelMessage(String serverId,
+                                         String channelId,
+                                         String channelName,
+                                         String senderId,
+                                         String senderName,
+                                         String content,
+                                         String replyToMessageId,
+                                         String replyToSenderName,
+                                         String replyToContent,
+                                         OnCompleteListener callback) {
         DatabaseReference messagesRef = getServerChannelMessagesRef(serverId, channelId);
         String msgId = messagesRef.push().getKey();
         if (msgId == null) {
@@ -206,6 +206,19 @@ public class ChatRepository {
                                   String senderName,
                                   String content,
                                   OnCompleteListener callback) {
+        sendDirectMessage(dmId, senderId, senderName, content, RealtimeChatMessage.TYPE_TEXT, null, null, null, 0, callback);
+    }
+
+    public void sendDirectMessage(String dmId,
+                                  String senderId,
+                                  String senderName,
+                                  String content,
+                                  String messageType,
+                                  String imageUrl,
+                                  String fileUrl,
+                                  String fileName,
+                                  long fileSize,
+                                  OnCompleteListener callback) {
         DatabaseReference messagesRef = getDirectMessagesRef(dmId);
         String msgId = messagesRef.push().getKey();
         if (msgId == null) {
@@ -223,6 +236,11 @@ public class ChatRepository {
                 dmId,
                 createdAt
         );
+        message.setMessageType(messageType);
+        message.setImageUrl(imageUrl);
+        message.setFileUrl(fileUrl);
+        message.setFileName(fileName);
+        message.setFileSize(fileSize);
 
         messagesRef.child(msgId)
                 .setValue(message)

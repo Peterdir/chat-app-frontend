@@ -3,6 +3,8 @@ package com.example.chat_app_frontend.utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * Firebase Manager - Quản lý kết nối Firebase tập trung (Singleton)
@@ -10,12 +12,14 @@ import com.google.firebase.database.FirebaseDatabase;
  * Cung cấp:
  *  - FirebaseAuth instance        → getAuth()
  *  - FirebaseDatabase instance    → getDatabase()
+ *  - FirebaseStorage instance     → getStorage()
  *  - DatabaseReference shortcuts  → getDatabaseReference(), getUsersRef(), v.v.
  */
 public class FirebaseManager {
 
     private static FirebaseDatabase database;
     private static FirebaseAuth auth;
+    private static FirebaseStorage storage;
 
     // -------------------------------------------------------------------------
     // Auth
@@ -75,5 +79,26 @@ public class FirebaseManager {
     /** Reference đến node test_messages/ */
     public static DatabaseReference getTestMessagesRef() {
         return getDatabaseReference("test_messages");
+    }
+
+    // -------------------------------------------------------------------------
+    // Storage
+    // -------------------------------------------------------------------------
+
+    /**
+     * Lấy FirebaseStorage instance.
+     */
+    public static FirebaseStorage getStorage() {
+        if (storage == null) {
+            storage = FirebaseStorage.getInstance();
+        }
+        return storage;
+    }
+
+    /**
+     * Lấy StorageReference đến một đường dẫn cụ thể.
+     */
+    public static StorageReference getStorageReference(String path) {
+        return getStorage().getReference(path);
     }
 }

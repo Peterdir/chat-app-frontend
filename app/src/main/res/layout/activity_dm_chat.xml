@@ -160,14 +160,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Attach button -->
+        <!-- Attach button (Plus sign) -->
         <ImageView
             android:id="@+id/btn_attach"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="6dp"
-            android:src="@drawable/ic_attach"
+            android:src="@drawable/ic_plus"
             app:tint="@color/discord_text_secondary" />
 
         <!-- Text input field -->

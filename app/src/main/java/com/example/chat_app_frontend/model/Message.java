@@ -5,6 +5,7 @@ import java.util.Map;
 public class Message {
     public static final String TYPE_TEXT = "text";
     public static final String TYPE_IMAGE = "image";
+    public static final String TYPE_FILE = "file";
     public static final String TYPE_DATE_DIVIDER = "date";
 
     private String id;
@@ -15,7 +16,10 @@ public class Message {
     private String timestamp;      // e.g. "09/01/2026 22:38"
     private String dateLabel;      // e.g. "9 tháng 1 năm 2026" – used for DATE_DIVIDER
     private String messageType;
-    private int imageResId;
+    private String imageUrl;
+    private String fileUrl;
+    private String fileName;
+    private long fileSize;
     private boolean isFirstInGroup; // first msg of consecutive msgs from same sender
     private boolean isSelf;         // sent by current user
     private Map<String, Map<String, Boolean>> reactions;
@@ -44,17 +48,6 @@ public class Message {
         this.isFirstInGroup = isFirstInGroup;
     }
 
-    // Constructor for image message
-    public Message(String id, String senderId, String senderName,
-                   int senderAvatarResId, String content,
-                   String timestamp, boolean isSelf, boolean isFirstInGroup,
-                   int imageResId) {
-        this(id, senderId, senderName, senderAvatarResId, content,
-                timestamp, isSelf, isFirstInGroup);
-        this.messageType = TYPE_IMAGE;
-        this.imageResId = imageResId;
-    }
-
     public String getId() { return id; }
     public String getSenderId() { return senderId; }
     public String getSenderName() { return senderName; }
@@ -63,7 +56,14 @@ public class Message {
     public String getTimestamp() { return timestamp; }
     public String getDateLabel() { return dateLabel; }
     public String getMessageType() { return messageType; }
-    public int getImageResId() { return imageResId; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getFileUrl() { return fileUrl; }
+    public void setFileUrl(String fileUrl) { this.fileUrl = fileUrl; }
+    public String getFileName() { return fileName; }
+    public void setFileName(String fileName) { this.fileName = fileName; }
+    public long getFileSize() { return fileSize; }
+    public void setFileSize(long fileSize) { this.fileSize = fileSize; }
     public boolean isFirstInGroup() { return isFirstInGroup; }
     public boolean isSelf() { return isSelf; }
     public Map<String, Map<String, Boolean>> getReactions() { return reactions; }
@@ -76,4 +76,5 @@ public class Message {
     public void setReplyToMessageId(String replyToMessageId) { this.replyToMessageId = replyToMessageId; }
     public void setReplyToSenderName(String replyToSenderName) { this.replyToSenderName = replyToSenderName; }
     public void setReplyToContent(String replyToContent) { this.replyToContent = replyToContent; }
+    public void setMessageType(String messageType) { this.messageType = messageType; }
 }

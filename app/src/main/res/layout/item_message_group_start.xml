@@ -42,173 +42,219 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="@color/discord_blurple">
 
-        <ImageView
-            android:id="@+id/img_avatar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
-
-        <TextView
-            android:id="@+id/tv_avatar_initial"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="U"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
-        </androidx.cardview.widget.CardView>
-
-        <!-- Avatar Decoration Layer -->
-        <ImageView
-            android:id="@+id/img_decoration"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:visibility="gone" />
-    </FrameLayout>
-
-    <!-- Content column -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <!-- Name + Timestamp row -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="2dp">
-
-            <TextView
-                android:id="@+id/tv_sender_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Username"
-                android:textColor="@color/discord_text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="8dp" />
-
-            <TextView
-                android:id="@+id/tv_timestamp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Today at 09:00"
-                android:textColor="@color/discord_text_secondary"
-                android:textSize="11sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_reply_quote"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="4dp"
-            android:visibility="gone">
-
-            <View
-                android:layout_width="2dp"
-                android:layout_height="30dp"
-                android:background="@color/discord_divider"
-                android:layout_marginEnd="8dp" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tv_reply_sender"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/discord_text_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:text="Người gửi" />
-
-                <TextView
-                    android:id="@+id/tv_reply_content"
+                <ImageView
+                    android:id="@+id/img_avatar"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    android:textColor="@color/discord_text_secondary"
-                    android:textSize="12sp"
-                    android:text="Nội dung trả lời" />
-            </LinearLayout>
-        </LinearLayout>
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
 
-        <!-- Text content -->
-        <TextView
-            android:id="@+id/tv_message_content"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Message content here"
-            android:textColor="@color/discord_text_primary"
-            android:textSize="15sp"
-            android:lineSpacingMultiplier="1.2"
-            android:visibility="visible" />
+                <TextView
+                    android:id="@+id/tv_avatar_initial"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="U"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </androidx.cardview.widget.CardView>
 
-        <!-- Image attachment (shown when type=image) -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cv_image_attachment"
-            android:layout_width="240dp"
-            android:layout_height="160dp"
-            android:layout_marginTop="6dp"
-            android:visibility="gone"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/discord_card_bg">
-
+            <!-- Avatar Decoration Layer -->
             <ImageView
-                android:id="@+id/img_attachment"
+                android:id="@+id/img_decoration"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-        </androidx.cardview.widget.CardView>
-
-        <!-- Reactions row -->
-        <LinearLayout
-            android:id="@+id/ll_reactions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/tv_reaction_1"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
-                android:background="@drawable/bg_reaction_chip"
-                android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:textColor="@color/discord_text_primary"
-                android:textSize="12sp"
-                android:layout_marginEnd="4dp" />
-
-            <TextView
-                android:id="@+id/tv_reaction_2"
-                android:layout_width="wrap_content"
-                android:layout_height="28dp"
-                android:background="@drawable/bg_reaction_chip"
-                android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:textColor="@color/discord_text_primary"
-                android:textSize="12sp"
-                android:layout_marginEnd="4dp"
+                android:scaleType="centerCrop"
                 android:visibility="gone" />
-        </LinearLayout>
+        </FrameLayout>
 
-    </LinearLayout>
+        <!-- Content column -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Name + Timestamp row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="2dp">
+
+                <TextView
+                    android:id="@+id/tv_sender_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Username"
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tv_timestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Today at 09:00"
+                    android:textColor="@color/discord_text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_reply_quote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone">
+
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="30dp"
+                    android:background="@color/discord_divider"
+                    android:layout_marginEnd="8dp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_reply_sender"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="Người gửi" />
+
+                    <TextView
+                        android:id="@+id/tv_reply_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="12sp"
+                        android:text="Nội dung trả lời" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Text content -->
+            <TextView
+                android:id="@+id/tv_message_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Message content here"
+                android:textColor="@color/discord_text_primary"
+                android:textSize="15sp"
+                android:lineSpacingMultiplier="1.2"
+                android:visibility="visible" />
+
+            <!-- Image attachment (shown when type=image) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_image_attachment"
+                android:layout_width="240dp"
+                android:layout_height="160dp"
+                android:layout_marginTop="6dp"
+                android:visibility="gone"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/discord_card_bg">
+
+                <ImageView
+                    android:id="@+id/img_attachment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- File attachment (shown when type=file) -->
+            <LinearLayout
+                android:id="@+id/ll_file_attachment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_search_input"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_attach"
+                    app:tint="@color/discord_text_primary" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_file_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="middle"
+                        android:maxWidth="180dp"
+                        android:singleLine="true"
+                        android:text="filename.pdf"
+                        android:textColor="@color/discord_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_file_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1.2 MB"
+                        android:textColor="@color/discord_text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Reactions row -->
+            <LinearLayout
+                android:id="@+id/ll_reactions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_reaction_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="28dp"
+                    android:background="@drawable/bg_reaction_chip"
+                    android:gravity="center"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/tv_reaction_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="28dp"
+                    android:background="@drawable/bg_reaction_chip"
+                    android:gravity="center"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:textColor="@color/discord_text_primary"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="4dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

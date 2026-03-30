@@ -1,6 +1,7 @@
 package com.example.chat_app_frontend.adapter;
 
-import android.graphics.Color;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +40,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private static final int VIEW_TYPE_CONTINUATION = 1;
     private static final int VIEW_TYPE_DATE = 2;
 
-    // Palette for avatar backgrounds based on sender name hash
     private static final int[] AVATAR_COLORS = {
             0xFF5865F2, // blurple
             0xFF23A559, // green
@@ -58,10 +58,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private static final Pattern GIPHY_PAYLOAD_PATTERN =
             Pattern.compile("^\\[GIF\\]\\s+giphy://([A-Za-z0-9]+)$");
-
-    public MessageAdapter(List<Message> messages) {
-        this(messages, null, "");
-    }
 
     public MessageAdapter(List<Message> messages,
                           OnMessageInteractionListener interactionListener,
@@ -197,6 +193,49 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 : "Tin nhắn gốc không khả dụng");
     }
 
+    private static void bindAttachment(Message msg,
+                                       CardView cvImageAttachment,
+                                       ImageView imgAttachment,
+                                       LinearLayout llFileAttachment,
+                                       TextView tvFileName,
+                                       TextView tvFileSize) {
+        String gifUrl = extractGiphyGifUrl(msg.getContent());
+
+        // Reset
+        cvImageAttachment.setVisibility(View.GONE);
+        llFileAttachment.setVisibility(View.GONE);
+        Glide.with(imgAttachment.getContext()).clear(imgAttachment);
+
+        if (gifUrl != null) {
+            cvImageAttachment.setVisibility(View.VISIBLE);
+            Glide.with(imgAttachment)
+                    .asGif()
+                    .load(gifUrl)
+                    .into(imgAttachment);
+        } else if (Message.TYPE_IMAGE.equals(msg.getMessageType())) {
+            cvImageAttachment.setVisibility(View.VISIBLE);
+            Glide.with(imgAttachment)
+                    .load(msg.getImageUrl())
+                    .placeholder(R.drawable.bg_search_input)
+                    .into(imgAttachment);
+        } else if (Message.TYPE_FILE.equals(msg.getMessageType())) {
+            llFileAttachment.setVisibility(View.VISIBLE);
+            tvFileName.setText(msg.getFileName());
+            tvFileSize.setText(formatFileSize(msg.getFileSize()));
+            llFileAttachment.setOnClickListener(v -> {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(msg.getFileUrl()));
+                v.getContext().startActivity(intent);
+            });
+        }
+    }
+
+    private static String formatFileSize(long size) {
+        if (size <= 0) return "0 B";
+        final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
+        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+        return new java.text.DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+
     private static List<ReactionEntry> buildReactionEntries(Map<String, Map<String, Boolean>> reactions) {
         List<ReactionEntry> entries = new ArrayList<>();
         if (reactions == null) {
@@ -239,8 +278,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             llReactions.setVisibility(View.GONE);
             tvReaction1.setVisibility(View.GONE);
             tvReaction2.setVisibility(View.GONE);
-            tvReaction1.setOnClickListener(null);
-            tvReaction2.setOnClickListener(null);
             return;
         }
 
@@ -251,7 +288,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             bindReactionChip(tvReaction2, entries.get(1), msg, listener, currentUserId);
         } else {
             tvReaction2.setVisibility(View.GONE);
-            tvReaction2.setOnClickListener(null);
         }
     }
 
@@ -272,12 +308,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 : R.drawable.bg_reaction_chip);
         chip.setTextColor(reactedByMe ? 0xFF5865F2 : 0xFFF2F3F5);
 
-        if (listener == null) {
-            chip.setOnClickListener(null);
-            return;
+        if (listener != null) {
+            chip.setOnClickListener(v -> listener.onReactionChipClicked(message, entry.getEmoji()));
         }
-
-        chip.setOnClickListener(v -> listener.onReactionChipClicked(message, entry.getEmoji()));
     }
 
     private static class ReactionEntry {
@@ -303,8 +336,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             return users;
         }
     }
-
-    // ---- ViewHolders ----
 
     static class DateViewHolder extends RecyclerView.ViewHolder {
         TextView tvDateLabel;
@@ -333,6 +364,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         TextView tvMessageContent;
         CardView cvImageAttachment;
         ImageView imgAttachment;
+        LinearLayout llFileAttachment;
+        TextView tvFileName;
+        TextView tvFileSize;
         LinearLayout llReactions;
         TextView tvReaction1;
         TextView tvReaction2;
@@ -352,6 +386,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvMessageContent = itemView.findViewById(R.id.tv_message_content);
             cvImageAttachment = itemView.findViewById(R.id.cv_image_attachment);
             imgAttachment = itemView.findViewById(R.id.img_attachment);
+            llFileAttachment = itemView.findViewById(R.id.ll_file_attachment);
+            tvFileName = itemView.findViewById(R.id.tv_file_name);
+            tvFileSize = itemView.findViewById(R.id.tv_file_size);
             llReactions = itemView.findViewById(R.id.ll_reactions);
             tvReaction1 = itemView.findViewById(R.id.tv_reaction_1);
             tvReaction2 = itemView.findViewById(R.id.tv_reaction_2);
@@ -360,60 +397,24 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void bind(Message msg,
                   OnMessageInteractionListener listener,
                   String currentUserId) {
-            // Avatar
-            if (msg.getSenderAvatarResId() != 0) {
-                imgAvatar.setImageResource(msg.getSenderAvatarResId());
-                imgAvatar.setVisibility(View.VISIBLE);
-                tvAvatarInitial.setVisibility(View.GONE);
-            } else {
-                imgAvatar.setVisibility(View.GONE);
-                tvAvatarInitial.setVisibility(View.VISIBLE);
-                String name = msg.getSenderName();
-                tvAvatarInitial.setText(name != null && !name.isEmpty()
-                        ? String.valueOf(name.charAt(0)).toUpperCase() : "?");
-                int colorIdx = (msg.getSenderId() != null ? msg.getSenderId().hashCode() : 0)
-                        & 0x7FFFFFFF;
-                cvAvatar.setCardBackgroundColor(AVATAR_COLORS[colorIdx % AVATAR_COLORS.length]);
-            }
-
-            // Name color: self = blurple, others = random from palette
             if (msg.isSelf()) {
                 tvSenderName.setTextColor(0xFF5865F2);
             } else {
-                int idx = (msg.getSenderId() != null ? msg.getSenderId().hashCode() : 0)
-                        & 0x7FFFFFFF;
-                tvSenderName.setTextColor((int) AVATAR_COLORS[idx % AVATAR_COLORS.length]);
+                int idx = (msg.getSenderId() != null ? msg.getSenderId().hashCode() : 0) & 0x7FFFFFFF;
+                tvSenderName.setTextColor(AVATAR_COLORS[idx % AVATAR_COLORS.length]);
             }
             tvSenderName.setText(msg.getSenderName());
             tvTimestamp.setText(msg.getTimestamp());
             bindReplyQuote(msg, llReplyQuote, tvReplySender, tvReplyContent);
 
-            String gifUrl = extractGiphyGifUrl(msg.getContent());
-
-            // Content
-            if (gifUrl == null && msg.getContent() != null && !msg.getContent().isEmpty()) {
+            if (msg.getContent() != null && !msg.getContent().isEmpty() && extractGiphyGifUrl(msg.getContent()) == null) {
                 tvMessageContent.setText(msg.getContent());
                 tvMessageContent.setVisibility(View.VISIBLE);
             } else {
                 tvMessageContent.setVisibility(View.GONE);
             }
 
-            // Image / GIF
-            if (gifUrl != null) {
-                cvImageAttachment.setVisibility(View.VISIBLE);
-                Glide.with(imgAttachment)
-                        .asGif()
-                        .load(gifUrl)
-                        .into(imgAttachment);
-            } else if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
-                cvImageAttachment.setVisibility(View.VISIBLE);
-                Glide.with(imgAttachment).clear(imgAttachment);
-                imgAttachment.setImageResource(msg.getImageResId());
-            } else {
-                Glide.with(imgAttachment).clear(imgAttachment);
-                cvImageAttachment.setVisibility(View.GONE);
-            }
-
+            bindAttachment(msg, cvImageAttachment, imgAttachment, llFileAttachment, tvFileName, tvFileSize);
             bindReactionChips(msg, llReactions, tvReaction1, tvReaction2, listener, currentUserId);
 
             if (listener != null) {
@@ -421,8 +422,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     listener.onMessageLongPressed(msg);
                     return true;
                 });
-            } else {
-                itemView.setOnLongClickListener(null);
             }
         }
     }
@@ -434,6 +433,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         TextView tvMessageContent;
         CardView cvImageAttachment;
         ImageView imgAttachment;
+        LinearLayout llFileAttachment;
+        TextView tvFileName;
+        TextView tvFileSize;
         LinearLayout llReactions;
         TextView tvReaction1;
         TextView tvReaction2;
@@ -446,6 +448,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvMessageContent = itemView.findViewById(R.id.tv_message_content);
             cvImageAttachment = itemView.findViewById(R.id.cv_image_attachment);
             imgAttachment = itemView.findViewById(R.id.img_attachment);
+            llFileAttachment = itemView.findViewById(R.id.ll_file_attachment);
+            tvFileName = itemView.findViewById(R.id.tv_file_name);
+            tvFileSize = itemView.findViewById(R.id.tv_file_size);
             llReactions = itemView.findViewById(R.id.ll_reactions);
             tvReaction1 = itemView.findViewById(R.id.tv_reaction_1);
             tvReaction2 = itemView.findViewById(R.id.tv_reaction_2);
@@ -455,30 +460,15 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                   OnMessageInteractionListener listener,
                   String currentUserId) {
             bindReplyQuote(msg, llReplyQuote, tvReplySender, tvReplyContent);
-            String gifUrl = extractGiphyGifUrl(msg.getContent());
 
-            if (gifUrl == null && msg.getContent() != null && !msg.getContent().isEmpty()) {
+            if (msg.getContent() != null && !msg.getContent().isEmpty() && extractGiphyGifUrl(msg.getContent()) == null) {
                 tvMessageContent.setText(msg.getContent());
                 tvMessageContent.setVisibility(View.VISIBLE);
             } else {
                 tvMessageContent.setVisibility(View.GONE);
             }
 
-            if (gifUrl != null) {
-                cvImageAttachment.setVisibility(View.VISIBLE);
-                Glide.with(imgAttachment)
-                        .asGif()
-                        .load(gifUrl)
-                        .into(imgAttachment);
-            } else if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
-                cvImageAttachment.setVisibility(View.VISIBLE);
-                Glide.with(imgAttachment).clear(imgAttachment);
-                imgAttachment.setImageResource(msg.getImageResId());
-            } else {
-                Glide.with(imgAttachment).clear(imgAttachment);
-                cvImageAttachment.setVisibility(View.GONE);
-            }
-
+            bindAttachment(msg, cvImageAttachment, imgAttachment, llFileAttachment, tvFileName, tvFileSize);
             bindReactionChips(msg, llReactions, tvReaction1, tvReaction2, listener, currentUserId);
 
             if (listener != null) {
@@ -486,8 +476,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     listener.onMessageLongPressed(msg);
                     return true;
                 });
-            } else {
-                itemView.setOnLongClickListener(null);
             }
         }
     }
