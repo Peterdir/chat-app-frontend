@@ -13,9 +13,9 @@
     android:focusable="true"
     android:background="?attr/selectableItemBackground">
 
-    <!-- Spacer to align with avatar area (40dp avatar + 12dp margin) -->
+    <!-- Spacer to align with avatar area (54dp width + 5dp marginEnd = 59dp) -->
     <View
-        android:layout_width="52dp"
+        android:layout_width="59dp"
         android:layout_height="1dp" />
 
     <!-- Content column -->

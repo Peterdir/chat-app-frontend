@@ -18,9 +18,15 @@ import com.example.chat_app_frontend.ui.DMChatActivity;
 import com.example.chat_app_frontend.ui.MainActivity;
 import com.example.chat_app_frontend.ui.PrivateCallActivity;
 import com.example.chat_app_frontend.utils.FirebaseManager;
+import com.example.chat_app_frontend.repository.CallRepository;
+import com.example.chat_app_frontend.model.CallSession;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
+import androidx.annotation.NonNull;
 
 import java.util.Map;
 
@@ -163,6 +169,14 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
         String friendUid = data != null ? data.get("callerUid") : null;
         boolean isVideo = data != null && "video".equalsIgnoreCase(data.get("callType"));
 
+        String myUid = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : null;
+        if (myUid == null || friendUid == null) return;
+        
+        String callId = CallRepository.buildCallId(myUid, friendUid);
+        int id = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+
         Intent intent = new Intent(this, PrivateCallActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(DMChatActivity.EXTRA_FRIEND_NAME, friendName);
@@ -174,9 +188,15 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             pendingFlags |= PendingIntent.FLAG_IMMUTABLE;
         }
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 1, intent, pendingFlags);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, id, intent, pendingFlags);
 
-        int id = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+        // Decline Action
+        Intent declineIntent = new Intent(this, CallActionReceiver.class);
+        declineIntent.setAction(CallActionReceiver.ACTION_DECLINE_CALL);
+        declineIntent.putExtra(CallActionReceiver.EXTRA_CALL_ID, callId);
+        declineIntent.putExtra(CallActionReceiver.EXTRA_NOTIFICATION_ID, id);
+        PendingIntent declinePendingIntent = PendingIntent.getBroadcast(this, id + 1, declineIntent, pendingFlags);
+
         String callText = isVideo ? "Cuộc gọi video đến" : "Cuộc gọi thoại đến";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CALL_CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -184,11 +204,33 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentText(callText)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setAutoCancel(true)
+                .setOngoing(true)
+                .setTimeoutAfter(60000)
+                .addAction(0, "Từ chối", declinePendingIntent)
+                .addAction(0, "Trả lời", pendingIntent)
                 .setFullScreenIntent(pendingIntent, true)
                 .setContentIntent(pendingIntent);
 
         NotificationManagerCompat.from(this).notify(id, builder.build());
+
+        // Listen for early hangup
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                CallSession session = snapshot.getValue(CallSession.class);
+                if (session != null && session.getStatus() != null) {
+                    String status = session.getStatus();
+                    if ("ended".equals(status) || "rejected".equals(status) || "accepted".equals(status)) {
+                        NotificationManagerCompat.from(AppFirebaseMessagingService.this).cancel(id);
+                        CallRepository.getInstance().removeObserver(callId, this);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        };
+        CallRepository.getInstance().observeSession(callId, listener);
     }
 
     private String safe(String value) {

@@ -50,6 +50,7 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
     public static final String EXTRA_FRIEND_NAME = "friend_name";
     public static final String EXTRA_FRIEND_STATUS = "friend_status";
     public static final String EXTRA_FRIEND_AVATAR = "friend_avatar";
+    public static final String EXTRA_FRIEND_AVATAR_URL = "friend_avatar_url";
     public static final String EXTRA_FRIEND_UID = "friend_uid";
 
     private RecyclerView rvMessages;
@@ -84,12 +85,13 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         friendName = getIntent().getStringExtra(EXTRA_FRIEND_NAME);
         String friendStatus = getIntent().getStringExtra(EXTRA_FRIEND_STATUS);
         int friendAvatarRes = getIntent().getIntExtra(EXTRA_FRIEND_AVATAR, 0);
+        String friendAvatarUrl = getIntent().getStringExtra(EXTRA_FRIEND_AVATAR_URL);
         if (friendName == null) friendName = "Friend";
         if (friendStatus == null) friendStatus = "Online";
         friendUid = getIntent().getStringExtra(EXTRA_FRIEND_UID);
 
         // Toolbar
-        setupToolbar(friendName, friendStatus, friendAvatarRes);
+        setupToolbar(friendName, friendStatus, friendAvatarRes, friendAvatarUrl);
 
         // Input
         etMessageInput = findViewById(R.id.et_message_input);
@@ -152,7 +154,7 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         startActivity(intent);
     }
 
-    private void setupToolbar(String name, String status, int avatarRes) {
+    private void setupToolbar(String name, String status, int avatarRes, String avatarUrl) {
         ImageView btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(v -> finish());
 
@@ -178,7 +180,15 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
 
         ImageView imgAvatar = findViewById(R.id.img_friend_avatar);
         TextView tvInitial = findViewById(R.id.tv_friend_initial);
-        if (avatarRes != 0) {
+        
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                    .load(avatarUrl)
+                    .circleCrop()
+                    .into(imgAvatar);
+            imgAvatar.setVisibility(View.VISIBLE);
+            tvInitial.setVisibility(View.GONE);
+        } else if (avatarRes != 0) {
             imgAvatar.setImageResource(avatarRes);
             imgAvatar.setVisibility(View.VISIBLE);
             tvInitial.setVisibility(View.GONE);

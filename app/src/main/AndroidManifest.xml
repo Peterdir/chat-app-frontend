@@ -125,6 +125,12 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".service.CallActionReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.chat_app_frontend.ACTION_DECLINE_CALL" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".service.AppFirebaseMessagingService"
             android:exported="false">
