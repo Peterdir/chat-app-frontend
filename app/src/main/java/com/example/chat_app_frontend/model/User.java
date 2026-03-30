@@ -29,6 +29,7 @@ public class User {
     private String avatarDecorationId; // ID của khung trang trí hiện tại
     private String profileEffectId;    // ID của hiệu ứng hồ sơ hiện tại
     private String namePlateId;        // ID của bảng tên hiện tại
+    private int orbs;                  // Số lượng Orbs hiện có
 
     /** Gói Nitro từ RTDB (users/{uid}/nitro) sau thanh toán VNPay. */
     private UserNitro nitro;
@@ -207,6 +208,14 @@ public class User {
 
     public void setNitro(UserNitro nitro) {
         this.nitro = nitro;
+    }
+
+    public int getOrbs() {
+        return orbs;
+    }
+
+    public void setOrbs(int orbs) {
+        this.orbs = orbs;
     }
 
     // =========================================================================

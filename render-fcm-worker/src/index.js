@@ -8,6 +8,9 @@ const paymentBaseUrl = process.env.VNPAY_PAYMENT_URL || "https://sandbox.vnpayme
 const packagePriceMap = {
   BASIC: 42000,
   NITRO: 113000,
+  PACKAGE_100_ORBS: 20000,
+  PACKAGE_500_ORBS: 100000,
+  PACKAGE_1000_ORBS: 200000,
 };
 
 http.createServer(async (req, res) => {
@@ -158,10 +161,10 @@ async function createVnpayPayment(payload, req) {
 
   const uid = authUser.uid;
   const packageType = payload.packageType ? String(payload.packageType).trim().toUpperCase() : "";
-  if (!packagePriceMap[packageType]) throw new Error("packageType must be BASIC or NITRO");
+  if (!packagePriceMap[packageType]) throw new Error("packageType must be BASIC, NITRO or an ORBS package");
 
   const amountVnd = packagePriceMap[packageType];
-  const orderInfo = `Nitro ${packageType} - ${uid}`;
+  const orderInfo = `${packageType} - ${uid}`;
   const txnRef = randomTxnRef();
   const createDate = formatVnpDateInVietnam(new Date());
   const expireDate = formatVnpDateInVietnam(new Date(Date.now() + 15 * 60 * 1000));
@@ -265,14 +268,29 @@ async function grantNitroAndMarkPayment(txnRef, responseCode, transactionNo) {
   }
 
   const now = Date.now();
-  const expireAt = now + 30 * 24 * 60 * 60 * 1000;
-  await admin.database().ref(`users/${payment.uid}/nitro`).update({
-    plan: payment.packageType,
-    isActive: true,
-    activeSince: now,
-    expiresAt: expireAt,
-    updatedAt: now,
-  });
+
+  if (payment.packageType === "BASIC" || payment.packageType === "NITRO") {
+    const expireAt = now + 30 * 24 * 60 * 60 * 1000;
+    await admin.database().ref(`users/${payment.uid}/nitro`).update({
+      plan: payment.packageType,
+      isActive: true,
+      activeSince: now,
+      expiresAt: expireAt,
+      updatedAt: now,
+    });
+  } else if (payment.packageType.startsWith("PACKAGE_") && payment.packageType.endsWith("_ORBS")) {
+    const parts = payment.packageType.split("_");
+    const orbsToAdd = parseInt(parts[1], 10);
+    if (!isNaN(orbsToAdd)) {
+      const userRef = admin.database().ref(`users/${payment.uid}`);
+      await userRef.transaction((user) => {
+        if (user) {
+          user.orbs = (user.orbs || 0) + orbsToAdd;
+        }
+        return user;
+      });
+    }
+  }
 
   await paymentRef.update({
     status: "PAID",
@@ -328,7 +346,8 @@ async function handleVnpayIpn(searchParams) {
 
 function buildPaymentDeepLink(result) {
   const status = result.success ? "success" : "failed";
-  const base = "chatapp://nitro-payment";
+  const isOrbs = result.packageType && result.packageType.includes("ORBS");
+  const base = isOrbs ? "chatapp://orbs-payment" : "chatapp://nitro-payment";
   return `${base}?status=${encodeURIComponent(status)}&code=${encodeURIComponent(
     result.code || ""
   )}&txnRef=${encodeURIComponent(result.txnRef || "")}&packageType=${encodeURIComponent(

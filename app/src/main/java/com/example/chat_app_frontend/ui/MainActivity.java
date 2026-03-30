@@ -318,6 +318,13 @@ public class MainActivity extends AppCompatActivity {
                 intent.setData(null);
                 return;
             }
+            if ("orbs-payment".equals(data.getHost())) {
+                Intent orbsIntent = new Intent(this, BuyOrbsActivity.class);
+                orbsIntent.setData(data);
+                startActivity(orbsIntent);
+                intent.setData(null);
+                return;
+            }
             if (serverId == null || serverId.trim().isEmpty()) {
                 serverId = data.getQueryParameter("serverId");
             }

@@ -31,7 +31,7 @@ import com.example.chat_app_frontend.model.ProfileEffect;
 public class ProfileFragment extends Fragment {
 
     private ImageView ivAvatar, avatarDecoration, imgProfileEffect;
-    private TextView tvDisplayName, tvUsername;
+    private TextView tvDisplayName, tvUsername, tvOrbsBalance;
     private View statusDot;
 
     @Nullable
@@ -47,6 +47,7 @@ public class ProfileFragment extends Fragment {
         setupSettingsNavigation(view);
         setupFriendsNavigation(view);
         setupAvatarClick(view);
+        setupOrbsNavigation(view);
         animateProfileEntrance(view);
 
         loadUserData();
@@ -61,6 +62,7 @@ public class ProfileFragment extends Fragment {
         tvUsername = view.findViewById(R.id.tv_username);
         statusDot = view.findViewById(R.id.status_dot);
         imgProfileEffect = view.findViewById(R.id.img_profile_effect);
+        tvOrbsBalance = view.findViewById(R.id.tv_orbs_balance);
     }
 
     private void loadUserData() {
@@ -76,6 +78,7 @@ public class ProfileFragment extends Fragment {
                 // Cập nhật tên
                 if (tvDisplayName != null) tvDisplayName.setText(user.getDisplayName());
                 if (tvUsername != null) tvUsername.setText(user.getUserName());
+                if (tvOrbsBalance != null) tvOrbsBalance.setText("◇ " + user.getOrbs());
 
                 // Cập nhật Avatar
                 if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
@@ -233,6 +236,22 @@ public class ProfileFragment extends Fragment {
         if (btnStoreHeader != null) {
             btnStoreHeader.setVisibility(View.VISIBLE);
             btnStoreHeader.setOnClickListener(storeClickListener);
+        }
+    }
+
+    private void setupOrbsNavigation(View view) {
+        View cardOrbs = view.findViewById(R.id.card_orbs);
+        if (cardOrbs != null) {
+            cardOrbs.setOnClickListener(v -> {
+                v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(80).withEndAction(() -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+                    Intent intent = new Intent(getActivity(), BuyOrbsActivity.class);
+                    startActivity(intent);
+                    if (getActivity() != null) {
+                        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    }
+                }).start();
+            });
         }
     }
 
