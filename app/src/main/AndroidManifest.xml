@@ -100,6 +100,7 @@
         <activity android:name=".ui.ServerSettingsActivity" android:exported="false" android:screenOrientation="portrait" />
         <activity android:name=".ui.ChannelSettingsActivity" android:exported="false"/>
         <activity android:name=".ui.ServerProfileActivity" android:exported="false" android:theme="@style/Theme.Chatappfrontend" />
+        <activity android:name=".ui.UserProfileActivity" android:exported="false" android:theme="@style/Theme.Chatappfrontend" />
         <activity android:name=".ui.ShopActivity" android:exported="false" android:theme="@style/Theme.Chatappfrontend" />
         <activity android:name=".ui.ShopAllActivity" android:exported="false" android:theme="@style/Theme.Chatappfrontend" />
         <activity android:name=".ui.NitroActivity" android:exported="false" android:theme="@style/Theme.Chatappfrontend" />

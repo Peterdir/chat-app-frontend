@@ -18,14 +18,15 @@ import java.util.List;
 /** Adapter hiển thị danh sách bạn bè (tab "Bạn bè"). */
 public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.ViewHolder> {
 
-    public interface OnMessageListener {
+    public interface OnFriendInteractionListener {
         void onMessage(Friend friend);
+        void onAvatarClicked(Friend friend);
     }
 
-    private final List<Friend>    friends;
-    private final OnMessageListener listener;
+    private final List<Friend> friends;
+    private final OnFriendInteractionListener listener;
 
-    public FriendListAdapter(List<Friend> friends, OnMessageListener listener) {
+    public FriendListAdapter(List<Friend> friends, OnFriendInteractionListener listener) {
         this.friends  = friends;
         this.listener = listener;
     }
@@ -57,6 +58,14 @@ public class FriendListAdapter extends RecyclerView.Adapter<FriendListAdapter.Vi
 
         holder.btnMessage.setOnClickListener(v -> {
             if (listener != null) listener.onMessage(f);
+        });
+
+        holder.ivAvatar.setOnClickListener(v -> {
+            if (listener != null) listener.onAvatarClicked(f);
+        });
+        
+        holder.itemView.setOnClickListener(v -> {
+             if (listener != null) listener.onAvatarClicked(f);
         });
     }
 

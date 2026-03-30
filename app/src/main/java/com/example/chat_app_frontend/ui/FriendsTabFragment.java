@@ -32,7 +32,7 @@ public class FriendsTabFragment extends Fragment {
     private LinearLayout   layoutEmpty;
     private TextView       tvEmpty;
 
-    private final List<Friend> friends = new ArrayList<>();
+    private List<Friend> friends = new ArrayList<>();
     private FriendListAdapter  adapter;
 
     @Nullable
@@ -46,10 +46,21 @@ public class FriendsTabFragment extends Fragment {
         layoutEmpty  = v.findViewById(R.id.layout_empty);
         tvEmpty      = v.findViewById(R.id.tv_empty);
 
-        adapter = new FriendListAdapter(friends, friend -> {
-            // Mở DMChatActivity khi nhấn nhắn tin
-            Toast.makeText(getContext(), "Mở chat với " + friend.getFriendName(), Toast.LENGTH_SHORT).show();
-            // TODO: mở DMChatActivity khi có deeplink
+        adapter = new FriendListAdapter(friends, new FriendListAdapter.OnFriendInteractionListener() {
+            @Override
+            public void onMessage(Friend friend) {
+                Intent intent = new Intent(getContext(), DMChatActivity.class);
+                intent.putExtra(DMChatActivity.EXTRA_FRIEND_NAME, friend.getFriendName());
+                intent.putExtra(DMChatActivity.EXTRA_FRIEND_UID, friend.getUid());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onAvatarClicked(Friend friend) {
+                if (friend.getUid() == null) return;
+                UserProfileBottomSheet bottomSheet = new UserProfileBottomSheet(friend.getFriendName(), friend.getUid());
+                bottomSheet.show(getParentFragmentManager(), "user_profile");
+            }
         });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -60,13 +71,13 @@ public class FriendsTabFragment extends Fragment {
     }
 
     private void loadFriends() {
-        progressBar.setVisibility(View.VISIBLE);
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
         FriendRepository.getInstance().getFriends(new FriendRepository.OnFriendListListener() {
             @Override
             public void onLoaded(List<Friend> list) {
                 if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
                     friends.clear();
                     friends.addAll(list);
                     adapter.notifyDataSetChanged();
@@ -84,7 +95,7 @@ public class FriendsTabFragment extends Fragment {
             public void onFailure(String error) {
                 if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
                     Toast.makeText(getContext(), "Lỗi: " + error, Toast.LENGTH_SHORT).show();
                 });
             }

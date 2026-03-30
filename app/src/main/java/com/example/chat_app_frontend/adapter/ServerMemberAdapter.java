@@ -7,12 +7,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chat_app_frontend.R;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.UserRepository;
+import com.example.chat_app_frontend.ui.UserProfileBottomSheet;
 import com.example.chat_app_frontend.utils.ProfileUIUtils;
 import com.google.firebase.database.ValueEventListener;
 
@@ -71,6 +73,14 @@ public class ServerMemberAdapter extends RecyclerView.Adapter<ServerMemberAdapte
             // Fallback for null UID
             bindUser(holder, user);
         }
+        
+        // Handle Item Click to show Profile
+        holder.itemView.setOnClickListener(v -> {
+            if (uid != null && v.getContext() instanceof AppCompatActivity) {
+                UserProfileBottomSheet bottomSheet = new UserProfileBottomSheet(user.getDisplayNameOrUserName(), uid);
+                bottomSheet.show(((AppCompatActivity) v.getContext()).getSupportFragmentManager(), "user_profile");
+            }
+        });
     }
 
     private void bindUser(ViewHolder holder, User user) {
