@@ -920,6 +920,13 @@ public class ServerChatActivity extends AppCompatActivity
                 toggleReaction(message, emoji);
         }
 
+        @Override
+        public void onUserClicked(String userId) {
+                if (userId == null || userId.trim().isEmpty()) return;
+                UserProfileBottomSheet bottomSheet = new UserProfileBottomSheet(null, userId);
+                bottomSheet.show(getSupportFragmentManager(), "user_profile");
+        }
+
         private String formatMessageTimestamp(long millis) {
                 Date date = new Date(millis);
                 String timeText = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(date);

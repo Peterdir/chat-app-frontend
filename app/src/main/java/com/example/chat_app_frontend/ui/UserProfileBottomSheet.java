@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,39 +64,60 @@ public class UserProfileBottomSheet extends BottomSheetDialogFragment {
 
         startObservingProfile();
 
-        View btnEditMain = view.findViewById(R.id.btn_edit_main_profile);
-        if (btnEditMain != null) {
-            btnEditMain.setOnClickListener(v -> {
+        // Logic: Bấm vào tên để hiện ra màn hình profile chi tiết
+        tvName.setOnClickListener(v -> {
+            if (targetObservationUid != null) {
                 dismiss();
-                android.content.Intent intent = new android.content.Intent(requireContext(), EditProfileActivity.class);
-                startActivity(intent);
-            });
+                // Giả định bạn sẽ sử dụng hoặc tạo UserProfileActivity để xem profile chi tiết
+                // Nếu bạn chưa có class này, hãy tạo nó và gán layout activity_user_profile_view.xml
+                try {
+                    Intent intent = new Intent(requireContext(), Class.forName("com.example.chat_app_frontend.ui.UserProfileActivity"));
+                    intent.putExtra("USER_ID", targetObservationUid);
+                    startActivity(intent);
+                } catch (ClassNotFoundException e) {
+                    Toast.makeText(requireContext(), "Đang cập nhật tính năng hồ sơ chi tiết", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        View btnEditMain = view.findViewById(R.id.btn_edit_main_profile);
+        String currentUid = AuthManager.getInstance(requireContext()).getUid();
+        
+        // Chỉ hiện nút chỉnh sửa nếu là profile của chính mình
+        if (btnEditMain != null) {
+            if (userId != null && !userId.equals(currentUid)) {
+                btnEditMain.setVisibility(View.GONE);
+            } else {
+                btnEditMain.setOnClickListener(v -> {
+                    dismiss();
+                    Intent intent = new Intent(requireContext(), EditProfileActivity.class);
+                    startActivity(intent);
+                });
+            }
         }
 
         View btnEditServer = view.findViewById(R.id.btn_edit_server_profile);
         if (btnEditServer != null) {
-            btnEditServer.setOnClickListener(v -> {
-                dismiss();
-                android.content.Intent intent = new android.content.Intent(requireContext(), EditServerProfileActivity.class);
-                startActivity(intent);
-            });
+            if (userId != null && !userId.equals(currentUid)) {
+                btnEditServer.setVisibility(View.GONE);
+            } else {
+                btnEditServer.setOnClickListener(v -> {
+                    dismiss();
+                    Intent intent = new Intent(requireContext(), EditServerProfileActivity.class);
+                    startActivity(intent);
+                });
+            }
         }
 
-        View btnGetNitro = view.findViewById(R.id.btn_get_nitro);
-        if (btnGetNitro != null) {
-            btnGetNitro.setOnClickListener(v -> {
-                dismiss();
-                // Store/Nitro logic
-                android.content.Intent intent = new android.content.Intent(requireContext(), EditProfileActivity.class);
-                startActivity(intent);
-            });
+        View btnGetNitroCard = view.findViewById(R.id.btn_get_nitro_card);
+        if (btnGetNitroCard != null && userId != null && !userId.equals(currentUid)) {
+            btnGetNitroCard.setVisibility(View.GONE);
         }
     }
 
     private void startObservingProfile() {
         targetObservationUid = userId;
         if (targetObservationUid == null) {
-            // Fallback to current user if no ID passed
             targetObservationUid = AuthManager.getInstance(requireContext()).getUid();
         }
         
@@ -106,15 +128,12 @@ public class UserProfileBottomSheet extends BottomSheetDialogFragment {
             public void onUserLoaded(User user) {
                 if (!isAdded()) return;
 
-                tvName.setText(user.getDisplayName() != null ? user.getDisplayName() : user.getUserName());
+                String displayName = user.getDisplayName() != null ? user.getDisplayName() : user.getUserName();
+                tvName.setText(displayName);
                 tvUsername.setText(user.getUserName());
 
-                // Sử dụng utility để load Avatar, Trang trí, Bảng tên và Hiệu ứng hồ sơ
                 ProfileUIUtils.loadUserProfile(requireContext(), user, 
                         imgAvatar, imgDecoration, imgNamePlate, imgProfileEffect);
-                
-                // Banner (Hiện tại load mặc định hoặc từ user nếu có field)
-                // if (user.getBannerUrl() != null) Glide.with(requireContext()).load(user.getBannerUrl()).into(imgBanner);
             }
 
             @Override

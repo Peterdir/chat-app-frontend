@@ -33,6 +33,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public interface OnMessageInteractionListener {
         void onMessageLongPressed(Message message);
         void onReactionChipClicked(Message message, String emoji);
+        void onUserClicked(String userId);
     }
 
     private static final int VIEW_TYPE_GROUP_START = 0;
@@ -144,6 +145,19 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             holder.imgAvatar.setVisibility(View.VISIBLE);
             holder.tvAvatarInitial.setVisibility(View.GONE);
         }
+
+        // Handle Avatar Click
+        holder.cvAvatar.setOnClickListener(v -> {
+            if (interactionListener != null) {
+                interactionListener.onUserClicked(user.getFirebaseUid());
+            }
+        });
+        
+        holder.tvSenderName.setOnClickListener(v -> {
+            if (interactionListener != null) {
+                interactionListener.onUserClicked(user.getFirebaseUid());
+            }
+        });
     }
 
     @Override
@@ -421,8 +435,14 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     listener.onMessageLongPressed(msg);
                     return true;
                 });
+                
+                // Also enable avatar click for initial static data if Firebase hasn't loaded yet
+                cvAvatar.setOnClickListener(v -> listener.onUserClicked(msg.getSenderId()));
+                tvSenderName.setOnClickListener(v -> listener.onUserClicked(msg.getSenderId()));
             } else {
                 itemView.setOnLongClickListener(null);
+                cvAvatar.setOnClickListener(null);
+                tvSenderName.setOnClickListener(null);
             }
         }
     }

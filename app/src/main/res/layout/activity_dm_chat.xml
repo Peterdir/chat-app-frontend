@@ -63,11 +63,15 @@
 
         <!-- Name + status column -->
         <LinearLayout
+            android:id="@+id/ll_friend_info"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginEnd="8dp">
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
 
             <TextView
                 android:id="@+id/tv_friend_name"

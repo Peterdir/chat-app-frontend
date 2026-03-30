@@ -187,6 +187,11 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
             tvInitial.setText(name.isEmpty() ? "?" : String.valueOf(name.charAt(0)).toUpperCase());
             tvInitial.setVisibility(View.VISIBLE);
         }
+        
+        View toolbarInfo = findViewById(R.id.ll_friend_info);
+        if (toolbarInfo != null) {
+            toolbarInfo.setOnClickListener(v -> onUserClicked(friendUid));
+        }
     }
 
     private void sendMessage() {
@@ -292,6 +297,13 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
     @Override
     public void onReactionChipClicked(Message message, String emoji) {
         toggleReaction(message, emoji);
+    }
+
+    @Override
+    public void onUserClicked(String userId) {
+        if (userId == null || userId.trim().isEmpty()) return;
+        UserProfileBottomSheet bottomSheet = new UserProfileBottomSheet(null, userId);
+        bottomSheet.show(getSupportFragmentManager(), "user_profile");
     }
 
     private void showMessageActionSheet(Message message) {
