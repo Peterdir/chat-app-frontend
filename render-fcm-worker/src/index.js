@@ -397,14 +397,26 @@ function chunkArray(items, chunkSize) {
 }
 
 async function collectRecipientTokens(serverId, senderId) {
+  const safeSenderId = String(senderId || "").trim();
+
   const membersSnapshot = await admin.database().ref(`server_members/${serverId}`).once("value");
   const members = membersSnapshot.val() || {};
-  const memberIds = Object.keys(members).filter((uid) => uid && uid !== senderId);
+  
+  // 1. Lọc uid người gửi ra khỏi danh sách duyệt
+  const memberIds = Object.keys(members).filter((uid) => {
+    return uid && String(uid).trim() !== safeSenderId;
+  });
 
   if (memberIds.length === 0) {
     return [];
   }
 
+  // 2. Lấy danh sách token hiện tại của người gửi để phòng trường hợp token bị kẹt ở account cũ
+  const senderTokensSnapshot = await admin.database().ref(`user_fcm_tokens/${safeSenderId}`).once("value");
+  const senderTokensMap = senderTokensSnapshot.val() || {};
+  const senderTokens = new Set(Object.keys(senderTokensMap).map(t => t.trim()));
+
+  // 3. Lấy tokens của các thành viên khác
   const tokenSnapshots = await Promise.all(
     memberIds.map((uid) => admin.database().ref(`user_fcm_tokens/${uid}`).once("value"))
   );
@@ -412,8 +424,10 @@ async function collectRecipientTokens(serverId, senderId) {
   const uniqueTokens = new Set();
   tokenSnapshots.forEach((snapshot) => {
     const tokenMap = snapshot.val() || {};
-    Object.keys(tokenMap).forEach((token) => {
-      if (token && token.trim()) {
+    Object.keys(tokenMap).forEach((rawToken) => {
+      const token = rawToken.trim();
+      // Loại bỏ token nếu token đó cũng đang thuộc về người gửi hiện tại
+      if (token && !senderTokens.has(token)) {
         uniqueTokens.add(token);
       }
     });
@@ -436,9 +450,88 @@ async function resolveCallerName(uid) {
   return user.displayName || user.username || user.email || "Friend";
 }
 
+async function handleDmPushEvent(snapshot, eventData) {
+  const eventId = snapshot.key;
+  const calleeUid = eventData.calleeUid;
+  const senderId = eventData.senderId || "";
+  const senderName = eventData.senderName || "Unknown";
+
+  if (!calleeUid) {
+    console.warn(`[skip] invalid dm event payload id=${eventId}`);
+    await snapshot.ref.remove();
+    return;
+  }
+
+  const tokens = await collectUserTokens(calleeUid);
+
+  if (tokens.length === 0) {
+    console.log(`[skip] dm event=${eventId} callee has no token`);
+    await snapshot.ref.remove();
+    return;
+  }
+
+  const safeSenderId = String(senderId).trim();
+  const senderTokensMap = (await admin.database().ref(`user_fcm_tokens/${safeSenderId}`).once("value")).val() || {};
+  const senderTokens = new Set(Object.keys(senderTokensMap).map(t => t.trim()));
+
+  const filteredTokens = tokens.filter(rawT => {
+    const t = rawT.trim();
+    return t && !senderTokens.has(t);
+  });
+
+  if (filteredTokens.length === 0) {
+    await snapshot.ref.remove();
+    return;
+  }
+
+  const title = senderName;
+  const body = (eventData.content || "Bạn có tin nhắn mới").slice(0, 180);
+
+  const messageTemplate = {
+    notification: { title, body },
+    android: {
+      priority: "high",
+      notification: {
+        channelId: "chat_messages",
+      },
+    },
+    data: {
+      eventType: "dm",
+      dmId: String(eventData.dmId || ""),
+      senderId: String(senderId),
+      senderName: String(senderName),
+      title,
+      body,
+    },
+  };
+
+  try {
+    const tokenBatches = chunkArray(filteredTokens, 500);
+    let successCount = 0;
+
+    for (const batch of tokenBatches) {
+      const response = await admin.messaging().sendEachForMulticast({
+        ...messageTemplate,
+        tokens: batch,
+      });
+      successCount += response.successCount;
+    }
+    console.log(`[sent-dm] event=${eventId} recipients=${filteredTokens.length} delivered=${successCount}`);
+  } catch (error) {
+    console.error(`[failed-dm] event=${eventId}`, error);
+  } finally {
+    await snapshot.ref.remove();
+  }
+}
+
 async function handlePushEvent(snapshot) {
   const eventId = snapshot.key;
   const eventData = snapshot.val() || {};
+
+  const eventType = eventData.type || "server";
+  if (eventType === "dm") {
+    return handleDmPushEvent(snapshot, eventData);
+  }
 
   const serverId = eventData.serverId;
   const channelId = eventData.channelId;

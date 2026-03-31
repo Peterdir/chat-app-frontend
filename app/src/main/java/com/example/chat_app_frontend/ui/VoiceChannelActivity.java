@@ -67,8 +67,7 @@ public class VoiceChannelActivity extends AppCompatActivity implements VoiceStat
     // View declarations
     private TextView tvTopChannelName, tvParticipantCount, tvUserNameStatus;
     private ImageButton btnCollapse, btnAddUserTop, btnSpeakerTop;
-    private ImageButton btnVideo, btnMuteMain, btnChatMain, btnEventMain, btnLeaveMain;
-    private ImageButton btnSwitchCamera; // Might not be in the new sheet yet
+    private ImageButton btnVideo, btnMuteMain, btnChatMain, btnEventMain, btnLeaveMain, btnSwitchCamera;
 
     private FrameLayout flCenterAvatarContainer;
     private FrameLayout flScreenSharePreview;
@@ -219,7 +218,7 @@ public class VoiceChannelActivity extends AppCompatActivity implements VoiceStat
         btnSpeakerTop = findViewById(R.id.btn_speaker_top);
 
         btnVideo = findViewById(R.id.btn_video_sheet);
-        // btnSwitchCamera = findViewById(R.id.btn_switch_camera_sheet); // We can add this if needed
+        btnSwitchCamera = findViewById(R.id.btn_switch_camera_top);
         btnMuteMain = findViewById(R.id.btn_mute_sheet);
         btnChatMain = findViewById(R.id.btn_chat_sheet);
         btnEventMain = findViewById(R.id.btn_soundboard_sheet);
@@ -255,6 +254,9 @@ public class VoiceChannelActivity extends AppCompatActivity implements VoiceStat
             btnVideo.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2B2D31")));
             btnVideo.setImageTintList(ColorStateList.valueOf(Color.WHITE));
             btnVideo.setImageResource(R.drawable.ic_cam_off);
+        }
+        if (btnSwitchCamera != null) {
+            btnSwitchCamera.setVisibility(isVideoOn ? View.VISIBLE : View.GONE);
         }
     }
 

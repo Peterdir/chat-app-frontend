@@ -9,6 +9,7 @@ import com.example.chat_app_frontend.repository.UserRepository;
 import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.Collections;
 
@@ -152,15 +153,34 @@ public class AuthManager {
      */
     public void logout(OnLogoutListener callback) {
         if (currentUser != null && currentUser.getFirebaseUid() != null) {
+            String uid = currentUser.getFirebaseUid();
             userRepository.updateUserStatus(
-                    currentUser.getFirebaseUid(), UserStatus.OFFLINE,
+                    uid, UserStatus.OFFLINE,
                     new UserRepository.OnCompleteListener() {
-                        @Override public void onSuccess() { doSignOut(callback); }
-                        @Override public void onFailure(String error) { doSignOut(callback); }
+                        @Override public void onSuccess() { clearTokenAndSignOut(uid, callback); }
+                        @Override public void onFailure(String error) { clearTokenAndSignOut(uid, callback); }
                     });
         } else {
             doSignOut(callback);
         }
+    }
+
+    private void clearTokenAndSignOut(String uid, OnLogoutListener callback) {
+        FirebaseMessaging.getInstance().getToken()
+            .addOnSuccessListener(token -> {
+                if (token != null && !token.trim().isEmpty()) {
+                    FirebaseManager.getDatabaseReference("user_fcm_tokens")
+                        .child(uid)
+                        .child(token)
+                        .removeValue();
+                }
+                FirebaseMessaging.getInstance().deleteToken().addOnCompleteListener(task -> {
+                    doSignOut(callback);
+                });
+            })
+            .addOnFailureListener(e -> {
+                doSignOut(callback);
+            });
     }
 
     private void doSignOut(OnLogoutListener callback) {

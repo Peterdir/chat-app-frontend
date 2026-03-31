@@ -271,6 +271,7 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
                 runOnUiThread(() -> {
                     chatRepository.sendDirectMessage(
                             chatId,
+                            friendUid,
                             currentUserId,
                             currentUserName,
                             imageData,
@@ -300,6 +301,7 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
 
         chatRepository.sendDirectMessage(
                 chatId,
+                friendUid,
                 currentUserId,
                 currentUserName,
                 text,

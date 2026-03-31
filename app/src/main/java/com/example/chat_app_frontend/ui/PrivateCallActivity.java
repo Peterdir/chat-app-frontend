@@ -68,7 +68,7 @@ public class PrivateCallActivity extends AppCompatActivity {
     private FrameLayout flLocalVideoOverlay;
     private CardView cardRemoteVideo;
     private View vRemoteSpeakingBorder, vLocalSpeakingBorder;
-    private ImageButton btnCamera, btnMic, btnMessage, btnDeafen, btnEndCall, btnCollapse, btnSpeaker;
+    private ImageButton btnCamera, btnMic, btnMessage, btnDeafen, btnEndCall, btnCollapse, btnSpeaker, btnSwitchCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +158,12 @@ public class PrivateCallActivity extends AppCompatActivity {
             btnSpeaker.setAlpha(isSpeakerOn ? 1.0f : 0.5f);
         });
 
+        btnSwitchCamera.setOnClickListener(v -> {
+            if (mRtcEngine != null && isCameraOn) {
+                mRtcEngine.switchCamera();
+            }
+        });
+
         // Khởi động
         if (checkPermissions()) {
             if (!isCaller) {
@@ -193,6 +199,7 @@ public class PrivateCallActivity extends AppCompatActivity {
         btnMessage = findViewById(R.id.btn_message);
         btnDeafen = findViewById(R.id.btn_deafen);
         btnEndCall = findViewById(R.id.btn_end_call);
+        btnSwitchCamera = findViewById(R.id.btn_switch_camera);
     }
 
     private void updateCameraUi() {
@@ -200,10 +207,12 @@ public class PrivateCallActivity extends AppCompatActivity {
             btnCamera.setBackgroundTintList(ColorStateList.valueOf(Color.WHITE));
             btnCamera.setImageTintList(ColorStateList.valueOf(Color.BLACK));
             btnCamera.setImageResource(R.drawable.ic_camera); // Giả sử ic_camera là icon cam on
+            if (btnSwitchCamera != null) btnSwitchCamera.setVisibility(View.VISIBLE);
         } else {
             btnCamera.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2B2D31")));
             btnCamera.setImageTintList(ColorStateList.valueOf(Color.WHITE));
             btnCamera.setImageResource(R.drawable.ic_cam_off);
+            if (btnSwitchCamera != null) btnSwitchCamera.setVisibility(View.GONE);
         }
     }
 

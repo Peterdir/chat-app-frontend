@@ -202,6 +202,7 @@ public class ChatRepository {
     }
 
     public void sendDirectMessage(String dmId,
+                                  String friendUid,
                                   String senderId,
                                   String senderName,
                                   String content,
@@ -226,8 +227,26 @@ public class ChatRepository {
 
         messagesRef.child(msgId)
                 .setValue(message)
-                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnSuccessListener(unused -> {
+                    queueDmPushEvent(dmId, friendUid, senderId, senderName, content);
+                    callback.onSuccess();
+                })
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    private void queueDmPushEvent(String dmId, String friendUid, String senderId, String senderName, String content) {
+        if (friendUid == null || friendUid.trim().isEmpty()) return;
+        DatabaseReference queueRef = FirebaseManager.getDatabaseReference("chat_push_events").push();
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("type", "dm");
+        payload.put("dmId", dmId);
+        payload.put("calleeUid", friendUid);
+        payload.put("senderId", senderId);
+        payload.put("senderName", senderName);
+        payload.put("content", content);
+        payload.put("createdAt", System.currentTimeMillis());
+
+        queueRef.setValue(payload);
     }
 
     public void toggleDirectMessageReaction(String dmId,
