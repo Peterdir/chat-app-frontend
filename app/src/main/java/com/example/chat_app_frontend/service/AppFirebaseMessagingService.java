@@ -91,29 +91,43 @@ public class AppFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
-        String serverId = data != null ? data.get("serverId") : null;
-        String channelId = data != null ? data.get("channelId") : null;
-        String channelName = data != null ? data.get("channelName") : null;
+        String eventTypeValue = data != null ? data.get("eventType") : null;
+        boolean isDmEvent = "dm".equalsIgnoreCase(eventTypeValue);
 
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(MainActivity.EXTRA_OPEN_SERVER_ID, serverId);
-        intent.putExtra(MainActivity.EXTRA_OPEN_CHANNEL_ID, channelId);
-        intent.putExtra(MainActivity.EXTRA_OPEN_CHANNEL_NAME, channelName);
+        Intent intent;
+        if (isDmEvent) {
+            String senderId = data != null ? data.get("senderId") : null;
+            String senderName = data != null ? data.get("senderName") : null;
 
-        Uri deepLinkUri = Uri.parse("chatapp://server-channel"
-            + "?serverId=" + safe(serverId)
-            + "&channelId=" + safe(channelId)
-            + "&channelName=" + safe(channelName));
-        intent.setData(deepLinkUri);
+            intent = new Intent(this, DMChatActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_UID, senderId);
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_NAME, senderName);
+            intent.setData(Uri.parse("chatapp://dm"
+                    + "?friendUid=" + safe(senderId)
+                    + "&friendName=" + safe(senderName)));
+        } else {
+            String serverId = data != null ? data.get("serverId") : null;
+            String channelId = data != null ? data.get("channelId") : null;
+            String channelName = data != null ? data.get("channelName") : null;
+
+            intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra(MainActivity.EXTRA_OPEN_SERVER_ID, serverId);
+            intent.putExtra(MainActivity.EXTRA_OPEN_CHANNEL_ID, channelId);
+            intent.putExtra(MainActivity.EXTRA_OPEN_CHANNEL_NAME, channelName);
+            intent.setData(Uri.parse("chatapp://server-channel"
+                    + "?serverId=" + safe(serverId)
+                    + "&channelId=" + safe(channelId)
+                    + "&channelName=" + safe(channelName)));
+        }
 
         int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             pendingFlags |= PendingIntent.FLAG_IMMUTABLE;
         }
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, pendingFlags);
-
         int id = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, id, intent, pendingFlags);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(title)

@@ -308,6 +308,19 @@ public class MainActivity extends AppCompatActivity {
         String serverId = intent.getStringExtra(EXTRA_OPEN_SERVER_ID);
         String channelId = intent.getStringExtra(EXTRA_OPEN_CHANNEL_ID);
         String channelName = intent.getStringExtra(EXTRA_OPEN_CHANNEL_NAME);
+        String eventType = intent.getStringExtra("eventType");
+        String dmSenderId = intent.getStringExtra("senderId");
+        String dmSenderName = intent.getStringExtra("senderName");
+
+        if (serverId == null || serverId.trim().isEmpty()) {
+            serverId = intent.getStringExtra("serverId");
+        }
+        if (channelId == null || channelId.trim().isEmpty()) {
+            channelId = intent.getStringExtra("channelId");
+        }
+        if (channelName == null || channelName.trim().isEmpty()) {
+            channelName = intent.getStringExtra("channelName");
+        }
 
         Uri data = intent.getData();
         if (data != null && "chatapp".equals(data.getScheme())) {
@@ -325,6 +338,15 @@ public class MainActivity extends AppCompatActivity {
                 intent.setData(null);
                 return;
             }
+            if ("dm".equals(data.getHost())) {
+                if (dmSenderId == null || dmSenderId.trim().isEmpty()) {
+                    dmSenderId = data.getQueryParameter("friendUid");
+                }
+                if (dmSenderName == null || dmSenderName.trim().isEmpty()) {
+                    dmSenderName = data.getQueryParameter("friendName");
+                }
+                eventType = "dm";
+            }
             if (serverId == null || serverId.trim().isEmpty()) {
                 serverId = data.getQueryParameter("serverId");
             }
@@ -334,6 +356,23 @@ public class MainActivity extends AppCompatActivity {
             if (channelName == null || channelName.trim().isEmpty()) {
                 channelName = data.getQueryParameter("channelName");
             }
+        }
+
+        if ("dm".equalsIgnoreCase(eventType) && dmSenderId != null && !dmSenderId.trim().isEmpty()) {
+            Intent openDmIntent = new Intent(this, DMChatActivity.class);
+            openDmIntent.putExtra(DMChatActivity.EXTRA_FRIEND_UID, dmSenderId);
+            openDmIntent.putExtra(
+                    DMChatActivity.EXTRA_FRIEND_NAME,
+                    (dmSenderName == null || dmSenderName.trim().isEmpty()) ? "Friend" : dmSenderName
+            );
+            startActivity(openDmIntent);
+
+            intent.removeExtra("eventType");
+            intent.removeExtra("senderId");
+            intent.removeExtra("senderName");
+            intent.removeExtra("dmId");
+            intent.setData(null);
+            return;
         }
 
         if (serverId == null || serverId.trim().isEmpty() || channelId == null || channelId.trim().isEmpty()) {

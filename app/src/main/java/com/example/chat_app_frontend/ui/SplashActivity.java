@@ -52,6 +52,7 @@ public class SplashActivity extends AppCompatActivity {
     private ImageView       ivLogoWordmark;
     private CircuitTrailView circuitTrailView;
     private PingRingView    pingRingView;
+    private Intent launchIntent;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -62,6 +63,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        launchIntent = getIntent();
 
         // Ping Render FCM Worker to wake it up
         new Thread(() -> {
@@ -209,7 +211,19 @@ public class SplashActivity extends AppCompatActivity {
                 // Nếu user đã đăng nhập qua Firebase Auth → bỏ qua Onboarding
                 boolean isLoggedIn = FirebaseAuth.getInstance().getCurrentUser() != null;
                 Class<?> target = isLoggedIn ? MainActivity.class : OnboardingActivity.class;
-                startActivity(new Intent(SplashActivity.this, target));
+                Intent nextIntent = new Intent(SplashActivity.this, target);
+                if (isLoggedIn && launchIntent != null) {
+                    if (launchIntent.getAction() != null) {
+                        nextIntent.setAction(launchIntent.getAction());
+                    }
+                    if (launchIntent.getData() != null) {
+                        nextIntent.setData(launchIntent.getData());
+                    }
+                    if (launchIntent.getExtras() != null) {
+                        nextIntent.putExtras(launchIntent.getExtras());
+                    }
+                }
+                startActivity(nextIntent);
                 overridePendingTransition(0, 0);
                 finish();
             }
