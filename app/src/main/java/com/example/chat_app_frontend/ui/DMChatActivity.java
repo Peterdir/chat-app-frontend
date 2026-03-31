@@ -4,19 +4,20 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -41,12 +42,12 @@ import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -70,25 +71,25 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
     private ChatRepository chatRepository;
     private ValueEventListener chatListener;
 
-    private static final String[] QUICK_REACTION_EMOJIS = {"❤️", "😆", "😮", "😢", "😡", "👍", "👎"};
-    private static final String SELF_NAME = "You";
-    private static final Locale VIETNAMESE_LOCALE = new Locale("vi", "VN");
-    private static final long GROUP_BREAK_THRESHOLD_MS = TimeUnit.MINUTES.toMillis(10);
+    // UI for progress
+    private FrameLayout flUploadProgress;
+    private TextView tvProgressLabel;
 
-    // PickVisualMedia để mở THƯ VIỆN ẢNH (Gallery)
-    private final ActivityResultLauncher<PickVisualMediaRequest> pickImageLauncher =
-            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
-                if (uri != null) {
-                    uploadAndSendImage(uri);
+    // Sử dụng StartActivityForResult để mở Gallery truyền thống (ép trỏ đến Thư viện ảnh)
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) uploadAndSend(uri);
                 }
-            });
+            }
+    );
 
-    private final ActivityResultLauncher<String> pickFileLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<String> fileLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
-                if (uri != null) {
-                    uploadAndSendFile(uri);
-                }
+                if (uri != null) uploadAndSend(uri);
             }
     );
 
@@ -109,17 +110,12 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
 
         findViewById(R.id.btn_send).setOnClickListener(v -> sendMessage());
         
-        // Bấm dấu cộng mở Menu đính kèm hoặc mở luôn Gallery (theo yêu cầu)
-        findViewById(R.id.btn_attach).setOnClickListener(v -> {
-            // Theo yêu cầu: Bấm dấu cộng truy cập thư viện ảnh
-            openGallery();
-        });
+        // Bấm dấu cộng mở thẳng Thư viện ảnh
+        findViewById(R.id.btn_attach).setOnClickListener(v -> openGallery());
 
-        // Nếu bạn muốn nút "Tệp tin" vẫn khả dụng, bạn có thể thêm một nút kẹp giấy riêng 
-        // hoặc mở BottomSheet khi người dùng nhấn giữ nút cộng, v.v.
-        // Ở đây tôi giả định bạn sẽ dùng một nút bấm khác để mở showAttachOptions() 
-        // hoặc người dùng sẽ chọn File từ một menu khác. 
-        // Để demo đúng yêu cầu: "Dấu cộng -> Gallery", tôi sẽ gắn showAttachOptions vào nút Emoji (tạm thời) hoặc nút khác nếu cần.
+        // Initialize progress UI
+        flUploadProgress = findViewById(R.id.fl_upload_progress);
+        tvProgressLabel = findViewById(R.id.tv_progress_label);
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
@@ -149,49 +145,31 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         attachRealtimeMessages();
     }
 
-    private void showAttachOptions() {
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_attach_options, null);
-
-        // Nút Tệp tin bên phải
-        view.findViewById(R.id.btn_pick_file).setOnClickListener(v -> {
-            dialog.dismiss();
-            pickFileLauncher.launch("*/*");
-        });
-
-        // Khu vực lưới ảnh bên dưới: Khi bấm vào sẽ mở Thư viện ảnh (Gallery)
-        view.findViewById(R.id.rv_photo_picker).setOnClickListener(v -> {
-            dialog.dismiss();
-            openGallery();
-        });
-
-        dialog.setContentView(view);
-        dialog.show();
-    }
-
     private void openGallery() {
-        pickImageLauncher.launch(new PickVisualMediaRequest.Builder()
-                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                .build());
+        // Mở thẳng Thư viện ảnh mặc định của thiết bị thay vì trình duyệt tệp
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryLauncher.launch(intent);
     }
 
-    private void uploadAndSendImage(Uri uri) {
-        Toast.makeText(this, "Đang tải ảnh lên...", Toast.LENGTH_SHORT).show();
-        String fileName = "chat_images/" + UUID.randomUUID().toString();
-        StorageReference ref = FirebaseManager.getStorageReference(fileName);
-
-        ref.putFile(uri).addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(downloadUri -> {
-            chatRepository.sendDirectMessage(chatId, currentUserId, currentUserName, "", RealtimeChatMessage.TYPE_IMAGE,
-                    downloadUri.toString(), null, null, 0, new ChatRepository.OnCompleteListener() {
-                @Override public void onSuccess() {}
-                @Override public void onFailure(String error) { Toast.makeText(DMChatActivity.this, error, Toast.LENGTH_SHORT).show(); }
-            });
-        })).addOnFailureListener(e -> Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    private void showProgress(String label) {
+        if (flUploadProgress != null) {
+            tvProgressLabel.setText(label);
+            flUploadProgress.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void uploadAndSendFile(Uri uri) {
-        String name = "file";
+    private void hideProgress() {
+        if (flUploadProgress != null) {
+            flUploadProgress.setVisibility(View.GONE);
+        }
+    }
+
+    private void uploadAndSend(Uri uri) {
+        String name = "attachment";
         long size = 0;
+        String mimeType = getContentResolver().getType(uri);
+        boolean isImage = mimeType != null && mimeType.startsWith("image/");
+
         try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 int nameIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
@@ -199,18 +177,47 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
                 if (nameIdx != -1) name = cursor.getString(nameIdx);
                 if (sizeIdx != -1) size = cursor.getLong(sizeIdx);
             }
-        }
-        final String fName = name;
-        final long fSize = size;
-        Toast.makeText(this, "Đang tải tệp lên...", Toast.LENGTH_SHORT).show();
-        StorageReference ref = FirebaseManager.getStorageReference("chat_files/" + UUID.randomUUID() + "_" + fName);
-        ref.putFile(uri).addOnSuccessListener(ts -> ref.getDownloadUrl().addOnSuccessListener(dUri -> {
-            chatRepository.sendDirectMessage(chatId, currentUserId, currentUserName, "", RealtimeChatMessage.TYPE_FILE,
-                    null, dUri.toString(), fName, fSize, new ChatRepository.OnCompleteListener() {
-                @Override public void onSuccess() {}
-                @Override public void onFailure(String error) { Toast.makeText(DMChatActivity.this, error, Toast.LENGTH_SHORT).show(); }
-            });
-        }));
+        } catch (Exception ignored) {}
+
+        final String finalName = name;
+        final long finalSize = size;
+        final String msgType = isImage ? RealtimeChatMessage.TYPE_IMAGE : RealtimeChatMessage.TYPE_FILE;
+
+        showProgress(isImage ? "Đang gửi ảnh..." : "Đang gửi tệp...");
+
+        // 1. Tạo tên file an toàn (UUID để tránh trùng lặp)
+        String safeFileName = UUID.randomUUID().toString();
+        String folder = isImage ? "chat_images/" : "chat_files/";
+
+        // 2. Tạo Storage Reference
+        StorageReference ref = FirebaseManager.getStorageReference(folder + safeFileName);
+
+        // 3. Sử dụng putFile thay vì putStream để đảm bảo tính ổn định và metadata
+        ref.putFile(uri).continueWithTask(task -> {
+            if (!task.isSuccessful()) {
+                if (task.getException() != null) throw task.getException();
+            }
+            return ref.getDownloadUrl();
+        }).addOnCompleteListener(task -> {
+            hideProgress();
+            if (task.isSuccessful()) {
+                String url = task.getResult().toString();
+                // Gửi tin nhắn kèm URL này vào DB
+                chatRepository.sendDirectMessage(chatId, currentUserId, currentUserName, "[Hình ảnh]", msgType,
+                        isImage ? url : null, !isImage ? url : null, finalName, finalSize,
+                        new ChatRepository.OnCompleteListener() {
+                            @Override public void onSuccess() {
+                                Log.d("ChatApp", "Đã lưu URL ảnh vào DB: " + url);
+                            }
+                            @Override public void onFailure(String error) {
+                                Toast.makeText(DMChatActivity.this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            } else {
+                Log.e("UploadError", "Failed: ", task.getException());
+                Toast.makeText(DMChatActivity.this, "Lỗi upload: " + (task.getException() != null ? task.getException().getMessage() : "Unknown"), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void sendMessage() {
@@ -248,17 +255,18 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         Collections.sort(raw, Comparator.comparingLong(RealtimeChatMessage::getCreatedAt));
         String prevSender = null;
         for (RealtimeChatMessage r : raw) {
-            boolean isFirst = r.getSenderId() != null && !r.getSenderId().equals(prevSender);
-            Message m = new Message(r.getId(), r.getSenderId(), r.getSenderName(), 0, r.getContent(), 
-                new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(r.getCreatedAt())), 
-                r.getSenderId() != null && r.getSenderId().equals(currentUserId), isFirst);
+            String sId = r.getSenderId() != null ? r.getSenderId() : "";
+            boolean isFirst = !Objects.equals(sId, prevSender);
+            Message m = new Message(r.getId(), sId, r.getSenderName(), 0, r.getContent(),
+                new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(r.getCreatedAt())),
+                sId.equals(currentUserId), isFirst);
             m.setMessageType(r.getMessageType());
             m.setImageUrl(r.getImageUrl());
             m.setFileUrl(r.getFileUrl());
             m.setFileName(r.getFileName());
             m.setFileSize(r.getFileSize());
             ui.add(m);
-            prevSender = r.getSenderId();
+            prevSender = sId;
         }
         return ui;
     }
@@ -270,8 +278,40 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         });
     }
 
-    private void startPrivateCall(boolean isVideo) { /* Call implementation */ }
-    private void showThemePicker() { /* Theme implementation */ }
+    private void showAttachOptions() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.bottom_sheet_attach_options, null);
+        
+        // Nút Tệp tin bên phải
+        view.findViewById(R.id.btn_pick_file).setOnClickListener(v -> {
+            dialog.dismiss();
+            fileLauncher.launch("*/*");
+        });
+
+        // Khu vực lưới ảnh: Mở Thư viện ảnh
+        view.findViewById(R.id.rv_photo_picker).setOnClickListener(v -> {
+            dialog.dismiss();
+            openGallery();
+        });
+
+        dialog.setContentView(view);
+        dialog.show();
+    }
+
+    private void startPrivateCall(boolean isVideo) {
+        String myUid = AuthManager.getInstance(this).getUid();
+        if (myUid != null && friendUid != null) {
+            Intent intent = new Intent(this, PrivateCallActivity.class);
+            intent.putExtra(EXTRA_FRIEND_NAME, friendName);
+            intent.putExtra("is_video", isVideo);
+            intent.putExtra(EXTRA_FRIEND_UID, friendUid);
+            intent.putExtra("is_caller", true);
+            startActivity(intent);
+        }
+    }
+
+    private void showThemePicker() { /* Theme picker logic */ }
+
     @Override public void onMessageLongPressed(Message m) {}
     @Override public void onReactionChipClicked(Message m, String e) {}
 

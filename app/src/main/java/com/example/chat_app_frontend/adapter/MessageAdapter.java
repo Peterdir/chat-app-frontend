@@ -1,5 +1,6 @@
 package com.example.chat_app_frontend.adapter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -198,25 +199,30 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                        ImageView imgAttachment,
                                        LinearLayout llFileAttachment,
                                        TextView tvFileName,
-                                       TextView tvFileSize) {
+                                       TextView tvFileSize,
+                                       TextView tvMessageContent) {
         String gifUrl = extractGiphyGifUrl(msg.getContent());
+        Context context = imgAttachment.getContext();
 
         // Reset
         cvImageAttachment.setVisibility(View.GONE);
         llFileAttachment.setVisibility(View.GONE);
-        Glide.with(imgAttachment.getContext()).clear(imgAttachment);
+        tvMessageContent.setVisibility(View.VISIBLE);
+        Glide.with(context).clear(imgAttachment);
 
         if (gifUrl != null) {
             cvImageAttachment.setVisibility(View.VISIBLE);
-            Glide.with(imgAttachment)
+            tvMessageContent.setVisibility(View.GONE);
+            Glide.with(context)
                     .asGif()
                     .load(gifUrl)
                     .into(imgAttachment);
         } else if (Message.TYPE_IMAGE.equals(msg.getMessageType())) {
             cvImageAttachment.setVisibility(View.VISIBLE);
-            Glide.with(imgAttachment)
+            tvMessageContent.setVisibility(View.GONE); // Ẩn text nếu là ảnh
+            Glide.with(context)
                     .load(msg.getImageUrl())
-                    .placeholder(R.drawable.bg_search_input)
+                    .placeholder(R.drawable.bonsai) // Dùng tạm bonsai hoặc placeholder của bạn
                     .into(imgAttachment);
         } else if (Message.TYPE_FILE.equals(msg.getMessageType())) {
             llFileAttachment.setVisibility(View.VISIBLE);
@@ -407,14 +413,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             tvTimestamp.setText(msg.getTimestamp());
             bindReplyQuote(msg, llReplyQuote, tvReplySender, tvReplyContent);
 
-            if (msg.getContent() != null && !msg.getContent().isEmpty() && extractGiphyGifUrl(msg.getContent()) == null) {
+            bindAttachment(msg, cvImageAttachment, imgAttachment, llFileAttachment, tvFileName, tvFileSize, tvMessageContent);
+            
+            if (tvMessageContent.getVisibility() == View.VISIBLE) {
                 tvMessageContent.setText(msg.getContent());
-                tvMessageContent.setVisibility(View.VISIBLE);
-            } else {
-                tvMessageContent.setVisibility(View.GONE);
             }
 
-            bindAttachment(msg, cvImageAttachment, imgAttachment, llFileAttachment, tvFileName, tvFileSize);
             bindReactionChips(msg, llReactions, tvReaction1, tvReaction2, listener, currentUserId);
 
             if (listener != null) {
@@ -461,14 +465,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                   String currentUserId) {
             bindReplyQuote(msg, llReplyQuote, tvReplySender, tvReplyContent);
 
-            if (msg.getContent() != null && !msg.getContent().isEmpty() && extractGiphyGifUrl(msg.getContent()) == null) {
+            bindAttachment(msg, cvImageAttachment, imgAttachment, llFileAttachment, tvFileName, tvFileSize, tvMessageContent);
+
+            if (tvMessageContent.getVisibility() == View.VISIBLE) {
                 tvMessageContent.setText(msg.getContent());
-                tvMessageContent.setVisibility(View.VISIBLE);
-            } else {
-                tvMessageContent.setVisibility(View.GONE);
             }
 
-            bindAttachment(msg, cvImageAttachment, imgAttachment, llFileAttachment, tvFileName, tvFileSize);
             bindReactionChips(msg, llReactions, tvReaction1, tvReaction2, listener, currentUserId);
 
             if (listener != null) {

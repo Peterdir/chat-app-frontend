@@ -47,9 +47,12 @@ public class FriendsTabFragment extends Fragment {
         tvEmpty      = v.findViewById(R.id.tv_empty);
 
         adapter = new FriendListAdapter(friends, friend -> {
-            // Mở DMChatActivity khi nhấn nhắn tin
-            Toast.makeText(getContext(), "Mở chat với " + friend.getFriendName(), Toast.LENGTH_SHORT).show();
-            // TODO: mở DMChatActivity khi có deeplink
+            // Mở DMChatActivity khi nhấn vào bạn bè để nhắn tin
+            Intent intent = new Intent(getContext(), DMChatActivity.class);
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_NAME, friend.getFriendName());
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_UID, friend.getUid()); // Sử dụng getUid() thay vì getFriendUid()
+            intent.putExtra(DMChatActivity.EXTRA_FRIEND_STATUS, friend.getOnlineStatus()); // Sử dụng getOnlineStatus()
+            startActivity(intent);
         });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
