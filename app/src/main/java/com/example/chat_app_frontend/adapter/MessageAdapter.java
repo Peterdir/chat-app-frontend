@@ -34,6 +34,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void onMessageLongPressed(Message message);
         void onReactionChipClicked(Message message, String emoji);
         void onUserClicked(String userId);
+        void onImageClicked(String imageUrlOrBase64);
     }
 
     private static final int VIEW_TYPE_GROUP_START = 0;
@@ -403,9 +404,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             bindReplyQuote(msg, llReplyQuote, tvReplySender, tvReplyContent);
 
             String gifUrl = extractGiphyGifUrl(msg.getContent());
+            boolean isBase64Image = msg.getContent() != null && msg.getContent().startsWith("data:image/");
 
             // Content
-            if (gifUrl == null && msg.getContent() != null && !msg.getContent().isEmpty()) {
+            if (gifUrl == null && !isBase64Image && msg.getContent() != null && !msg.getContent().isEmpty()) {
                 tvMessageContent.setText(msg.getContent());
                 tvMessageContent.setVisibility(View.VISIBLE);
             } else {
@@ -419,13 +421,22 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         .asGif()
                         .load(gifUrl)
                         .into(imgAttachment);
+                imgAttachment.setOnClickListener(v -> { if (listener != null) listener.onImageClicked(gifUrl); });
+            } else if (isBase64Image) {
+                cvImageAttachment.setVisibility(View.VISIBLE);
+                Glide.with(imgAttachment)
+                        .load(msg.getContent())
+                        .into(imgAttachment);
+                imgAttachment.setOnClickListener(v -> { if (listener != null) listener.onImageClicked(msg.getContent()); });
             } else if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
                 cvImageAttachment.setVisibility(View.VISIBLE);
                 Glide.with(imgAttachment).clear(imgAttachment);
                 imgAttachment.setImageResource(msg.getImageResId());
+                imgAttachment.setOnClickListener(null);
             } else {
                 Glide.with(imgAttachment).clear(imgAttachment);
                 cvImageAttachment.setVisibility(View.GONE);
+                imgAttachment.setOnClickListener(null);
             }
 
             bindReactionChips(msg, llReactions, tvReaction1, tvReaction2, listener, currentUserId);
@@ -476,8 +487,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                   String currentUserId) {
             bindReplyQuote(msg, llReplyQuote, tvReplySender, tvReplyContent);
             String gifUrl = extractGiphyGifUrl(msg.getContent());
+            boolean isBase64Image = msg.getContent() != null && msg.getContent().startsWith("data:image/");
 
-            if (gifUrl == null && msg.getContent() != null && !msg.getContent().isEmpty()) {
+            if (gifUrl == null && !isBase64Image && msg.getContent() != null && !msg.getContent().isEmpty()) {
                 tvMessageContent.setText(msg.getContent());
                 tvMessageContent.setVisibility(View.VISIBLE);
             } else {
@@ -490,13 +502,22 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         .asGif()
                         .load(gifUrl)
                         .into(imgAttachment);
+                imgAttachment.setOnClickListener(v -> { if (listener != null) listener.onImageClicked(gifUrl); });
+            } else if (isBase64Image) {
+                cvImageAttachment.setVisibility(View.VISIBLE);
+                Glide.with(imgAttachment)
+                        .load(msg.getContent())
+                        .into(imgAttachment);
+                imgAttachment.setOnClickListener(v -> { if (listener != null) listener.onImageClicked(msg.getContent()); });
             } else if (Message.TYPE_IMAGE.equals(msg.getMessageType()) && msg.getImageResId() != 0) {
                 cvImageAttachment.setVisibility(View.VISIBLE);
                 Glide.with(imgAttachment).clear(imgAttachment);
                 imgAttachment.setImageResource(msg.getImageResId());
+                imgAttachment.setOnClickListener(null);
             } else {
                 Glide.with(imgAttachment).clear(imgAttachment);
                 cvImageAttachment.setVisibility(View.GONE);
+                imgAttachment.setOnClickListener(null);
             }
 
             bindReactionChips(msg, llReactions, tvReaction1, tvReaction2, listener, currentUserId);

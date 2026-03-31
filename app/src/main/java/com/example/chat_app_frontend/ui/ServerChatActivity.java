@@ -1,5 +1,14 @@
 package com.example.chat_app_frontend.ui;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.util.Base64;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -101,10 +110,20 @@ public class ServerChatActivity extends AppCompatActivity
         private Handler voiceTimerHandler = new Handler(Looper.getMainLooper());
         private Runnable voiceTimerRunnable;
 
+        private ActivityResultLauncher<String> imagePickerLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server_chat);
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        uploadImageMessage(uri);
+                    }
+                });
 
         channelName = getIntent().getStringExtra(EXTRA_CHANNEL_NAME);
         if (channelName == null) channelName = "general";
@@ -152,6 +171,11 @@ public class ServerChatActivity extends AppCompatActivity
         ImageView btnSend = findViewById(R.id.btn_send);
         btnSend.setOnClickListener(v -> sendMessage());
 
+        ImageView btnAttach = findViewById(R.id.btn_attach);
+        if (btnAttach != null) {
+            btnAttach.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+        }
+
         // RecyclerView
         rvMessages = findViewById(R.id.rv_messages);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -176,6 +200,75 @@ public class ServerChatActivity extends AppCompatActivity
 
         initGlobalVoiceBar();
         VoiceStateManager.getInstance().addListener(this);
+    }
+
+    private void uploadImageMessage(Uri imageUri) {
+        if (currentUserId == null || currentUserId.trim().isEmpty()) {
+            Toast.makeText(this, "Bạn cần đăng nhập để gửi ảnh", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this, "Đang xử lý ảnh...", Toast.LENGTH_SHORT).show();
+
+        new Thread(() -> {
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                if (inputStream == null) return;
+                Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
+                inputStream.close();
+                if (originalBitmap == null) return;
+
+                int maxSize = 800;
+                int width = originalBitmap.getWidth();
+                int height = originalBitmap.getHeight();
+                Bitmap resizedBitmap = originalBitmap;
+                if (width > maxSize || height > maxSize) {
+                    float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
+                    int newWidth = Math.round(width * ratio);
+                    int newHeight = Math.round(height * ratio);
+                    resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
+                }
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+                byte[] imageBytes = baos.toByteArray();
+                baos.close();
+
+                String base64String = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+                String imageData = "data:image/jpeg;base64," + base64String;
+
+                if (resizedBitmap != originalBitmap) {
+                    resizedBitmap.recycle();
+                }
+                originalBitmap.recycle();
+
+                runOnUiThread(() -> {
+                    chatRepository.sendServerChannelMessage(
+                            serverId,
+                            channelId,
+                            channelName,
+                            currentUserId,
+                            currentUserName,
+                            imageData,
+                            pendingReplyMessage != null ? pendingReplyMessage.getId() : null,
+                            pendingReplyMessage != null ? pendingReplyMessage.getSenderName() : null,
+                            pendingReplyMessage != null ? buildReplySnippetOrNull(pendingReplyMessage.getContent()) : null,
+                            new ChatRepository.OnCompleteListener() {
+                                @Override
+                                public void onSuccess() {
+                                    clearReplyTarget();
+                                }
+                                @Override
+                                public void onFailure(String error) {
+                                    Toast.makeText(ServerChatActivity.this, "Lỗi gửi ảnh: " + error, Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(ServerChatActivity.this, "Lỗi xử lý ảnh", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
     private void sendMessage() {
@@ -925,6 +1018,12 @@ public class ServerChatActivity extends AppCompatActivity
                 if (userId == null || userId.trim().isEmpty()) return;
                 UserProfileBottomSheet bottomSheet = new UserProfileBottomSheet(null, userId);
                 bottomSheet.show(getSupportFragmentManager(), "user_profile");
+        }
+
+        @Override
+        public void onImageClicked(String imageUrlOrBase64) {
+                if (imageUrlOrBase64 == null || imageUrlOrBase64.trim().isEmpty()) return;
+                com.example.chat_app_frontend.utils.ImageViewerDialog.show(this, imageUrlOrBase64);
         }
 
         private String formatMessageTimestamp(long millis) {

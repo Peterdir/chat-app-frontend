@@ -1,5 +1,14 @@
 package com.example.chat_app_frontend.ui;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.util.Base64;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -77,10 +86,20 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
     private String lastMessageSenderId;
     private long lastMessageAtMillis = -1L;
 
+    private ActivityResultLauncher<String> imagePickerLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dm_chat);
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        uploadImageMessage(uri);
+                    }
+                });
 
         friendName = getIntent().getStringExtra(EXTRA_FRIEND_NAME);
         String friendStatus = getIntent().getStringExtra(EXTRA_FRIEND_STATUS);
@@ -99,6 +118,11 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
 
         ImageView btnSend = findViewById(R.id.btn_send);
         btnSend.setOnClickListener(v -> sendMessage());
+
+        ImageView btnAttach = findViewById(R.id.btn_attach);
+        if (btnAttach != null) {
+            btnAttach.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+        }
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
@@ -202,6 +226,68 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         if (toolbarInfo != null) {
             toolbarInfo.setOnClickListener(v -> onUserClicked(friendUid));
         }
+    }
+
+    private void uploadImageMessage(Uri imageUri) {
+        if (currentUserId == null || currentUserId.trim().isEmpty()) {
+            Toast.makeText(this, "Bạn cần đăng nhập để gửi ảnh", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(this, "Đang xử lý ảnh...", Toast.LENGTH_SHORT).show();
+
+        new Thread(() -> {
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                if (inputStream == null) return;
+                Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
+                inputStream.close();
+                if (originalBitmap == null) return;
+
+                int maxSize = 800;
+                int width = originalBitmap.getWidth();
+                int height = originalBitmap.getHeight();
+                Bitmap resizedBitmap = originalBitmap;
+                if (width > maxSize || height > maxSize) {
+                    float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
+                    int newWidth = Math.round(width * ratio);
+                    int newHeight = Math.round(height * ratio);
+                    resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
+                }
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+                byte[] imageBytes = baos.toByteArray();
+                baos.close();
+
+                String base64String = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+                String imageData = "data:image/jpeg;base64," + base64String;
+
+                if (resizedBitmap != originalBitmap) {
+                    resizedBitmap.recycle();
+                }
+                originalBitmap.recycle();
+
+                runOnUiThread(() -> {
+                    chatRepository.sendDirectMessage(
+                            chatId,
+                            currentUserId,
+                            currentUserName,
+                            imageData,
+                            new ChatRepository.OnCompleteListener() {
+                                @Override
+                                public void onSuccess() {}
+                                @Override
+                                public void onFailure(String error) {
+                                    Toast.makeText(DMChatActivity.this, "Lỗi gửi ảnh: " + error, Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(DMChatActivity.this, "Lỗi xử lý ảnh", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
     private void sendMessage() {
@@ -314,6 +400,12 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         if (userId == null || userId.trim().isEmpty()) return;
         UserProfileBottomSheet bottomSheet = new UserProfileBottomSheet(null, userId);
         bottomSheet.show(getSupportFragmentManager(), "user_profile");
+    }
+
+    @Override
+    public void onImageClicked(String imageUrlOrBase64) {
+        if (imageUrlOrBase64 == null || imageUrlOrBase64.trim().isEmpty()) return;
+        com.example.chat_app_frontend.utils.ImageViewerDialog.show(this, imageUrlOrBase64);
     }
 
     private void showMessageActionSheet(Message message) {

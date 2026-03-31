@@ -63,6 +63,9 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     
+    // Zoom ảnh
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
     // Hỗ trợ ảnh động APNG/GIF/WebP
     implementation("com.github.penfeizhou.android.animation:apng:3.0.5")
     implementation("com.github.penfeizhou.android.animation:glide-plugin:3.0.5")
