@@ -2,6 +2,7 @@ package com.example.chat_app_frontend.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Base64;
 import androidx.activity.result.ActivityResultLauncher;
@@ -10,8 +11,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -19,12 +23,15 @@ import android.widget.LinearLayout;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ArrayAdapter;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +44,7 @@ import com.example.chat_app_frontend.model.Message;
 import com.example.chat_app_frontend.model.RealtimeChatMessage;
 import com.example.chat_app_frontend.model.User;
 import com.example.chat_app_frontend.repository.ChatRepository;
+import com.example.chat_app_frontend.repository.ServerRepository;
 import com.example.chat_app_frontend.utils.ChatThemeHelper;
 import com.example.chat_app_frontend.utils.FirebaseManager;
 import com.giphy.sdk.core.models.Media;
@@ -48,6 +56,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
@@ -65,6 +74,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerChatActivity extends AppCompatActivity
         implements GiphyDialogFragment.GifSelectionListener, MessageAdapter.OnMessageInteractionListener, VoiceStateManager.VoiceStateListener {
@@ -85,6 +95,7 @@ public class ServerChatActivity extends AppCompatActivity
     private String channelName;
         private String channelId;
         private String serverId;
+        private String serverName;
 
         private ChatRepository chatRepository;
         private ValueEventListener chatListener;
@@ -131,6 +142,8 @@ public class ServerChatActivity extends AppCompatActivity
                 if (channelId == null || channelId.trim().isEmpty()) channelId = channelName;
                 serverId = getIntent().getStringExtra(EXTRA_SERVER_ID);
                 if (serverId == null || serverId.trim().isEmpty()) serverId = "unknown_server";
+                serverName = getIntent().getStringExtra(EXTRA_SERVER_NAME);
+                if (serverName == null || serverName.trim().isEmpty()) serverName = "Server";
 
                 chatRepository = ChatRepository.getInstance();
 
@@ -198,9 +211,359 @@ public class ServerChatActivity extends AppCompatActivity
         ImageView btnTheme = findViewById(R.id.btn_theme);
         btnTheme.setOnClickListener(v -> showThemePicker());
 
+                View btnSearch = findViewById(R.id.btn_search);
+                if (btnSearch != null) {
+                        btnSearch.setOnClickListener(v -> showServerWideSearchDialog());
+                }
+
         initGlobalVoiceBar();
         VoiceStateManager.getInstance().addListener(this);
     }
+
+        private void showServerWideSearchDialog() {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                LinearLayout root = new LinearLayout(this);
+                root.setOrientation(LinearLayout.VERTICAL);
+                root.setBackgroundResource(R.drawable.bg_search_input);
+                int pad = dp(16);
+                root.setPadding(pad, pad, pad, pad);
+
+                EditText input = new EditText(this);
+                input.setHint("Nhập nội dung cần tìm");
+                input.setBackgroundResource(R.drawable.bg_chat_input);
+                input.setTextColor(ContextCompat.getColor(this, R.color.discord_text_primary));
+                input.setHintTextColor(ContextCompat.getColor(this, R.color.discord_text_secondary));
+                input.setPadding(dp(14), dp(12), dp(14), dp(12));
+                root.addView(input, new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                ));
+
+                TextView tvStatus = new TextView(this);
+                tvStatus.setText("Nhập từ khóa để bắt đầu tìm trong server");
+                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.discord_text_secondary));
+                tvStatus.setPadding(0, dp(8), 0, dp(8));
+                root.addView(tvStatus);
+
+                ListView listView = new ListView(this);
+                listView.setDivider(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+                listView.setDividerHeight(dp(6));
+                listView.setCacheColorHint(Color.TRANSPARENT);
+                LinearLayout.LayoutParams listLp = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                dp(360)
+                );
+                root.addView(listView, listLp);
+
+                List<ServerMessageSearchItem> filteredItems = new ArrayList<>();
+                ServerMessageSearchAdapter adapter = new ServerMessageSearchAdapter(this, filteredItems);
+                listView.setAdapter(adapter);
+
+                Handler searchHandler = new Handler(Looper.getMainLooper());
+                int[] activeSearchToken = {0};
+                Runnable[] pendingTask = {null};
+
+                AlertDialog dialog = builder
+                                .setView(root)
+                                .setNegativeButton("Đóng", null)
+                                .create();
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(true);
+
+                input.addTextChangedListener(new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                String keyword = s != null ? s.toString().trim().toLowerCase(Locale.ROOT) : "";
+                                if (pendingTask[0] != null) {
+                                        searchHandler.removeCallbacks(pendingTask[0]);
+                                        pendingTask[0] = null;
+                                }
+
+                                if (keyword.isEmpty()) {
+                                        activeSearchToken[0]++;
+                                        filteredItems.clear();
+                                        adapter.notifyDataSetChanged();
+                                        tvStatus.setText("Nhập từ khóa để bắt đầu tìm trong server");
+                                        return;
+                                }
+
+                                tvStatus.setText("Đang tìm \"" + keyword + "\"...");
+                                int requestToken = ++activeSearchToken[0];
+                                Runnable delayedSearch = () -> searchServerMessages(keyword, requestToken, activeSearchToken, filteredItems, adapter, tvStatus);
+                                pendingTask[0] = delayedSearch;
+                                searchHandler.postDelayed(delayedSearch, 280);
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                        }
+                });
+
+                listView.setOnItemClickListener((parent, view, position, id) -> {
+                        if (position < 0 || position >= filteredItems.size()) {
+                                return;
+                        }
+                        ServerMessageSearchItem selected = filteredItems.get(position);
+                        if (selected.channelId != null && selected.channelId.equals(channelId)) {
+                                int targetIndex = findMessageIndexById(selected.messageId);
+                                if (targetIndex >= 0) {
+                                        rvMessages.scrollToPosition(targetIndex);
+                                }
+                                dialog.dismiss();
+                                return;
+                        }
+
+                        Intent intent = new Intent(this, ServerChatActivity.class);
+                        intent.putExtra(EXTRA_SERVER_ID, serverId);
+                        intent.putExtra(EXTRA_SERVER_NAME, serverName);
+                        intent.putExtra(EXTRA_CHANNEL_ID, selected.channelId);
+                        intent.putExtra(EXTRA_CHANNEL_NAME, selected.channelName);
+                        startActivity(intent);
+                        dialog.dismiss();
+                });
+
+                dialog.show();
+                if (dialog.getWindow() != null) {
+                        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+                }
+        }
+
+        private void searchServerMessages(String keyword,
+                                                                          int requestToken,
+                                                                          int[] activeSearchToken,
+                                                                          List<ServerMessageSearchItem> uiItems,
+                                                                          ServerMessageSearchAdapter adapter,
+                                                                          TextView tvStatus) {
+                ServerRepository.getInstance().getServerChannels(serverId, new ServerRepository.OnChannelListCallback() {
+                        @Override
+                        public void onSuccess(List<com.example.chat_app_frontend.model.Channel> channels) {
+                                if (requestToken != activeSearchToken[0]) {
+                                        return;
+                                }
+
+                                List<com.example.chat_app_frontend.model.Channel> validChannels = new ArrayList<>();
+                                for (com.example.chat_app_frontend.model.Channel channel : channels) {
+                                        if (channel == null || channel.getId() == null || channel.getId().trim().isEmpty()) {
+                                                continue;
+                                        }
+                                        validChannels.add(channel);
+                                }
+
+                                if (validChannels.isEmpty()) {
+                                        uiItems.clear();
+                                        adapter.notifyDataSetChanged();
+                                        tvStatus.setText("Server chưa có kênh để tìm kiếm");
+                                        return;
+                                }
+
+                                List<ServerMessageSearchItem> aggregated = Collections.synchronizedList(new ArrayList<>());
+                                AtomicInteger pending = new AtomicInteger(validChannels.size());
+
+                                for (com.example.chat_app_frontend.model.Channel channel : validChannels) {
+                                        String channelIdValue = channel.getId();
+                                        String channelNameValue = safe(channel.getName());
+
+                                        DatabaseReference messagesRef = FirebaseManager
+                                                        .getDatabaseReference("chat_messages/server_channels")
+                                                        .child(serverId + "_" + channelIdValue)
+                                                        .child("messages");
+
+                                        messagesRef
+                                                        .orderByChild("createdAt")
+                                                        .limitToLast(200)
+                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                @Override
+                                                                public void onDataChange(DataSnapshot snapshot) {
+                                                                        if (requestToken != activeSearchToken[0]) {
+                                                                                return;
+                                                                        }
+
+                                                                        for (DataSnapshot msgNode : snapshot.getChildren()) {
+                                                                                RealtimeChatMessage msg = msgNode.getValue(RealtimeChatMessage.class);
+                                                                                if (msg == null) {
+                                                                                        continue;
+                                                                                }
+
+                                                                                String searchable = (
+                                                                                                safe(msg.getSenderName()) + " " +
+                                                                                                safe(msg.getContent()) + " " +
+                                                                                                channelNameValue
+                                                                                ).toLowerCase(Locale.ROOT);
+                                                                                if (!searchable.contains(keyword)) {
+                                                                                        continue;
+                                                                                }
+
+                                                                                String messageId = msg.getId();
+                                                                                if (messageId == null || messageId.trim().isEmpty()) {
+                                                                                        messageId = msgNode.getKey();
+                                                                                }
+                                                                                aggregated.add(new ServerMessageSearchItem(
+                                                                                                messageId,
+                                                                                                channelIdValue,
+                                                                                                channelNameValue,
+                                                                                                msg.getSenderName(),
+                                                                                                msg.getContent(),
+                                                                                                msg.getCreatedAt()
+                                                                                ));
+                                                                        }
+
+                                                                        maybePublishServerSearchResult(
+                                                                                        requestToken,
+                                                                                        activeSearchToken,
+                                                                                        pending,
+                                                                                        aggregated,
+                                                                                        uiItems,
+                                                                                        adapter,
+                                                                                        tvStatus
+                                                                        );
+                                                                }
+
+                                                                @Override
+                                                                public void onCancelled(DatabaseError error) {
+                                                                        maybePublishServerSearchResult(
+                                                                                        requestToken,
+                                                                                        activeSearchToken,
+                                                                                        pending,
+                                                                                        aggregated,
+                                                                                        uiItems,
+                                                                                        adapter,
+                                                                                        tvStatus
+                                                                        );
+                                                                }
+                                                        });
+                                }
+                        }
+
+                        @Override
+                        public void onFailure(String error) {
+                                if (requestToken != activeSearchToken[0]) {
+                                        return;
+                                }
+                                uiItems.clear();
+                                adapter.notifyDataSetChanged();
+                                tvStatus.setText("Không tải được kênh trong server");
+                        }
+                });
+        }
+
+        private void maybePublishServerSearchResult(int requestToken,
+                                                                                        int[] activeSearchToken,
+                                                                                        AtomicInteger pending,
+                                                                                        List<ServerMessageSearchItem> aggregated,
+                                                                                        List<ServerMessageSearchItem> uiItems,
+                                                                                        ServerMessageSearchAdapter adapter,
+                                                                                        TextView tvStatus) {
+                if (pending.decrementAndGet() != 0) {
+                        return;
+                }
+                if (requestToken != activeSearchToken[0]) {
+                        return;
+                }
+
+                aggregated.sort((a, b) -> Long.compare(b.createdAt, a.createdAt));
+                uiItems.clear();
+                uiItems.addAll(aggregated);
+                adapter.notifyDataSetChanged();
+
+                if (aggregated.isEmpty()) {
+                        tvStatus.setText("Không tìm thấy tin nhắn phù hợp");
+                        return;
+                }
+                tvStatus.setText("Kết quả: " + aggregated.size() + " tin nhắn");
+        }
+
+        private int findMessageIndexById(String messageId) {
+                if (messageId == null || messageId.trim().isEmpty()) {
+                        return -1;
+                }
+                for (int i = 0; i < messageList.size(); i++) {
+                        Message item = messageList.get(i);
+                        if (item != null && messageId.equals(item.getId())) {
+                                return i;
+                        }
+                }
+                return -1;
+        }
+
+        private String buildSearchSnippet(String content) {
+                if (content == null || content.trim().isEmpty()) {
+                        return "(tin nhắn rỗng)";
+                }
+                String normalized = content.replace('\n', ' ').trim();
+                if (normalized.length() > 80) {
+                        return normalized.substring(0, 80) + "...";
+                }
+                return normalized;
+        }
+
+        private String safe(String text) {
+                if (text == null || text.trim().isEmpty()) {
+                        return "unknown";
+                }
+                return text.trim();
+        }
+
+        private static class ServerMessageSearchItem {
+                final String messageId;
+                final String channelId;
+                final String channelName;
+                final String senderName;
+                final String content;
+                final long createdAt;
+
+                ServerMessageSearchItem(String messageId,
+                                                                String channelId,
+                                                                String channelName,
+                                                                String senderName,
+                                                                String content,
+                                                                long createdAt) {
+                        this.messageId = messageId;
+                        this.channelId = channelId;
+                        this.channelName = channelName;
+                        this.senderName = senderName;
+                        this.content = content;
+                        this.createdAt = createdAt;
+                }
+        }
+
+        private static class ServerMessageSearchAdapter extends ArrayAdapter<ServerMessageSearchItem> {
+                ServerMessageSearchAdapter(ServerChatActivity activity, List<ServerMessageSearchItem> items) {
+                        super(activity, R.layout.item_search_result, items);
+                }
+
+                @Override
+                public View getView(int position, View convertView, android.view.ViewGroup parent) {
+                        View row = convertView;
+                        if (row == null) {
+                                row = android.view.LayoutInflater.from(getContext())
+                                                .inflate(R.layout.item_search_result, parent, false);
+                        }
+
+                        TextView tvTitle = row.findViewById(R.id.tv_search_title);
+                        TextView tvSubtitle = row.findViewById(R.id.tv_search_subtitle);
+
+                        ServerMessageSearchItem item = getItem(position);
+                        if (item == null) {
+                                tvTitle.setText("(tin nhắn)");
+                                tvSubtitle.setText("#unknown");
+                                return row;
+                        }
+
+                        String snippet = item.content == null ? "(tin nhắn rỗng)" : item.content.replace('\n', ' ').trim();
+                        if (snippet.length() > 72) {
+                                snippet = snippet.substring(0, 72) + "...";
+                        }
+
+                        tvTitle.setText(snippet.isEmpty() ? "(tin nhắn rỗng)" : snippet);
+                        tvSubtitle.setText("#" + item.channelName + " • " + item.senderName);
+                        return row;
+                }
+        }
 
     private void uploadImageMessage(Uri imageUri) {
         if (currentUserId == null || currentUserId.trim().isEmpty()) {

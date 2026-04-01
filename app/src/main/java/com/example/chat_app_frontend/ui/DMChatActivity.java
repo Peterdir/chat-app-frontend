@@ -2,6 +2,7 @@ package com.example.chat_app_frontend.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Base64;
 import androidx.activity.result.ActivityResultLauncher;
@@ -10,19 +11,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -160,6 +167,11 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
 
         ImageView btnTheme = findViewById(R.id.btn_theme);
         btnTheme.setOnClickListener(v -> showThemePicker());
+
+        View btnSearch = findViewById(R.id.btn_search);
+        if (btnSearch != null) {
+            btnSearch.setOnClickListener(v -> showDirectMessageSearchDialog());
+        }
 
         attachRealtimeMessages();
     }
@@ -709,6 +721,169 @@ public class DMChatActivity extends AppCompatActivity implements MessageAdapter.
         }
 
         dialog.show();
+    }
+
+    private void showDirectMessageSearchDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundResource(R.drawable.bg_search_input);
+        int pad = dp(16);
+        root.setPadding(pad, pad, pad, pad);
+
+        EditText input = new EditText(this);
+        input.setHint("Nhập nội dung cần tìm");
+        input.setBackgroundResource(R.drawable.bg_chat_input);
+        input.setTextColor(ContextCompat.getColor(this, R.color.discord_text_primary));
+        input.setHintTextColor(ContextCompat.getColor(this, R.color.discord_text_secondary));
+        input.setPadding(dp(14), dp(12), dp(14), dp(12));
+        root.addView(input, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+
+        TextView tvStatus = new TextView(this);
+        tvStatus.setText("Nhập từ khóa để tìm trong đoạn chat");
+        tvStatus.setTextColor(ContextCompat.getColor(this, R.color.discord_text_secondary));
+        tvStatus.setPadding(0, dp(8), 0, dp(8));
+        root.addView(tvStatus);
+
+        ListView listView = new ListView(this);
+        listView.setDivider(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+        listView.setDividerHeight(dp(6));
+        LinearLayout.LayoutParams listLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(360)
+        );
+        root.addView(listView, listLp);
+
+        List<Message> filtered = new ArrayList<>();
+        DirectSearchAdapter adapter = new DirectSearchAdapter(filtered);
+        listView.setAdapter(adapter);
+
+        Runnable refresh = () -> {
+            String query = input.getText() != null ? input.getText().toString().trim().toLowerCase(Locale.ROOT) : "";
+            filtered.clear();
+
+            if (query.isEmpty()) {
+                tvStatus.setText("Nhập từ khóa để tìm trong đoạn chat");
+                adapter.notifyDataSetChanged();
+                return;
+            }
+
+            for (Message message : messageList) {
+                if (message == null || Message.TYPE_DATE_DIVIDER.equals(message.getMessageType())) {
+                    continue;
+                }
+                String content = message.getContent() != null ? message.getContent() : "";
+                String sender = message.getSenderName() != null ? message.getSenderName() : "";
+                String searchable = (sender + " " + content).toLowerCase(Locale.ROOT);
+                if (!searchable.contains(query)) {
+                    continue;
+                }
+
+                filtered.add(message);
+            }
+
+            if (filtered.isEmpty()) {
+                tvStatus.setText("Không có kết quả phù hợp");
+            } else {
+                tvStatus.setText("Kết quả: " + filtered.size());
+            }
+            adapter.notifyDataSetChanged();
+        };
+
+        AlertDialog dialog = builder
+                .setView(root)
+                .setNegativeButton("Đóng", null)
+                .create();
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                refresh.run();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            if (position < 0 || position >= filtered.size()) {
+                return;
+            }
+            Message selected = filtered.get(position);
+            int targetIndex = findMessageIndexById(selected.getId());
+            if (targetIndex >= 0) {
+                rvMessages.scrollToPosition(targetIndex);
+            }
+            dialog.dismiss();
+        });
+
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+        }
+    }
+
+    private int findMessageIndexById(String messageId) {
+        if (messageId == null || messageId.trim().isEmpty()) {
+            return -1;
+        }
+        for (int i = 0; i < messageList.size(); i++) {
+            Message item = messageList.get(i);
+            if (item != null && messageId.equals(item.getId())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private String buildSnippet(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            return "(tin nhắn rỗng)";
+        }
+        String normalized = content.replace('\n', ' ').trim();
+        if (normalized.length() > 80) {
+            return normalized.substring(0, 80) + "...";
+        }
+        return normalized;
+    }
+
+    private class DirectSearchAdapter extends ArrayAdapter<Message> {
+        DirectSearchAdapter(List<Message> items) {
+            super(DMChatActivity.this, R.layout.item_search_result, items);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View row = convertView;
+            if (row == null) {
+                row = getLayoutInflater().inflate(R.layout.item_search_result, parent, false);
+            }
+
+            TextView title = row.findViewById(R.id.tv_search_title);
+            TextView subtitle = row.findViewById(R.id.tv_search_subtitle);
+            Message item = getItem(position);
+            if (item == null) {
+                title.setText("(tin nhắn)");
+                subtitle.setText("Không xác định");
+                return row;
+            }
+
+            String sender = item.getSenderName() != null ? item.getSenderName() : "unknown";
+            title.setText(buildSnippet(item.getContent()));
+            subtitle.setText(sender);
+            return row;
+        }
     }
 
     @Override

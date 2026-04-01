@@ -50,6 +50,7 @@
 
             <!-- Search Bar -->
             <TextView
+                android:id="@+id/tv_server_search"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
@@ -61,7 +62,9 @@
                 android:text="Tìm kiếm"
                 android:textColor="@color/discord_text_secondary"
                 android:textSize="14sp"
-                android:layout_marginEnd="8dp"/>
+                android:layout_marginEnd="8dp"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <!-- Add Member Button -->
             <ImageView

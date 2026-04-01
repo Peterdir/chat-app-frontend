@@ -201,6 +201,18 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ServerView
         return null;
     }
 
+    public Server findServerById(String serverId) {
+        if (serverId == null) {
+            return null;
+        }
+        for (Server server : serverList) {
+            if (serverId.equals(server.getId())) {
+                return server;
+            }
+        }
+        return null;
+    }
+
     public void addServer(Server server) {
         serverList.add(server);
         notifyItemInserted(serverList.size() - 1);

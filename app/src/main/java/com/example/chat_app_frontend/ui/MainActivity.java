@@ -396,4 +396,24 @@ public class MainActivity extends AppCompatActivity {
         intent.removeExtra(EXTRA_OPEN_CHANNEL_NAME);
         intent.setData(null);
     }
+
+    public void openServerFromSearch(String serverId, String fallbackServerName) {
+        if (serverId == null || serverId.trim().isEmpty()) {
+            return;
+        }
+
+        serverSidebar.setVisibility(View.VISIBLE);
+        if (bottomNav != null && bottomNav.getSelectedItemId() != R.id.nav_home) {
+            bottomNav.setSelectedItemId(R.id.nav_home);
+        }
+
+        Server target = serverAdapter.findServerById(serverId);
+        if (target != null) {
+            serverAdapter.setSelectedServer(serverId);
+            loadServerFragment(target);
+            return;
+        }
+
+        reloadServerRail(serverId, true);
+    }
 }
